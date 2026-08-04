@@ -63,6 +63,7 @@
     loadConversations();
     bindEvents();
     if (typeof bindMediaEvents === 'function') bindMediaEvents();
+    if (typeof bindGalleryVaultEvents === 'function') bindGalleryVaultEvents();
     renderAll();
     healthCheck();
     if (apiKey()) loadModels(); else openSettingsDialog();
