@@ -1,22 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AION">
-  <title>AION</title>
-  <rect width="512" height="512" rx="96" fill="#0b0b0f"/>
-  <rect x="2" y="2" width="508" height="508" rx="94" fill="none" stroke="#1a1a22" stroke-width="2"/>
-  <g>
-      <line x1="256" y1="256" x2="256.00" y2="168.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
-      <line x1="256" y1="256" x2="332.21" y2="212.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
-      <line x1="256" y1="256" x2="332.21" y2="300.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
-      <line x1="256" y1="256" x2="256.00" y2="344.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
-      <line x1="256" y1="256" x2="179.79" y2="300.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
-      <line x1="256" y1="256" x2="179.79" y2="212.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
-      <polygon points="256.00,156.00 266.39,162.00 266.39,174.00 256.00,180.00 245.61,174.00 245.61,162.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
-      <polygon points="332.21,200.00 342.60,206.00 342.60,218.00 332.21,224.00 321.82,218.00 321.82,206.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
-      <polygon points="332.21,288.00 342.60,294.00 342.60,306.00 332.21,312.00 321.82,306.00 321.82,294.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
-      <polygon points="256.00,332.00 266.39,338.00 266.39,350.00 256.00,356.00 245.61,350.00 245.61,338.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
-      <polygon points="179.79,288.00 190.18,294.00 190.18,306.00 179.79,312.00 169.40,306.00 169.40,294.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
-      <polygon points="179.79,200.00 190.18,206.00 190.18,218.00 179.79,224.00 169.40,218.00 169.40,206.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
-      <polygon points="256.00,224.00 283.71,240.00 283.71,272.00 256.00,288.00 228.29,272.00 228.29,240.00" fill="#b8963e"/>
-      <polygon points="256.00,236.00 273.32,246.00 273.32,266.00 256.00,276.00 238.68,266.00 238.68,246.00" fill="#0b0b0f"/>
-      <circle cx="256" cy="256" r="6" fill="#b8963e"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#a5b4fc"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07070b"/>
+      <stop offset="100%" stop-color="#0a0a10"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <rect x="2" y="2" width="252" height="252" rx="54" fill="none" stroke="url(#g)" stroke-width="2" opacity="0.4"/>
+  <g transform="translate(128 128)" filter="url(#glow)">
+    <path d="M 0,-78 L 67,-39 L 67,39 L 0,78 L -67,39 L -67,-39 Z" fill="none" stroke="url(#g)" stroke-width="5" stroke-linejoin="round" opacity="0.55"/>
+    <path d="M 0,-58 L 50,-29 L 50,29 L 0,58 L -50,29 L -50,-29 Z" fill="none" stroke="url(#g)" stroke-width="4" stroke-linejoin="round" opacity="0.75"/>
+    <circle cx="0" cy="0" r="14" fill="url(#g)"/>
+    <circle cx="0" cy="0" r="6" fill="#07070b"/>
   </g>
+  <circle cx="40" cy="40" r="3" fill="#22d3ee" opacity="0.6"/>
+  <circle cx="216" cy="216" r="3" fill="#67e8f9" opacity="0.6"/>
+  <circle cx="216" cy="40" r="2" fill="#a5b4fc" opacity="0.4"/>
+  <circle cx="40" cy="216" r="2" fill="#a5b4fc" opacity="0.4"/>
 </svg>
