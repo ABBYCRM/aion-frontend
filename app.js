@@ -12,10 +12,10 @@
   const STORAGE_KEY = 'aion.conversations.v1';
   const SETTINGS_KEY = 'aion.settings.v1';
   const API_BASE_KEY = 'aion.apiBase.v1';
-  // Default: same-origin (when frontend is served by the backend on Render).
+  // Default: the AION backend on DigitalOcean.
   // Override at runtime by setting localStorage['aion.apiBase.v1'] = 'https://api.your-domain.com'
   // — or via the Settings panel.
-  const DEFAULT_API_BASE = window.location.origin;
+  const DEFAULT_API_BASE = 'https://aion-backend-v2-jszgl.ondigitalocean.app';
   const MAX_TITLE = 60;
   const MAX_FILE_BYTES = 10 * 1024 * 1024;   // 10 MB per file
   const ACCEPTED_FILES = [
