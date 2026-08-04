@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#11100d">
   <meta name="description" content="AION — authenticated tool-augmented assistant">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https:; img-src 'self' data:; style-src 'self'; script-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://aion-backend-v2-jszgl.ondigitalocean.app; img-src 'self' data:; style-src 'self'; script-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'">
   <title>AION</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -26,10 +26,7 @@
     <aside id="sidebar" class="sidebar" aria-label="Conversation history">
       <div class="brand-row">
         <div class="brand-mark">A</div>
-        <div>
-          <strong>AION</strong>
-          <span>Operating Nexus</span>
-        </div>
+        <div><strong>AION</strong><span>Operating Nexus</span></div>
         <button id="closeSidebar" class="icon-button mobile-only" aria-label="Close sidebar">×</button>
       </div>
       <button id="newChat" class="primary-button full">＋ New chat</button>
@@ -46,13 +43,10 @@
         <button id="openSidebar" class="icon-button mobile-only" aria-label="Open sidebar">☰</button>
         <div class="model-controls">
           <label for="modelSelect">Model</label>
-          <select id="modelSelect" aria-label="Model selection">
-            <option value="">Default failover chain</option>
-          </select>
+          <select id="modelSelect" aria-label="Model selection"><option value="">Configured failover chain</option></select>
         </div>
         <label class="search-toggle" title="Attach current web results to this turn">
-          <input id="webSearchToggle" type="checkbox">
-          <span>Search web</span>
+          <input id="webSearchToggle" type="checkbox"><span>Search web</span>
         </label>
         <span id="connectionStatus" class="connection" aria-live="polite">Checking…</span>
       </header>
@@ -75,24 +69,26 @@
   <dialog id="settingsDialog" class="dialog">
     <form method="dialog" class="dialog-card">
       <header><h2>Settings</h2><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
-      <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" placeholder="https://api.example.com"></label>
+      <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" readonly></label>
       <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored for this browser session only"></label>
       <label>Temperature<input id="temperature" type="number" min="0" max="2" step="0.1"></label>
       <label>Max completion tokens<input id="maxTokens" type="number" min="32" max="4096" step="32"></label>
+      <label class="search-toggle"><input id="useNotes" type="checkbox"><span>Include matching notes in model context</span></label>
+      <label class="search-toggle"><input id="persistHistory" type="checkbox"><span>Persist sanitized chat history on this device</span></label>
       <div class="dialog-actions">
         <button id="clearHistory" class="danger-button" type="button">Clear local history</button>
         <button id="saveSettings" class="primary-button" value="default">Save</button>
       </div>
-      <p class="muted">The API key is stored in <code>sessionStorage</code>, not local history.</p>
+      <p class="muted">The API key is session-only. History and notes context are off by default.</p>
     </form>
   </dialog>
 
   <dialog id="notesDialog" class="dialog wide">
     <div class="dialog-card">
-      <header><h2>Owner-scoped notes</h2><button class="icon-button" data-close-dialog="notesDialog" aria-label="Close">×</button></header>
+      <header><h2>Owner-scoped non-secret notes</h2><button class="icon-button" data-close-dialog="notesDialog" aria-label="Close">×</button></header>
       <form id="noteForm" class="note-form">
         <input id="noteName" required maxlength="200" placeholder="Name">
-        <select id="noteKind"><option>note</option><option>project</option><option>url</option><option>instruction</option></select>
+        <select id="noteKind"><option>note</option><option>project</option><option>url</option></select>
         <input id="noteTags" maxlength="300" placeholder="tags, comma, separated">
         <textarea id="noteValue" required maxlength="20000" placeholder="Non-secret note value"></textarea>
         <button class="primary-button" type="submit">Add note</button>
@@ -106,8 +102,8 @@
     <div class="dialog-card">
       <header><h2>GitHub</h2><button class="icon-button" data-close-dialog="githubDialog" aria-label="Close">×</button></header>
       <div class="github-form">
-        <label>Repository<input id="githubRepository" value="ABBYCRM/aion-frontend" placeholder="owner/repo"></label>
-        <label>Path or search query<input id="githubArgument" placeholder="app.js or resolve_model_chain"></label>
+        <label>Allowlisted repository<input id="githubRepository" value="ABBYCRM/aion-frontend" placeholder="owner/repo"></label>
+        <label>Path or search query<input id="githubArgument" placeholder="app-chat-a.js or resolve_model_chain"></label>
         <div class="button-row">
           <button data-github-action="repository" type="button">Repository</button>
           <button data-github-action="issues" type="button">Issues</button>
@@ -116,7 +112,7 @@
         </div>
       </div>
       <pre id="githubOutput" class="json-output">Choose an action.</pre>
-      <p class="muted">GitHub credentials stay server-side. Write endpoints require an admin key, server-side enablement, and an explicit confirmation header.</p>
+      <p class="muted">GitHub credentials stay server-side. Repository access is fail-closed; writes additionally require an admin key, server enablement, and explicit confirmation.</p>
     </div>
   </dialog>
 

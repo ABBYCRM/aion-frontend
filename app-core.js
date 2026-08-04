@@ -5,12 +5,18 @@
   const SETTINGS_KEY = 'aion.settings.v2';
   const MODEL_KEY = 'aion.model.v2';
   const API_KEY_SESSION = 'aion.apiKey.session';
-  const MAX_TEXT_FILE = 100_000;
-  const MAX_IMAGE_FILE = 900_000;
+  const MAX_TEXT_FILE = Number(CONFIG.maxTextFileBytes) || 100_000;
+  const MAX_IMAGE_FILE = Number(CONFIG.maxImageBytes) || 900_000;
+  const MAX_ATTACHMENT_COUNT = Number(CONFIG.maxAttachmentCount) || 6;
+  const MAX_TOTAL_ATTACHMENT_BYTES = Number(CONFIG.maxTotalAttachmentBytes) || 1_200_000;
   const ACCEPTED_TYPES = new Set([
     'image/png', 'image/jpeg', 'image/webp', 'image/gif',
     'text/plain', 'text/markdown', 'text/csv', 'application/json',
   ]);
+  const CONFIGURED_API_BASE = normalizeApiBase(CONFIG.apiBase || window.location.origin);
+  const ALLOWED_API_ORIGINS = new Set(
+    (CONFIG.allowedApiOrigins || [CONFIGURED_API_BASE]).map((value) => new URL(value).origin),
+  );
 
   const $ = (id) => document.getElementById(id);
   const dom = {
@@ -21,6 +27,7 @@
     webSearchToggle: $('webSearchToggle'), modelSelect: $('modelSelect'), connectionStatus: $('connectionStatus'),
     settingsDialog: $('settingsDialog'), openSettings: $('openSettings'), backendUrl: $('backendUrl'),
     apiKey: $('apiKey'), temperature: $('temperature'), maxTokens: $('maxTokens'),
+    persistHistory: $('persistHistory'), useNotes: $('useNotes'),
     saveSettings: $('saveSettings'), clearHistory: $('clearHistory'),
     notesDialog: $('notesDialog'), openNotes: $('openNotes'), noteForm: $('noteForm'),
     noteName: $('noteName'), noteKind: $('noteKind'), noteTags: $('noteTags'), noteValue: $('noteValue'),
@@ -34,10 +41,13 @@
     activeId: null,
     pendingAttachments: [],
     controller: null,
+    renderFrame: 0,
     settings: {
-      apiBase: String(CONFIG.apiBase || window.location.origin).replace(/\/+$/, ''),
+      apiBase: CONFIGURED_API_BASE,
       temperature: 0.7,
       maxTokens: 1024,
+      persistHistory: false,
+      useNotes: false,
     },
     selectedModel: null,
     modelsLoaded: false,
@@ -51,33 +61,65 @@
     try { return sessionStorage.getItem(API_KEY_SESSION) || ''; } catch { return ''; }
   }
 
+  function normalizeApiBase(value) {
+    const parsed = new URL(String(value || ''), window.location.origin);
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Backend URL must use HTTP or HTTPS.');
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error('Backend URL must be a bare origin.');
+    if (parsed.pathname !== '/' && parsed.pathname !== '') throw new Error('Backend URL must not contain a path.');
+    if (parsed.protocol === 'http:' && !['localhost', '127.0.0.1', '::1'].includes(parsed.hostname)) {
+      throw new Error('Non-local backend URLs must use HTTPS.');
+    }
+    return parsed.origin;
+  }
+
+  function apiBaseAllowed(value) {
+    try {
+      const base = normalizeApiBase(value);
+      return Boolean(CONFIG.allowCustomApiBase) || ALLOWED_API_ORIGINS.has(new URL(base).origin);
+    } catch { return false; }
+  }
+
   function loadSettings() {
     try {
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      if (saved.apiBase) state.settings.apiBase = String(saved.apiBase).replace(/\/+$/, '');
+      if (CONFIG.allowCustomApiBase && saved.apiBase && apiBaseAllowed(saved.apiBase)) {
+        state.settings.apiBase = normalizeApiBase(saved.apiBase);
+      }
       if (Number.isFinite(saved.temperature)) state.settings.temperature = Math.min(2, Math.max(0, saved.temperature));
       if (Number.isInteger(saved.maxTokens)) state.settings.maxTokens = Math.min(4096, Math.max(32, saved.maxTokens));
+      state.settings.persistHistory = saved.persistHistory === true;
+      state.settings.useNotes = saved.useNotes === true;
       const selected = JSON.parse(localStorage.getItem(MODEL_KEY) || 'null');
       if (selected && selected.provider && selected.model) state.selectedModel = selected;
-    } catch { /* use defaults */ }
+    } catch { /* use secure defaults */ }
   }
 
   function saveSettings() {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+    const saved = {
+      temperature: state.settings.temperature,
+      maxTokens: state.settings.maxTokens,
+      persistHistory: state.settings.persistHistory,
+      useNotes: state.settings.useNotes,
+    };
+    if (CONFIG.allowCustomApiBase) saved.apiBase = state.settings.apiBase;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
     if (state.selectedModel) localStorage.setItem(MODEL_KEY, JSON.stringify(state.selectedModel));
     else localStorage.removeItem(MODEL_KEY);
   }
 
   function loadConversations() {
-    try {
-      const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-      if (Array.isArray(value)) state.conversations = value;
-    } catch { state.conversations = []; }
+    if (state.settings.persistHistory) {
+      try {
+        const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        if (Array.isArray(value)) state.conversations = value;
+      } catch { state.conversations = []; }
+    }
     if (!state.conversations.length) createConversation();
     state.activeId = state.conversations[0].id;
   }
 
   function saveConversations() {
+    if (!state.settings.persistHistory) return;
     const safe = state.conversations.map((conversation) => ({
       ...conversation,
       messages: conversation.messages.map((message) => ({
@@ -108,18 +150,27 @@
         })),
       };
     }
+    const result = tool.result && typeof tool.result === 'object' ? { ...tool.result } : tool.result;
+    if (result && typeof result === 'object') delete result.content;
     return {
       type: tool.type,
       tool: tool.tool,
       repository: tool.repository,
-      result: limitObject(tool.result),
+      result: limitObject(result),
       message: tool.message,
     };
   }
 
-  function limitObject(value) {
-    try { return JSON.parse(JSON.stringify(value).slice(0, 80_000)); }
-    catch { return String(value).slice(0, 80_000); }
+  function limitObject(value, depth = 0) {
+    if (depth > 5) return '[truncated]';
+    if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
+      return typeof value === 'string' ? value.slice(0, 5000) : value;
+    }
+    if (Array.isArray(value)) return value.slice(0, 50).map((item) => limitObject(item, depth + 1));
+    if (typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).slice(0, 50).map(([key, item]) => [key, limitObject(item, depth + 1)]));
+    }
+    return String(value).slice(0, 5000);
   }
 
   function createConversation() {

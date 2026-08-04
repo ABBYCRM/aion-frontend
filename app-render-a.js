@@ -31,13 +31,13 @@
     if (!conversation || !conversation.messages.length) {
       const welcome = document.createElement('div');
       welcome.className = 'welcome';
-      welcome.innerHTML = '<h1>AION</h1><p>Authenticated chat with live web search, GitHub repository tools, bounded model failover, and owner-scoped notes.</p>';
+      welcome.innerHTML = '<h1>AION</h1><p>Authenticated chat with live web search, allowlisted GitHub repository tools, bounded model failover, and optional owner-scoped notes.</p>';
       const suggestions = document.createElement('div');
       suggestions.className = 'suggestion-grid';
       [
         '/search latest developments in FastAPI security',
         '/github ABBYCRM/aion-backend-v2 search resolve_model_chain',
-        '/github ABBYCRM/aion-frontend file app.js',
+        '/github ABBYCRM/aion-frontend file app-chat-a.js',
         'Explain the architecture of AION and identify the next test to add.',
       ].forEach((text) => {
         const button = document.createElement('button');

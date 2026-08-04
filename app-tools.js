@@ -1,18 +1,28 @@
   function openSettingsDialog() {
     dom.backendUrl.value = state.settings.apiBase;
+    dom.backendUrl.readOnly = !CONFIG.allowCustomApiBase;
     dom.apiKey.value = apiKey();
     dom.temperature.value = String(state.settings.temperature);
     dom.maxTokens.value = String(state.settings.maxTokens);
+    dom.persistHistory.checked = state.settings.persistHistory;
+    dom.useNotes.checked = state.settings.useNotes;
     if (!dom.settingsDialog.open) dom.settingsDialog.showModal();
   }
 
   function persistSettings() {
-    const backend = dom.backendUrl.value.trim().replace(/\/+$/, '');
-    if (!safeHttpUrl(backend)) { showToast('Backend URL must use HTTP or HTTPS.'); return; }
+    let backend = CONFIGURED_API_BASE;
+    if (CONFIG.allowCustomApiBase) {
+      try { backend = normalizeApiBase(dom.backendUrl.value.trim()); }
+      catch (error) { showToast(error.message); return; }
+      if (!apiBaseAllowed(backend)) { showToast('Backend origin is not allowed by this build.'); return; }
+    }
     state.settings.apiBase = backend;
     state.settings.temperature = Math.min(2, Math.max(0, Number(dom.temperature.value) || 0.7));
     state.settings.maxTokens = Math.min(4096, Math.max(32, Number(dom.maxTokens.value) || 1024));
+    state.settings.persistHistory = dom.persistHistory.checked;
+    state.settings.useNotes = dom.useNotes.checked;
     try { sessionStorage.setItem(API_KEY_SESSION, dom.apiKey.value.trim()); } catch { /* ignored */ }
+    if (!state.settings.persistHistory) localStorage.removeItem(HISTORY_KEY);
     saveSettings();
     healthCheck();
     loadModels();
@@ -22,6 +32,13 @@
   async function loadNotes() {
     dom.notesList.textContent = 'Loading…';
     try {
+      const statusResponse = await apiFetch('/api/notes/status');
+      const statusPayload = await statusResponse.json();
+      if (!statusResponse.ok) throw new Error(detail(statusPayload, statusResponse));
+      if (!statusPayload.available) {
+        dom.notesList.textContent = 'Notes are disabled until the backend has a PostgreSQL DATABASE_URL.';
+        return;
+      }
       const query = encodeURIComponent(dom.noteSearch.value.trim());
       const response = await apiFetch(`/api/notes?q=${query}&limit=100`);
       const payload = await response.json();
@@ -84,6 +101,7 @@
       file: ['/api/github/file', { repository, path: argument }],
       search: ['/api/github/search', { repository, query: argument, limit: 20 }],
     };
+    if (!repository) { showToast('Enter an allowlisted owner/repository.'); return; }
     if ((action === 'file' || action === 'search') && !argument) {
       showToast('Enter a path or search query.');
       return;

@@ -11,12 +11,18 @@ static_sites:
     index_document: index.html
     catchall_document: index.html
     headers:
+      - name: Content-Security-Policy
+        value: "default-src 'self'; connect-src 'self' https://aion-backend-v2-jszgl.ondigitalocean.app; img-src 'self' data:; style-src 'self'; script-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'"
+      - name: X-Frame-Options
+        value: DENY
       - name: X-Content-Type-Options
         value: nosniff
       - name: Referrer-Policy
         value: no-referrer
       - name: Permissions-Policy
         value: camera=(), geolocation=(), payment=(), usb=()
+      - name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
       - name: Cache-Control
         value: no-cache
     routes:
