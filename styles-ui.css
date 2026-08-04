@@ -1,0 +1,62 @@
+.composer-area { padding: 10px max(16px, calc((100vw - 1040px) / 2)) 18px; background: linear-gradient(transparent, var(--bg) 24%); }
+.composer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: end; gap: 8px; padding: 9px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); }
+.composer textarea { width: 100%; max-height: 180px; resize: none; border: 0; padding: 10px 6px; background: transparent; color: var(--text); outline: 0; }
+.composer-hint { margin: 8px 8px 0; color: var(--muted); font-size: 11px; text-align: center; }
+.attachment-list { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
+.attachment-chip { display: inline-flex; align-items: center; gap: 7px; max-width: 300px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel); font-size: 12px; }
+.attachment-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attachment-chip button { border: 0; background: transparent; cursor: pointer; }
+
+button, select, input, textarea { border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); color: var(--text); }
+input, select, textarea { padding: 9px 10px; }
+button { padding: 9px 12px; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+.primary-button, .send-button { border-color: #9f7f35; background: var(--accent); color: #16120a; font-weight: 700; }
+.primary-button:hover, .send-button:hover { background: var(--accent-2); }
+.danger-button { border-color: rgb(225 106 100 / 50%); color: #ffb2ad; background: rgb(225 106 100 / 8%); }
+.icon-button { display: grid; place-items: center; min-width: 38px; min-height: 38px; padding: 5px; background: transparent; }
+
+.dialog { width: min(620px, calc(100vw - 24px)); border: 0; padding: 0; background: transparent; color: var(--text); }
+.dialog.wide { width: min(920px, calc(100vw - 24px)); }
+.dialog::backdrop { background: rgb(0 0 0 / 70%); backdrop-filter: blur(4px); }
+.dialog-card { display: grid; gap: 14px; max-height: min(86dvh, 900px); overflow: auto; padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); }
+.dialog-card header { display: flex; justify-content: space-between; align-items: center; }
+.dialog-card h2 { margin: 0; }
+.dialog-card label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+.dialog-actions, .button-row, .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.dialog-actions { justify-content: space-between; }
+.note-form { display: grid; grid-template-columns: 1fr 150px; gap: 8px; }
+.note-form textarea { grid-column: 1 / -1; min-height: 90px; resize: vertical; }
+.note-form button { justify-self: start; }
+.toolbar input { flex: 1; min-width: 180px; }
+.stack-list { display: grid; gap: 8px; }
+.stack-item { padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+.stack-item header { margin-bottom: 8px; }
+.stack-item p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.stack-item small { color: var(--muted); }
+.github-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.github-form .button-row { grid-column: 1 / -1; }
+.json-output { min-height: 260px; max-height: 50dvh; overflow: auto; margin: 0; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #090806; white-space: pre-wrap; overflow-wrap: anywhere; }
+.muted { color: var(--muted); font-size: 12px; }
+.toast { position: fixed; right: 18px; bottom: 18px; z-index: 100; max-width: min(420px, calc(100vw - 36px)); padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); box-shadow: var(--shadow); }
+.mobile-only { display: none; }
+
+@media (max-width: 800px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 50; width: min(310px, 88vw); transform: translateX(-105%); transition: transform .2s ease; box-shadow: var(--shadow); }
+  .app-shell.sidebar-open .sidebar { transform: translateX(0); }
+  .mobile-only { display: grid; }
+  .brand-row .mobile-only { margin-left: auto; }
+  .topbar { gap: 8px; padding: 9px 10px; }
+  .model-controls label { display: none; }
+  .model-controls select { max-width: 44vw; }
+  .search-toggle span { display: none; }
+  .messages { padding: 20px 12px; }
+  .composer-area { padding: 8px 10px 12px; }
+  .suggestion-grid { grid-template-columns: 1fr; }
+  .message { grid-template-columns: 32px minmax(0, 1fr); gap: 9px; }
+  .avatar { width: 30px; height: 30px; }
+  .tool-card { margin-left: 39px; }
+  .github-form, .note-form { grid-template-columns: 1fr; }
+  .github-form .button-row, .note-form textarea { grid-column: 1; }
+}

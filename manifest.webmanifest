@@ -1,24 +1,22 @@
 {
-  "name": "AION",
+  "name": "AION — Adaptive Intelligence Operating Nexus",
   "short_name": "AION",
-  "description": "Adaptive Intelligence Operating Nexus",
+  "description": "Authenticated tool-augmented assistant with web and GitHub access",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0b0b0f",
-  "theme_color": "#0b0b0f",
-  "categories": ["productivity", "utilities", "developer"],
+  "orientation": "any",
+  "background_color": "#11100d",
+  "theme_color": "#11100d",
+  "categories": ["productivity", "developer", "utilities"],
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    {
-      "name": "New chat",
-      "url": "/?new=1",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    }
+    { "name": "New chat", "url": "/?new=1", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
   ]
 }

@@ -1,43 +1,32 @@
-# DigitalOcean App Platform spec for the AION frontend (static PWA).
-# Deploy from this directory. The static assets live under ../backend/static/
-# but DO only needs the files in this app's source dir, so we symlink or copy.
-#
-# To deploy via doctl CLI:
-#   doctl apps create --spec frontend/do-app.yaml
-# Then update with:
-#   doctl apps update <app-id> --spec frontend/do-app.yaml
 name: aion-frontend
 region: nyc
 static_sites:
-  - name: aion
-    source_dir: ../backend/static
-    output_dir: .
+  - name: website
+    github:
+      repo: ABBYCRM/aion-frontend
+      branch: main
+      deploy_on_push: true
+    environment_slug: html
+    source_dir: /
     index_document: index.html
-    error_document: index.html
-    cors:
-      allow_origins:
-        - "*"
+    catchall_document: index.html
     headers:
+      - name: X-Content-Type-Options
+        value: nosniff
+      - name: Referrer-Policy
+        value: no-referrer
+      - name: Permissions-Policy
+        value: camera=(), geolocation=(), payment=(), usb=()
       - name: Cache-Control
-        value: "public, max-age=3600"
-      - name: Service-Worker-Allowed
-        value: "/"
+        value: no-cache
     routes:
       - path: /sw.js
         headers:
-          - name: Service-Worker-Allowed
-            value: "/"
           - name: Cache-Control
-            value: "no-cache"
-      - path: /manifest.webmanifest
+            value: no-cache, no-store, must-revalidate
+          - name: Service-Worker-Allowed
+            value: /
+      - path: /config.js
         headers:
-          - name: Content-Type
-            value: "application/manifest+json"
-      - path: /icon.svg
-        headers:
-          - name: Content-Type
-            value: "image/svg+xml"
-    envs:
-      - key: AION_BACKEND_URL
-        value: https://aion-runtime.onrender.com
-        scope: BUILD_TIME
+          - name: Cache-Control
+            value: no-cache, no-store, must-revalidate
