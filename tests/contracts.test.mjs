@@ -53,7 +53,7 @@ test('security policy is delivered as an HTTP header', () => {
 });
 
 test('CSP allows blob: for TTS media + data: for VTT captions', () => {
-  assert.match(index, /media-src 'self' blob:/);
+  assert.match(index, /media-src 'self' blob: data:/);
   assert.match(index, /worker-src 'self' blob:/);
-  assert.match(appSpec, /media-src 'self' blob:/);
+  assert.match(appSpec, /media-src 'self' blob: data:/);
 });
