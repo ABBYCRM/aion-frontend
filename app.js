@@ -95,6 +95,20 @@
     connectionDot: $('connectionDot'),
     modelName: $('modelName'),
     modelPickerBtn: $('modelPickerBtn'),
+    scratchpadBtn: $('scratchpadBtn'),
+    scratchpadPanel: $('scratchpadPanel'),
+    scratchpadStat: $('scratchpadStat'),
+    spSearch: $('spSearch'),
+    spKindFilter: $('spKindFilter'),
+    spReveal: $('spReveal'),
+    spVerify: $('spVerify'),
+    spAddForm: $('spAddForm'),
+    spName: $('spName'),
+    spKind: $('spKind'),
+    spTags: $('spTags'),
+    spValue: $('spValue'),
+    spList: $('spList'),
+    spVerifyReport: $('spVerifyReport'),
     pickerProvider: $('pickerProvider'),
     pickerLabel: $('pickerLabel'),
     pickerPanel: $('pickerPanel'),
@@ -748,6 +762,33 @@
     return (n / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
+  async function detectAndOfferSave(text) {
+    if (!text) return;
+    try {
+      const r = await fetch(apiUrl('/api/scratchpad/detect'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!r.ok) return;
+      const d = await r.json();
+      if (!d.candidates || !d.candidates.length) return;
+      // Show a toast per candidate with quick-save. Don't save automatically.
+      for (const c of d.candidates.slice(0, 3)) {
+        const ok = confirm(`AION detected a ${c.hint} (${c.preview}).\n\nSave to scratchpad with 7-law signature?`);
+        if (!ok) continue;
+        const defaultName = c.hint.charAt(0).toUpperCase() + c.hint.slice(1);
+        const name = prompt('Name for this entry:', defaultName) || defaultName;
+        await fetch(apiUrl('/api/scratchpad'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, value: c.value, kind: c.kind, source: 'auto-detect' }),
+        });
+        showToast(`Saved: ${name}`);
+      }
+    } catch (e) { /* silent */ }
+  }
+
   async function sendMessage() {
     if (state.streaming) return;
     const conv = activeConv() || newConversation();
@@ -765,6 +806,8 @@
       ts: now(),
     };
     conv.messages.push(userMsg);
+    // detect candidate secrets in the user's message and offer to save
+    detectAndOfferSave(text).catch(() => {});
     dom.prompt.value = '';
     state.pendingAttachments = [];
     renderPendingAttachments();
@@ -1321,6 +1364,177 @@
   // ------------------------------------------------------------------
   // Boot
   // ------------------------------------------------------------------
+  // Scratchpad UI
+  // ------------------------------------------------------------------
+  let _spItems = [];
+  let _spReveal = false;
+  let _spVerify = false;
+
+  async function loadScratchpad() {
+    try {
+      const params = new URLSearchParams();
+      const q = dom.spSearch.value.trim();
+      if (q) params.set('q', q);
+      const kind = dom.spKindFilter.value;
+      if (kind) params.set('kind', kind);
+      if (_spReveal) params.set('reveal', 'true');
+      const r = await fetch(apiUrl('/api/scratchpad?' + params.toString()));
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      _spItems = data.items || [];
+      renderScratchpad();
+    } catch (e) {
+      dom.spList.innerHTML = `<div class="picker-empty">Failed to load: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  function renderScratchpad() {
+    if (!_spItems.length) {
+      dom.spList.innerHTML = '<div class="picker-empty">No entries yet. Add one above.</div>';
+      return;
+    }
+    dom.spList.innerHTML = _spItems.map(it => {
+      const sig = it.kernel_signature || {};
+      const state = (sig.decision_state || 'unsigned').toLowerCase();
+      const isSecret = ['api_key', 'secret', 'token', 'credential', 'password', 'private_key'].includes(it.kind);
+      const value = it.value;
+      const valueClass = isSecret && !it.revealed ? 'sp-item-value' : 'sp-item-value';
+      const tagsHtml = (it.tags || []).map(t => `<span>${escapeHtml(t)}</span>`).join(' · ');
+      const fp = (sig.content_fingerprint || '').slice(0, 12);
+      const thread = (sig.thread_id || '').slice(0, 16);
+      const used = it.use_count || 0;
+      return `
+        <div class="sp-item" data-id="${escapeHtml(it.id)}">
+          <div class="sp-item-head">
+            <span class="sp-item-name">${escapeHtml(it.name)}</span>
+            <span class="sp-item-kind">${escapeHtml(it.kind)}</span>
+            <span class="sp-item-state ${state}">${escapeHtml(state)}</span>
+          </div>
+          ${tagsHtml ? `<div class="sp-item-tags">${tagsHtml}</div>` : ''}
+          <div class="${valueClass}">${escapeHtml(value)}</div>
+          <div class="sp-item-foot">
+            <span>fp ${fp}…</span>
+            <span>·</span>
+            <span>thread ${thread}</span>
+            <span>·</span>
+            <span>used ${used}×</span>
+            <div class="sp-act">
+              <button class="sp-copy" data-id="${escapeHtml(it.id)}">Copy</button>
+              ${isSecret ? `<button class="sp-reveal" data-id="${escapeHtml(it.id)}">${it.revealed ? 'Hide' : 'Reveal'}</button>` : ''}
+              <button class="del sp-del" data-id="${escapeHtml(it.id)}">Delete</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Wire up actions
+    dom.spList.querySelectorAll('.sp-copy').forEach(b => b.addEventListener('click', async () => {
+      const id = b.dataset.id;
+      const it = await fetch(apiUrl('/api/scratchpad/' + id + '?reveal=true')).then(r => r.json());
+      try { await navigator.clipboard.writeText(it.value || ''); showToast('Copied.'); } catch (e) { showToast('Copy failed.'); }
+    }));
+    dom.spList.querySelectorAll('.sp-reveal').forEach(b => b.addEventListener('click', async () => {
+      const id = b.dataset.id;
+      const it = await fetch(apiUrl('/api/scratchpad/' + id + '?reveal=true')).then(r => r.json());
+      if (it && it.value != null) {
+        b.closest('.sp-item').querySelector('.sp-item-value').textContent = it.value;
+        b.textContent = 'Hide';
+        try { await navigator.clipboard.writeText(it.value); showToast('Revealed & copied.'); } catch (e) {}
+      }
+    }));
+    dom.spList.querySelectorAll('.sp-del').forEach(b => b.addEventListener('click', async () => {
+      const id = b.dataset.id;
+      if (!confirm('Delete this entry? The kernel signature will be lost.')) return;
+      await fetch(apiUrl('/api/scratchpad/' + id), { method: 'DELETE' });
+      await loadScratchpad();
+      await loadSpStats();
+    }));
+  }
+
+  async function loadSpStats() {
+    try {
+      const r = await fetch(apiUrl('/api/scratchpad/stats'));
+      const d = await r.json();
+      dom.scratchpadStat.textContent = `${d.total} entries · ${d.secrets} secret${d.secrets === 1 ? '' : 's'} · lawset ${d.lawset_version}`;
+    } catch (e) {
+      dom.scratchpadStat.textContent = 'offline';
+    }
+  }
+
+  async function runSpVerify() {
+    const r = await fetch(apiUrl('/api/scratchpad/verify'));
+    const d = await r.json();
+    const el = dom.spVerifyReport;
+    el.hidden = false;
+    el.innerHTML = `
+      <div><span class="${d.bad === 0 ? 'ok' : 'bad'}">${d.ok} ok</span> · <span class="${d.drift > 0 ? 'drift' : ''}">${d.drift} drift</span> · <span class="${d.bad > 0 ? 'bad' : 'ok'}">${d.bad} bad</span> · of ${d.total} total</div>
+      ${d.bad_entries && d.bad_entries.length ? `<div style="margin-top:6px; color:var(--danger);">${d.bad_entries.slice(0, 5).map(e => `&middot; ${escapeHtml(e.name)}: ${escapeHtml(e.reason)}`).join('<br>')}</div>` : ''}
+    `;
+  }
+
+  async function addScratchpadEntry(form) {
+    const payload = {
+      name: form.querySelector('#spName').value.trim(),
+      value: form.querySelector('#spValue').value,
+      kind: form.querySelector('#spKind').value,
+      tags: form.querySelector('#spTags').value.split(',').map(t => t.trim()).filter(Boolean),
+      source: 'ui',
+    };
+    if (!payload.name || !payload.value) {
+      showToast('Name and value are required.');
+      return;
+    }
+    const r = await fetch(apiUrl('/api/scratchpad'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      showToast('Save failed: ' + (err.detail || r.statusText));
+      return;
+    }
+    const e = await r.json();
+    const sig = e.kernel_signature || {};
+    form.querySelector('#spName').value = '';
+    form.querySelector('#spValue').value = '';
+    form.querySelector('#spTags').value = '';
+    form.querySelector('#spAddHint').textContent =
+      `signed: ${sig.decision_state} · ${sig.lawset_version} · fp ${(sig.content_fingerprint || '').slice(0, 12)}`;
+    showToast(`Saved & signed (${sig.decision_state}).`);
+    await loadScratchpad();
+    await loadSpStats();
+  }
+
+  function initScratchpad() {
+    if (!dom.scratchpadBtn) return;
+    dom.scratchpadBtn.addEventListener('click', async () => {
+      dom.scratchpadPanel.hidden = false;
+      await loadSpStats();
+      await loadScratchpad();
+      setTimeout(() => dom.spSearch.focus(), 30);
+    });
+    dom.spSearch.addEventListener('input', debounce(loadScratchpad, 200));
+    dom.spKindFilter.addEventListener('change', loadScratchpad);
+    dom.spReveal.addEventListener('click', () => {
+      _spReveal = !_spReveal;
+      dom.spReveal.textContent = _spReveal ? 'Hide' : 'Reveal';
+      loadScratchpad();
+    });
+    dom.spVerify.addEventListener('click', runSpVerify);
+    dom.spAddForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      addScratchpadEntry(e.currentTarget);
+    });
+  }
+
+  function debounce(fn, ms) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+
+  // ------------------------------------------------------------------
   function boot() {
     loadSettings();
     state.conversations = loadConversations();
@@ -1330,6 +1544,7 @@
     bind();
     renderAll();
     initModelPicker();
+    initScratchpad();
     healthCheck();
     setInterval(healthCheck, 30000);
 

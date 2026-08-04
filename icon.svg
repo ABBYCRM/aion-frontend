@@ -1,15 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AION">
+  <title>AION</title>
   <rect width="512" height="512" rx="96" fill="#0b0b0f"/>
-  <circle cx="256" cy="256" r="180" fill="none" stroke="#b8963e" stroke-width="6"/>
-  <circle cx="256" cy="256" r="120" fill="none" stroke="#b8963e" stroke-width="3" opacity="0.5"/>
-  <circle cx="256" cy="256" r="36" fill="#d4af37"/>
-  <line x1="256" y1="76" x2="256" y2="156" stroke="#b8963e" stroke-width="4"/>
-  <line x1="256" y1="356" x2="256" y2="436" stroke="#b8963e" stroke-width="4"/>
-  <line x1="76" y1="256" x2="156" y2="256" stroke="#b8963e" stroke-width="4"/>
-  <line x1="356" y1="256" x2="436" y2="256" stroke="#b8963e" stroke-width="4"/>
-  <line x1="135" y1="135" x2="190" y2="190" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
-  <line x1="322" y1="322" x2="377" y2="377" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
-  <line x1="377" y1="135" x2="322" y2="190" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
-  <line x1="190" y1="322" x2="135" y2="377" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
-  <text x="256" y="488" font-family="Inter, -apple-system, sans-serif" font-size="44" font-weight="600" fill="#b8963e" text-anchor="middle" letter-spacing="6">AION</text>
+  <rect x="2" y="2" width="508" height="508" rx="94" fill="none" stroke="#1a1a22" stroke-width="2"/>
+  <g>
+      <line x1="256" y1="256" x2="256.00" y2="168.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <line x1="256" y1="256" x2="332.21" y2="212.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <line x1="256" y1="256" x2="332.21" y2="300.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <line x1="256" y1="256" x2="256.00" y2="344.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <line x1="256" y1="256" x2="179.79" y2="300.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <line x1="256" y1="256" x2="179.79" y2="212.00" stroke="#b8963e" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+      <polygon points="256.00,156.00 266.39,162.00 266.39,174.00 256.00,180.00 245.61,174.00 245.61,162.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
+      <polygon points="332.21,200.00 342.60,206.00 342.60,218.00 332.21,224.00 321.82,218.00 321.82,206.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
+      <polygon points="332.21,288.00 342.60,294.00 342.60,306.00 332.21,312.00 321.82,306.00 321.82,294.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
+      <polygon points="256.00,332.00 266.39,338.00 266.39,350.00 256.00,356.00 245.61,350.00 245.61,338.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
+      <polygon points="179.79,288.00 190.18,294.00 190.18,306.00 179.79,312.00 169.40,306.00 169.40,294.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
+      <polygon points="179.79,200.00 190.18,206.00 190.18,218.00 179.79,224.00 169.40,218.00 169.40,206.00" fill="#b8963e" stroke="#b8963e" stroke-width="1"/>
+      <polygon points="256.00,224.00 283.71,240.00 283.71,272.00 256.00,288.00 228.29,272.00 228.29,240.00" fill="#b8963e"/>
+      <polygon points="256.00,236.00 273.32,246.00 273.32,266.00 256.00,276.00 238.68,266.00 238.68,246.00" fill="#0b0b0f"/>
+      <circle cx="256" cy="256" r="6" fill="#b8963e"/>
+  </g>
 </svg>
