@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0b0b0f"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#b8963e" stroke-width="6"/>
+  <circle cx="256" cy="256" r="120" fill="none" stroke="#b8963e" stroke-width="3" opacity="0.5"/>
+  <circle cx="256" cy="256" r="36" fill="#d4af37"/>
+  <line x1="256" y1="76" x2="256" y2="156" stroke="#b8963e" stroke-width="4"/>
+  <line x1="256" y1="356" x2="256" y2="436" stroke="#b8963e" stroke-width="4"/>
+  <line x1="76" y1="256" x2="156" y2="256" stroke="#b8963e" stroke-width="4"/>
+  <line x1="356" y1="256" x2="436" y2="256" stroke="#b8963e" stroke-width="4"/>
+  <line x1="135" y1="135" x2="190" y2="190" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
+  <line x1="322" y1="322" x2="377" y2="377" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
+  <line x1="377" y1="135" x2="322" y2="190" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
+  <line x1="190" y1="322" x2="135" y2="377" stroke="#b8963e" stroke-width="3" opacity="0.7"/>
+  <text x="256" y="488" font-family="Inter, -apple-system, sans-serif" font-size="44" font-weight="600" fill="#b8963e" text-anchor="middle" letter-spacing="6">AION</text>
+</svg>
