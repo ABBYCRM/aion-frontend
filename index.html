@@ -19,6 +19,7 @@
   <script src="/app-chat-a.js" defer></script>
   <script src="/app-chat-b.js" defer></script>
   <script src="/app-media.js" defer></script>
+  <script src="/app-gallery-vault.js" defer></script>
   <script src="/app-tools.js" defer></script>
   <script src="/app-boot.js" defer></script>
 </head>
@@ -34,6 +35,7 @@
       <nav id="conversationList" class="conversation-list"></nav>
       <div class="sidebar-footer">
         <button id="openMedia" class="nav-button">Media</button>
+        <button id="openVault" class="nav-button">Vault</button>
         <button id="openGithub" class="nav-button">GitHub</button>
         <button id="openNotes" class="nav-button">Notes</button>
         <button id="openSettings" class="nav-button">Settings</button>
@@ -116,6 +118,7 @@
         <button class="media-tab active" data-media-tab="tts" type="button" role="tab" aria-selected="true">Text → Speech</button>
         <button class="media-tab" data-media-tab="image" type="button" role="tab" aria-selected="false">Image</button>
         <button class="media-tab" data-media-tab="video" type="button" role="tab" aria-selected="false">Video</button>
+        <button class="media-tab" data-media-tab="gallery" type="button" role="tab" aria-selected="false">Gallery</button>
       </nav>
 
       <section class="media-panel" data-media-panel="tts">
@@ -191,6 +194,46 @@
         <video id="videoOutput" controls hidden></video>
         <p class="muted" id="videoStatus">Pick duration, write a prompt, click Generate.</p>
       </section>
+
+      <section class="media-panel" data-media-panel="gallery" hidden>
+        <div class="toolbar">
+          <button id="galleryRefresh" type="button" class="primary-button">Refresh</button>
+          <select id="galleryFilter">
+            <option value="">All</option>
+            <option value="image">Images only</option>
+            <option value="video">Videos only</option>
+          </select>
+          <span class="muted" id="galleryStatus">Loading...</span>
+        </div>
+        <div id="galleryGrid" class="image-gallery"></div>
+      </section>
+    </div>
+  </dialog>
+
+  <dialog id="vaultDialog" class="dialog wide">
+    <div class="dialog-card">
+      <header><h2>Vault (admin)</h2><button class="icon-button" data-close-dialog="vaultDialog" aria-label="Close">×</button></header>
+      <p class="muted">Encrypted secret store. Values are never sent in plain JSON — reveal/rotate require an explicit confirmation.</p>
+      <div class="toolbar">
+        <button id="vaultRefresh" type="button" class="primary-button">Refresh</button>
+        <button id="vaultPingAll" type="button">Ping all</button>
+        <select id="vaultFilter">
+          <option value="">All categories</option>
+          <option value="llm">LLM</option>
+          <option value="search">Search</option>
+          <option value="scraping">Scraping</option>
+          <option value="github">GitHub</option>
+          <option value="email">Email</option>
+          <option value="browser">Browser</option>
+          <option value="screenshot">Screenshot</option>
+          <option value="vector">Vector</option>
+          <option value="inngest">Inngest</option>
+          <option value="discord">Discord</option>
+          <option value="other">Other</option>
+        </select>
+        <span class="muted" id="vaultStatus">Loading…</span>
+      </div>
+      <div id="vaultList" class="stack-list"></div>
     </div>
   </dialog>
 
