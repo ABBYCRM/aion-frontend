@@ -522,6 +522,16 @@ a:hover { color: var(--accent-2); }
   padding: 10px 14px;
   border: 1px solid var(--border);
 }
+.msg .author {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+}
+.msg .body .content { color: var(--text); }
 .msg .body {
   color: var(--text);
   font-size: 15px;
@@ -572,15 +582,15 @@ a:hover { color: var(--accent-2); }
 .msg .meta .badge.reject { color: var(--danger); border-color: rgba(168, 106, 77, 0.35); }
 .msg .meta .badge.model { color: var(--text-2); }
 
-.msg-actions {
+.msg-actions, .msg .actions {
   display: flex;
   gap: 4px;
   margin-top: 6px;
   opacity: 0;
   transition: opacity var(--transition);
 }
-.msg:hover .msg-actions, .msg:focus-within .msg-actions { opacity: 1; }
-.msg-actions .icon-btn {
+.msg:hover .msg-actions, .msg:focus-within .msg-actions, .msg .actions { opacity: 1; }
+.msg-actions .icon-btn, .msg .actions .icon-btn {
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-3);
@@ -592,7 +602,7 @@ a:hover { color: var(--accent-2); }
   cursor: pointer;
   transition: color var(--transition), background var(--transition), border-color var(--transition);
 }
-.msg-actions .icon-btn:hover { color: var(--accent); background: var(--accent-soft); border-color: rgba(184, 150, 62, 0.3); }
+.msg-actions .icon-btn:hover, .msg .actions .icon-btn:hover { color: var(--accent); background: var(--accent-soft); border-color: rgba(184, 150, 62, 0.3); }
 
 .msg.streaming .body::after {
   content: '\258D';
@@ -954,4 +964,25 @@ a:hover { color: var(--accent-2); }
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.toast {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: var(--mono);
+  z-index: 200;
+  box-shadow: var(--shadow);
+  animation: toastIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
