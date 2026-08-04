@@ -1,5 +1,6 @@
   function apiUrl(path) {
-    return `${state.settings.apiBase}${path}`;
+    if (!apiBaseAllowed(state.settings.apiBase)) throw new Error('Backend origin is not allowed by this build.');
+    return `${normalizeApiBase(state.settings.apiBase)}${path}`;
   }
 
   async function apiFetch(path, options = {}, requireAuth = true) {
@@ -13,7 +14,7 @@
       headers.set('X-AION-Key', key);
     }
     if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-    const response = await fetch(apiUrl(path), { ...options, headers });
+    const response = await fetch(apiUrl(path), { ...options, headers, credentials: 'omit' });
     if (response.status === 401) {
       openSettingsDialog();
       throw new Error('Authentication failed. Check the AION API key.');
@@ -40,7 +41,7 @@
       const payload = await response.json();
       if (!response.ok) throw new Error(detail(payload, response));
       const previous = state.selectedModel ? `${state.selectedModel.provider}::${state.selectedModel.model}` : '';
-      dom.modelSelect.replaceChildren(new Option('Default failover chain', ''));
+      dom.modelSelect.replaceChildren(new Option('Configured failover chain', ''));
       const groups = new Map();
       for (const item of payload.flat || []) {
         if (!groups.has(item.provider)) groups.set(item.provider, []);
@@ -64,6 +65,7 @@
   }
 
   function detail(payload, response) {
+    if (Array.isArray(payload?.detail)) return payload.detail.map((item) => item.msg || item.type).join('; ');
     return payload?.detail || payload?.error?.message || response.statusText || `HTTP ${response.status}`;
   }
 
@@ -93,6 +95,7 @@
 
     const history = conversation.messages
       .filter((message) => message.id !== assistant.id)
+      .filter((message) => typeof message.content === 'string' && message.content.trim())
       .slice(-30)
       .map((message) => ({ role: message.role, content: message.content }));
     if (attachments.length) history[history.length - 1].content = attachmentContent(text, attachments);
@@ -102,6 +105,7 @@
       temperature: state.settings.temperature,
       max_tokens: state.settings.maxTokens,
       web_search: dom.webSearchToggle.checked,
+      use_notes: state.settings.useNotes,
     };
     if (state.selectedModel) {
       payload.provider = state.selectedModel.provider;

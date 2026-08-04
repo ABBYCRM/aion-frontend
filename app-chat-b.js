@@ -13,10 +13,7 @@
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
+    const consumeBlocks = () => {
       let boundary;
       while ((boundary = buffer.indexOf('\n\n')) >= 0) {
         const block = buffer.slice(0, boundary);
@@ -25,7 +22,24 @@
         if (!data || data === '[DONE]') continue;
         try { onEvent(JSON.parse(data)); } catch { /* ignore malformed event */ }
       }
+    };
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      consumeBlocks();
     }
+    buffer += decoder.decode();
+    if (buffer && !buffer.endsWith('\n\n')) buffer += '\n\n';
+    consumeBlocks();
+  }
+
+  function scheduleStreamRender() {
+    if (state.renderFrame) return;
+    state.renderFrame = requestAnimationFrame(() => {
+      state.renderFrame = 0;
+      renderMessages();
+    });
   }
 
   function handleStreamEvent(assistant, event) {
@@ -34,12 +48,16 @@
       case 'tool':
       case 'tool_error': assistant.tools.push(event); break;
       case 'attempt': assistant.model = `${event.provider}/${event.model}`; break;
+      case 'attempt_failed': assistant.tools.push(event); break;
       case 'delta': assistant.content += event.text || ''; break;
-      case 'done': assistant.model = `${event.provider}/${event.model}`; break;
+      case 'done':
+        assistant.model = `${event.provider}/${event.model}`;
+        assistant.error = '';
+        break;
       case 'error': assistant.error = event.message || event.kind || 'Generation failed'; break;
       default: break;
     }
-    renderMessages();
+    scheduleStreamRender();
   }
 
   function stopGeneration() {
@@ -59,17 +77,36 @@
   }
 
   async function ingestFiles(files) {
+    let count = state.pendingAttachments.length;
+    let totalBytes = state.pendingAttachments.reduce((sum, item) => sum + item.size, 0);
     for (const file of files) {
+      if (count >= MAX_ATTACHMENT_COUNT) {
+        showToast(`A maximum of ${MAX_ATTACHMENT_COUNT} attachments is allowed.`);
+        break;
+      }
       if (!ACCEPTED_TYPES.has(file.type) && !file.type.startsWith('text/')) {
         showToast(`${file.name}: unsupported file type`);
         continue;
       }
-      if (file.type.startsWith('image/')) {
-        if (file.size > MAX_IMAGE_FILE) { showToast(`${file.name}: image must be under 900 KB`); continue; }
-        state.pendingAttachments.push({ name: file.name, type: file.type, size: file.size, kind: 'image', dataUrl: await readFile(file, 'data') });
-      } else {
-        if (file.size > MAX_TEXT_FILE) { showToast(`${file.name}: text file must be under 100 KB`); continue; }
-        state.pendingAttachments.push({ name: file.name, type: file.type, size: file.size, kind: 'text', text: await readFile(file, 'text') });
+      const limit = file.type.startsWith('image/') ? MAX_IMAGE_FILE : MAX_TEXT_FILE;
+      if (file.size > limit) {
+        showToast(`${file.name}: file exceeds the ${Math.round(limit / 1000)} KB limit`);
+        continue;
+      }
+      if (totalBytes + file.size > MAX_TOTAL_ATTACHMENT_BYTES) {
+        showToast(`Attachments must total under ${Math.round(MAX_TOTAL_ATTACHMENT_BYTES / 1000)} KB.`);
+        continue;
+      }
+      try {
+        if (file.type.startsWith('image/')) {
+          state.pendingAttachments.push({ name: file.name, type: file.type, size: file.size, kind: 'image', dataUrl: await readFile(file, 'data') });
+        } else {
+          state.pendingAttachments.push({ name: file.name, type: file.type, size: file.size, kind: 'text', text: await readFile(file, 'text') });
+        }
+        count += 1;
+        totalBytes += file.size;
+      } catch (error) {
+        showToast(`${file.name}: ${error.message || 'file read failed'}`);
       }
     }
     renderAttachments();
