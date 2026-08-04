@@ -60,3 +60,16 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   .github-form, .note-form { grid-template-columns: 1fr; }
   .github-form .button-row, .note-form textarea { grid-column: 1; }
 }
+
+.media-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.media-tab { border: 0; background: transparent; padding: 7px 12px; border-radius: 8px 8px 0 0; color: var(--muted); cursor: pointer; }
+.media-tab.active { background: var(--panel-2); color: var(--text); border-bottom: 1px solid var(--accent); }
+.media-panel { display: grid; gap: 10px; padding-top: 6px; }
+.media-panel label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; }
+.media-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.media-row label { display: inline-flex; align-items: center; gap: 5px; }
+.image-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.image-card { display: grid; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+.image-card img { width: 100%; height: auto; border-radius: 6px; }
+.image-card small { color: var(--muted); }
+audio, video { width: 100%; max-width: 540px; margin-top: 8px; border-radius: 8px; }

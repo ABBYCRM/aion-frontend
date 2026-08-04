@@ -18,6 +18,8 @@
   <script src="/app-render-b.js" defer></script>
   <script src="/app-chat-a.js" defer></script>
   <script src="/app-chat-b.js" defer></script>
+  <script src="/app-media.js" defer></script>
+  <script src="/app-media.js" defer></script>
   <script src="/app-tools.js" defer></script>
   <script src="/app-boot.js" defer></script>
 </head>
@@ -32,6 +34,7 @@
       <button id="newChat" class="primary-button full">＋ New chat</button>
       <nav id="conversationList" class="conversation-list"></nav>
       <div class="sidebar-footer">
+        <button id="openMedia" class="nav-button">Media</button>
         <button id="openGithub" class="nav-button">GitHub</button>
         <button id="openNotes" class="nav-button">Notes</button>
         <button id="openSettings" class="nav-button">Settings</button>
@@ -95,6 +98,91 @@
       </form>
       <div class="toolbar"><input id="noteSearch" placeholder="Search notes"><button id="refreshNotes" type="button">Refresh</button></div>
       <div id="notesList" class="stack-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="mediaDialog" class="dialog wide">
+    <div class="dialog-card">
+      <header><h2>Media</h2><button class="icon-button" data-close-dialog="mediaDialog" aria-label="Close">×</button></header>
+      <nav class="media-tabs" role="tablist">
+        <button class="media-tab active" data-media-tab="tts" type="button" role="tab" aria-selected="true">Text → Speech</button>
+        <button class="media-tab" data-media-tab="image" type="button" role="tab" aria-selected="false">Image</button>
+        <button class="media-tab" data-media-tab="video" type="button" role="tab" aria-selected="false">Video</button>
+      </nav>
+
+      <section class="media-panel" data-media-panel="tts">
+        <label>Voice
+          <select id="ttsVoice">
+            <option value="alloy">alloy</option><option value="echo">echo</option>
+            <option value="fable">fable</option><option value="onyx">onyx</option>
+            <option value="nova">nova</option><option value="shimmer">shimmer</option>
+          </select>
+        </label>
+        <label>Text
+          <textarea id="ttsText" maxlength="4000" rows="4" placeholder="What should AION say?"></textarea>
+        </label>
+        <div class="button-row">
+          <button id="ttsSpeak" type="button" class="primary-button">Speak</button>
+        </div>
+        <audio id="ttsAudio" controls hidden></audio>
+        <p class="muted" id="ttsStatus">Type text, pick a voice, click Speak.</p>
+      </section>
+
+      <section class="media-panel" data-media-panel="image" hidden>
+        <label>Model
+          <select id="imageModel">
+            <option value="gpt-image-1">gpt-image-1</option>
+            <option value="dall-e-3">dall-e-3</option>
+          </select>
+        </label>
+        <label>Size
+          <select id="imageSize">
+            <option value="1024x1024">1024×1024</option>
+            <option value="1024x1792">1024×1792</option>
+            <option value="1792x1024">1792×1024</option>
+            <option value="512x512">512×512</option>
+            <option value="256x256">256×256</option>
+          </select>
+        </label>
+        <label>Prompt
+          <textarea id="imagePrompt" maxlength="4000" rows="3" placeholder="Describe the image"></textarea>
+        </label>
+        <div class="button-row">
+          <button id="imageGenerate" type="button" class="primary-button">Generate</button>
+        </div>
+        <div id="imageGallery" class="image-gallery"></div>
+        <p class="muted" id="imageStatus">Pick a model, write a prompt, click Generate.</p>
+      </section>
+
+      <section class="media-panel" data-media-panel="video" hidden>
+        <label>Prompt
+          <textarea id="videoPrompt" maxlength="4000" rows="3" placeholder="What should the video show?"></textarea>
+        </label>
+        <div class="media-row">
+          <label>Seconds
+            <select id="videoSeconds">
+              <option value="4">4s</option><option value="6">6s</option>
+              <option value="8">8s</option><option value="12">12s</option>
+            </select>
+          </label>
+          <label>Size
+            <select id="videoSize">
+              <option value="1280x720">1280×720</option>
+              <option value="720x1280">720×1280</option>
+              <option value="1024x1024">1024×1024</option>
+            </select>
+          </label>
+          <label>Poll
+            <input id="videoPoll" type="checkbox" checked>
+            <span>Wait for completion (up to 2 min)</span>
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="videoGenerate" type="button" class="primary-button">Generate video</button>
+        </div>
+        <video id="videoOutput" controls hidden></video>
+        <p class="muted" id="videoStatus">Pick duration, write a prompt, click Generate.</p>
+      </section>
     </div>
   </dialog>
 

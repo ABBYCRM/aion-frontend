@@ -62,6 +62,7 @@
     loadSettings();
     loadConversations();
     bindEvents();
+    if (typeof bindMediaEvents === 'function') bindMediaEvents();
     renderAll();
     healthCheck();
     if (apiKey()) loadModels(); else openSettingsDialog();

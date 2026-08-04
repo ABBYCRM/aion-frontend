@@ -33,7 +33,16 @@
     noteName: $('noteName'), noteKind: $('noteKind'), noteTags: $('noteTags'), noteValue: $('noteValue'),
     noteSearch: $('noteSearch'), refreshNotes: $('refreshNotes'), notesList: $('notesList'),
     githubDialog: $('githubDialog'), openGithub: $('openGithub'), githubRepository: $('githubRepository'),
-    githubArgument: $('githubArgument'), githubOutput: $('githubOutput'), toast: $('toast'),
+    githubArgument: $('githubArgument'), githubOutput: $('githubOutput'),
+    mediaDialog: $('mediaDialog'), openMedia: $('openMedia'),
+    ttsVoice: $('ttsVoice'), ttsText: $('ttsText'), ttsSpeak: $('ttsSpeak'),
+    ttsAudio: $('ttsAudio'), ttsStatus: $('ttsStatus'),
+    imageModel: $('imageModel'), imageSize: $('imageSize'), imagePrompt: $('imagePrompt'),
+    imageGenerate: $('imageGenerate'), imageGallery: $('imageGallery'), imageStatus: $('imageStatus'),
+    videoPrompt: $('videoPrompt'), videoSeconds: $('videoSeconds'), videoSize: $('videoSize'),
+    videoPoll: $('videoPoll'), videoGenerate: $('videoGenerate'),
+    videoOutput: $('videoOutput'), videoStatus: $('videoStatus'),
+    toast: $('toast'),
   };
 
   const state = {
