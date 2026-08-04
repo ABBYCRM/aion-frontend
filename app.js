@@ -298,6 +298,15 @@
 
   async function initModelPicker() {
     if (!dom.modelPickerBtn) return;
+    // Pre-fetch /api/models to populate state.models.chain (used as fallback label)
+    try {
+      const r = await fetch(apiUrl('/api/models'));
+      if (r.ok) {
+        const data = await r.json();
+        state.models.chain = data.chain || state.models.chain;
+        state.models.primary = data.primary || state.models.primary;
+      }
+    } catch (e) { /* ignore */ }
     dom.modelPickerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       togglePicker();
