@@ -8,6 +8,7 @@
     dom.useNotes.checked = state.settings.useNotes;
     dom.autoSpeak.checked = !!state.settings.autoSpeak;
     if (dom.ttsVoiceSetting) dom.ttsVoiceSetting.value = state.settings.ttsVoice || 'alloy';
+    if (dom.forgetApiKeyOnClose) dom.forgetApiKeyOnClose.checked = state.settings.forgetApiKeyOnClose;
     if (!dom.settingsDialog.open) dom.settingsDialog.showModal();
   }
 
@@ -25,7 +26,13 @@
     state.settings.useNotes = dom.useNotes.checked;
     state.settings.autoSpeak = dom.autoSpeak.checked;
     if (dom.ttsVoiceSetting) state.settings.ttsVoice = dom.ttsVoiceSetting.value || 'alloy';
-    try { sessionStorage.setItem(API_KEY_SESSION, dom.apiKey.value.trim()); } catch { /* ignored */ }
+    if (dom.forgetApiKeyOnClose) state.settings.forgetApiKeyOnClose = dom.forgetApiKeyOnClose.checked;
+    const key = dom.apiKey.value.trim();
+    try { localStorage.setItem(API_KEY_LOCAL, key); } catch { /* ignored */ }
+    if (state.settings.forgetApiKeyOnClose) {
+      try { sessionStorage.setItem(API_KEY_LOCAL, key); } catch { /* ignored */ }
+      try { localStorage.removeItem(API_KEY_LOCAL); } catch { /* ignored */ }
+    }
     if (!state.settings.persistHistory) localStorage.removeItem(HISTORY_KEY);
     saveSettings();
     healthCheck();

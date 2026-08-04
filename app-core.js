@@ -4,7 +4,8 @@
   const HISTORY_KEY = 'aion.conversations.v2';
   const SETTINGS_KEY = 'aion.settings.v2';
   const MODEL_KEY = 'aion.model.v2';
-  const API_KEY_SESSION = 'aion.apiKey.session';
+  const API_KEY_LOCAL = 'aion.apiKey.local';
+  const API_KEY_FORGET_KEY = 'aion.apiKey.forgetOnClose';
   const MAX_TEXT_FILE = Number(CONFIG.maxTextFileBytes) || 100_000;
   const MAX_IMAGE_FILE = Number(CONFIG.maxImageBytes) || 900_000;
   const MAX_ATTACHMENT_COUNT = Number(CONFIG.maxAttachmentCount) || 6;
@@ -59,6 +60,7 @@
       useNotes: false,
       autoSpeak: false,
       ttsVoice: 'alloy',
+      forgetApiKeyOnClose: false,
     },
     selectedModel: null,
     modelsLoaded: false,
@@ -69,7 +71,12 @@
   }
 
   function apiKey() {
-    try { return sessionStorage.getItem(API_KEY_SESSION) || ''; } catch { return ''; }
+    try {
+      if (localStorage.getItem(API_KEY_FORGET_KEY) === '1') {
+        return sessionStorage.getItem(API_KEY_LOCAL) || '';
+      }
+      return localStorage.getItem(API_KEY_LOCAL) || sessionStorage.getItem(API_KEY_LOCAL) || '';
+    } catch { return ''; }
   }
 
   function normalizeApiBase(value) {
@@ -102,6 +109,7 @@
       state.settings.useNotes = saved.useNotes === true;
       state.settings.autoSpeak = saved.autoSpeak === true;
       state.settings.ttsVoice = typeof saved.ttsVoice === 'string' ? saved.ttsVoice : 'alloy';
+      state.settings.forgetApiKeyOnClose = saved.forgetApiKeyOnClose === true;
       const selected = JSON.parse(localStorage.getItem(MODEL_KEY) || 'null');
       if (selected && selected.provider && selected.model) state.selectedModel = selected;
     } catch { /* use secure defaults */ }
@@ -117,7 +125,10 @@
     if (CONFIG.allowCustomApiBase) saved.apiBase = state.settings.apiBase;
     saved.autoSpeak = state.settings.autoSpeak;
     saved.ttsVoice = state.settings.ttsVoice;
+    saved.forgetApiKeyOnClose = state.settings.forgetApiKeyOnClose;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
+    if (state.settings.forgetApiKeyOnClose) localStorage.setItem(API_KEY_FORGET_KEY, '1');
+    else localStorage.removeItem(API_KEY_FORGET_KEY);
     if (state.selectedModel) localStorage.setItem(MODEL_KEY, JSON.stringify(state.selectedModel));
     else localStorage.removeItem(MODEL_KEY);
   }

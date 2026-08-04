@@ -72,7 +72,7 @@
     <form method="dialog" class="dialog-card">
       <header><h2>Settings</h2><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
       <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" readonly></label>
-      <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored for this browser session only"></label>
+      <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored locally on this device"></label>
       <label>Temperature<input id="temperature" type="number" min="0" max="2" step="0.1"></label>
       <label>Max completion tokens<input id="maxTokens" type="number" min="32" max="4096" step="32"></label>
       <label class="search-toggle"><input id="useNotes" type="checkbox"><span>Include matching notes in model context</span></label>
@@ -85,11 +85,12 @@
           <option value="nova">nova</option><option value="shimmer">shimmer</option>
         </select>
       </label>
+      <label class="search-toggle"><input id="forgetApiKeyOnClose" type="checkbox"><span>Forget API key when this tab closes (otherwise the key is kept in this browser's local storage)</span></label>
       <div class="dialog-actions">
         <button id="clearHistory" class="danger-button" type="button">Clear local history</button>
         <button id="saveSettings" class="primary-button" value="default">Save</button>
       </div>
-      <p class="muted">The API key is session-only. History and notes context are off by default.</p>
+      <p class="muted">The API key is stored on this device and reused across sessions. Enable "Forget on close" if you share this device. History and notes context are off by default.</p>
     </form>
   </dialog>
 
