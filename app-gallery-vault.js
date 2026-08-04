@@ -88,6 +88,22 @@
     }
   }
 
+  async function deleteOne(name, btn) {
+    if (!confirm(`DELETE ${name} from the vault? This will also clear the live env so the running app stops using it. This cannot be undone (you will need to paste the value again to restore it).`)) return;
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    try {
+      const r = await apiFetch(`/api/vault/${encodeURIComponent(name)}`, {
+        method: 'DELETE',
+        headers: { 'X-AION-Confirm': 'yes' },
+      });
+      const p = await r.json();
+      if (!r.ok) throw new Error(detail(p, r));
+      showToast(`Deleted ${name} from vault`);
+      await refreshVault();
+    } catch (error) { showToast('Delete failed: ' + error.message); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = 'Delete'; } }
+  }
+
   async function deleteGalleryItem(itemId) {
     if (!confirm('Delete this item from the gallery?')) return;
     try {
@@ -203,6 +219,14 @@
       rotate.className = 'icon-button primary';
       rotate.addEventListener('click', () => rotateOne(item.name, rotate));
       actions.append(rotate);
+      if (item.has_value) {
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.textContent = 'Delete';
+        del.className = 'icon-button danger';
+        del.addEventListener('click', () => deleteOne(item.name, del));
+        actions.append(del);
+      }
       row.append(actions);
       dom.vaultList.append(row);
     }
