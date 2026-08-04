@@ -36,7 +36,7 @@
       const statusPayload = await statusResponse.json();
       if (!statusResponse.ok) throw new Error(detail(statusPayload, statusResponse));
       if (!statusPayload.available) {
-        dom.notesList.textContent = 'Notes are disabled until the backend has a PostgreSQL DATABASE_URL.';
+        dom.notesList.textContent = 'Notes are not configured on this backend deployment.';
         return;
       }
       const query = encodeURIComponent(dom.noteSearch.value.trim());
