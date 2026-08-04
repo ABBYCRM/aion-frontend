@@ -51,6 +51,7 @@
       voiceRate: 1.0,
     },
     models: { primary: '', chain: [], providers: {} },
+    selectedModel: null, // {provider, model} — user pick, persisted
     recognition: null,
     tts: { speaking: false, utterance: null },
     pendingAttachments: [],  // [{name, size, type, kind, dataUrl?, text?}]
@@ -81,18 +82,26 @@
     settingsPanel: $('settingsPanel'),
     attachBtn: $('attachBtn'),
     attachments: $('attachments'),
-    tempRange: $('tempRange'),
-    tempValue: $('tempValue'),
-    maxTokensRange: $('maxTokensRange'),
-    maxTokensValue: $('maxTokensValue'),
+    tempInput: $('tempInput'),
+    tempVal: $('tempVal'),
+    maxTokensInput: $('maxTokensInput'),
+    
     voiceSelect: $('voiceSelect'),
     rateRange: $('rateRange'),
-    rateValue: $('rateValue'),
+    
     autoTts: $('autoTts'),
     clearAllBtn: $('clearAllBtn'),
     apiBaseInput: $('apiBaseInput'),
     connectionDot: $('connectionDot'),
     modelName: $('modelName'),
+    modelPickerBtn: $('modelPickerBtn'),
+    pickerProvider: $('pickerProvider'),
+    pickerLabel: $('pickerLabel'),
+    pickerPanel: $('pickerPanel'),
+    pickerList: $('pickerList'),
+    pickerSearch: $('pickerSearch'),
+    pickerInfo: $('pickerInfo'),
+    pickerReset: $('pickerReset'),
     decisionBadge: $('decisionBadge'),
     toast: $('toast'),
   };
@@ -123,6 +132,205 @@
   function saveSettings() {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); }
     catch (e) { /* ignore */ }
+  }
+
+  // ------------------------------------------------------------------
+  // Model picker
+  // ------------------------------------------------------------------
+  const MODEL_KEY = 'aion.selectedModel.v1';
+
+  function loadSelectedModel() {
+    try {
+      const raw = localStorage.getItem(MODEL_KEY);
+      if (raw) {
+        const v = JSON.parse(raw);
+        if (v && v.provider && v.model) return v;
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+  function saveSelectedModel(sel) {
+    try {
+      if (sel) localStorage.setItem(MODEL_KEY, JSON.stringify(sel));
+      else localStorage.removeItem(MODEL_KEY);
+    } catch (e) { /* ignore */ }
+  }
+
+  let _pickerCache = null;  // {providers, flat, chain, primary, ts}
+  async function fetchAllModels(force = false) {
+    if (!force && _pickerCache && (Date.now() - _pickerCache.ts) < 60000) return _pickerCache;
+    try {
+      const r = await fetch(apiUrl('/api/models/all'));
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      _pickerCache = { ...data, ts: Date.now() };
+      return _pickerCache;
+    } catch (e) {
+      console.warn('fetchAllModels failed', e);
+      return _pickerCache || { providers: {}, flat: [], chain: state.models.chain, primary: state.models.primary };
+    }
+  }
+
+  function shortModelName(model) {
+    if (!model) return '';
+    const i = model.lastIndexOf('/');
+    return i >= 0 ? model.slice(i + 1) : model;
+  }
+  function shortProviderName(p) {
+    if (!p) return '';
+    return p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function renderPickerLabel() {
+    const sel = state.selectedModel;
+    if (!sel) {
+      // Default = first chain model
+      const chain = state.models.chain || [];
+      if (chain.length) {
+        dom.pickerProvider.textContent = 'default';
+        dom.pickerLabel.textContent = shortModelName(chain[0]);
+        return;
+      }
+      dom.pickerProvider.textContent = '—';
+      dom.pickerLabel.textContent = 'no model';
+      return;
+    }
+    dom.pickerProvider.textContent = shortProviderName(sel.provider);
+    dom.pickerLabel.textContent = shortModelName(sel.model);
+  }
+
+  function openPicker() {
+    if (!dom.pickerPanel.hidden) return;
+    dom.pickerPanel.hidden = false;
+    dom.modelPickerBtn.setAttribute('aria-expanded', 'true');
+    populatePicker();
+    // focus search
+    setTimeout(() => dom.pickerSearch.focus(), 30);
+  }
+  function closePicker() {
+    if (dom.pickerPanel.hidden) return;
+    dom.pickerPanel.hidden = true;
+    dom.modelPickerBtn.setAttribute('aria-expanded', 'false');
+  }
+  function togglePicker() {
+    if (dom.pickerPanel.hidden) openPicker();
+    else closePicker();
+  }
+
+  function selectedKey() {
+    const s = state.selectedModel;
+    return s ? `${s.provider}::${s.model}` : '';
+  }
+
+  function populatePicker() {
+    if (!_pickerCache) {
+      dom.pickerList.innerHTML = '<div class="picker-empty">Loading models…</div>';
+      dom.pickerInfo.textContent = '0 models';
+      return;
+    }
+    const data = _pickerCache;
+    const filter = (dom.pickerSearch.value || '').toLowerCase().trim();
+    const groups = [];
+    for (const [providerName, info] of Object.entries(data.providers || {})) {
+      if (!info.ok) continue;
+      let models = info.models || [];
+      if (filter) models = models.filter(m => m.toLowerCase().includes(filter) || providerName.toLowerCase().includes(filter));
+      if (models.length === 0) continue;
+      groups.push({ provider: providerName, base: info.base, models });
+    }
+    // Sort groups: providers with chain models first, then alphabetical
+    const chainSet = new Set((data.chain || []).map(m => m));
+    groups.sort((a, b) => {
+      const aHas = a.models.some(m => chainSet.has(m));
+      const bHas = b.models.some(m => chainSet.has(m));
+      if (aHas !== bHas) return aHas ? -1 : 1;
+      return a.provider.localeCompare(b.provider);
+    });
+
+    if (groups.length === 0) {
+      dom.pickerList.innerHTML = `<div class="picker-empty">No models match <code>${escapeHtml(filter)}</code></div>`;
+    } else {
+      const cur = selectedKey();
+      dom.pickerList.innerHTML = groups.map(g => {
+        const isAnyChain = g.models.some(m => chainSet.has(m));
+        const items = g.models.map(m => {
+          const key = `${g.provider}::${m}`;
+          const isSel = key === cur;
+          const inChain = chainSet.has(m);
+          return `<button class="picker-item ${isSel ? 'selected' : ''}" role="option" aria-selected="${isSel}" data-provider="${escapeHtml(g.provider)}" data-model="${escapeHtml(m)}" style="position:relative;">
+            ${inChain ? '<span style="color:var(--accent); font-size:10px;">●</span>' : '<span style="color:var(--text-3); font-size:10px;">○</span>'}
+            <span>${escapeHtml(m)}</span>
+            <svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>`;
+        }).join('');
+        return `<div class="picker-group">
+          <div class="picker-group-title">
+            <span class="provider-dot"></span>
+            <span>${escapeHtml(shortProviderName(g.provider))}</span>
+            ${isAnyChain ? '<span style="color:var(--accent); font-size:9px; padding:1px 5px; border:1px solid rgba(184,150,62,0.35); border-radius:3px;">DEFAULT CHAIN</span>' : ''}
+            <span class="provider-count">${g.models.length}</span>
+          </div>
+          ${items}
+        </div>`;
+      }).join('');
+    }
+
+    const total = (data.flat || []).length;
+    dom.pickerInfo.textContent = filter
+      ? `${groups.reduce((s, g) => s + g.models.length, 0)} / ${total} models`
+      : `${total} models`;
+  }
+
+  function selectModel(provider, model) {
+    state.selectedModel = { provider, model };
+    saveSelectedModel(state.selectedModel);
+    renderPickerLabel();
+    closePicker();
+    showToast(`Model: ${shortProviderName(provider)} · ${shortModelName(model)}`);
+  }
+  function resetModel() {
+    state.selectedModel = null;
+    saveSelectedModel(null);
+    renderPickerLabel();
+    populatePicker();
+    showToast('Model: default chain');
+  }
+
+  async function initModelPicker() {
+    if (!dom.modelPickerBtn) return;
+    dom.modelPickerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePicker();
+    });
+    dom.pickerPanel.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', (e) => {
+      if (!dom.pickerPanel.hidden && !dom.pickerPanel.contains(e.target) && e.target !== dom.modelPickerBtn) {
+        closePicker();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !dom.pickerPanel.hidden) closePicker();
+    });
+    dom.pickerSearch.addEventListener('input', () => populatePicker());
+    dom.pickerReset.addEventListener('click', (e) => { e.stopPropagation(); resetModel(); });
+
+    // delegate clicks on picker items
+    dom.pickerList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.picker-item');
+      if (!btn) return;
+      const provider = btn.dataset.provider;
+      const model = btn.dataset.model;
+      if (provider && model) selectModel(provider, model);
+    });
+
+    // Fetch the full model list and populate
+    const data = await fetchAllModels();
+    if (data && data.flat) {
+      // also keep state.models in sync
+      state.models.chain = data.chain || state.models.chain;
+      state.models.primary = data.primary || state.models.primary;
+    }
+    renderPickerLabel();
   }
 
   // ------------------------------------------------------------------
@@ -576,15 +784,20 @@
           return { role: m.role, content: m.content };
         });
 
+      const payload = {
+        messages: wire,
+        temperature: state.settings.temperature,
+        max_tokens: state.settings.maxTokens,
+        stream: true,
+      };
+      if (state.selectedModel) {
+        payload.model = state.selectedModel.model;
+        payload.provider = state.selectedModel.provider;
+      }
       const res = await fetch(apiUrl('/api/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: wire,
-          temperature: state.settings.temperature,
-          max_tokens: state.settings.maxTokens,
-          stream: true,
-        }),
+        body: JSON.stringify(payload),
         signal: state.streaming.signal,
       });
       if (!res.ok) {
@@ -642,10 +855,10 @@
         break;
       case 'attempt':
         asstMsg.model = formatModelLabel(evt.provider, evt.model);
-        dom.modelName.textContent = formatModelLabel(evt.provider, evt.model, true);
+        // model display lives in the topbar picker now
         break;
       case 'open':
-        dom.modelName.textContent = formatModelLabel(evt.provider, evt.model, true);
+        // model display lives in the topbar picker now
         break;
       case 'delta':
         asstMsg.content = (asstMsg.content || '') + (evt.text || '');
@@ -846,7 +1059,7 @@
         fetch(apiUrl('/api/models')).then(r => r.json()),
       ]);
       state.models = { primary: models.primary, chain: models.chain, providers: models.providers || {} };
-      dom.modelName.textContent = (models.primary || 'aion').split('/').pop();
+      // model display lives in the topbar picker now
       renderKernelBody(ready, cp, models);
     } catch (e) {
       dom.kernelBody.innerHTML = `<p class="muted">Failed to load kernel state: ${escapeHtml(e.message)}</p>`;
@@ -904,12 +1117,12 @@
   // Settings panel
   // ------------------------------------------------------------------
   function openSettingsPanel() {
-    dom.tempRange.value = state.settings.temperature;
-    dom.tempValue.textContent = Number(state.settings.temperature).toFixed(2);
-    dom.maxTokensRange.value = state.settings.maxTokens;
-    dom.maxTokensValue.textContent = state.settings.maxTokens;
+    dom.tempInput.value = state.settings.temperature;
+    dom.tempVal.textContent = Number(state.settings.temperature).toFixed(2);
+    dom.maxTokensInput.value = state.settings.maxTokens;
+    dom.maxTokensInput.textContent = state.settings.maxTokens;
     dom.rateRange.value = state.settings.voiceRate;
-    dom.rateValue.textContent = Number(state.settings.voiceRate).toFixed(2);
+    dom.rateRange.value = Number(state.settings.voiceRate).toFixed(2);
     dom.autoTts.checked = !!state.settings.autoTts;
     if (dom.apiBaseInput) {
       dom.apiBaseInput.value = (() => {
@@ -921,19 +1134,19 @@
     dom.settingsPanel.hidden = false;
   }
   function bindSettings() {
-    dom.tempRange.addEventListener('input', () => {
-      state.settings.temperature = Number(dom.tempRange.value);
-      dom.tempValue.textContent = state.settings.temperature.toFixed(2);
+    dom.tempInput.addEventListener('input', () => {
+      state.settings.temperature = Number(dom.tempInput.value);
+      dom.tempVal.textContent = state.settings.temperature.toFixed(2);
       saveSettings();
     });
-    dom.maxTokensRange.addEventListener('input', () => {
-      state.settings.maxTokens = Number(dom.maxTokensRange.value);
-      dom.maxTokensValue.textContent = state.settings.maxTokens;
+    dom.maxTokensInput.addEventListener('input', () => {
+      state.settings.maxTokens = Number(dom.maxTokensInput.value);
+      dom.maxTokensInput.textContent = state.settings.maxTokens;
       saveSettings();
     });
     dom.rateRange.addEventListener('input', () => {
       state.settings.voiceRate = Number(dom.rateRange.value);
-      dom.rateValue.textContent = state.settings.voiceRate.toFixed(2);
+      dom.rateRange.value = state.settings.voiceRate.toFixed(2);
       saveSettings();
     });
     dom.voiceSelect.addEventListener('change', () => {
@@ -1087,8 +1300,10 @@
     state.conversations = loadConversations();
     if (state.conversations.length === 0) newConversation();
     else state.activeId = state.conversations[0].id;
+    state.selectedModel = loadSelectedModel();
     bind();
     renderAll();
+    initModelPicker();
     healthCheck();
     setInterval(healthCheck, 30000);
 

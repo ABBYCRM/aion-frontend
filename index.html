@@ -24,26 +24,31 @@
   <div id="app" class="app">
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar" aria-label="Conversation history">
-      <div class="sidebar-header">
-        <button id="newChatBtn" class="btn btn-ghost btn-block" title="New chat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-          <span>New chat</span>
-        </button>
-        <button id="closeSidebarBtn" class="btn btn-ghost btn-icon" title="Close sidebar" aria-label="Close sidebar">
+      <div class="sidebar-head">
+        <span class="brand">
+          <span class="brand-mark">A</span>
+          <span>AION</span>
+        </span>
+        <button id="closeSidebarBtn" class="btn btn-ghost btn-icon collapse-btn" title="Close sidebar" aria-label="Close sidebar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
+
+      <button id="newChatBtn" class="btn btn-ghost btn-block" title="New chat" style="margin: 10px 12px 0; width: calc(100% - 24px);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span>New chat</span>
+      </button>
 
       <nav class="sidebar-nav" id="conversationList" aria-label="Conversations">
         <!-- populated by JS -->
       </nav>
 
-      <div class="sidebar-footer">
-        <button id="kernelBtn" class="btn btn-ghost btn-block" title="Kernel status">
+      <div class="sidebar-foot">
+        <button id="kernelBtn" class="nav-btn" title="Kernel status">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
           <span>Kernel status</span>
         </button>
-        <button id="settingsBtn" class="btn btn-ghost btn-block" title="Settings">
+        <button id="settingsBtn" class="nav-btn" title="Settings">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span>Settings</span>
         </button>
@@ -53,17 +58,37 @@
     <!-- Main -->
     <main class="main">
       <header class="topbar">
-        <button id="openSidebarBtn" class="btn btn-ghost btn-icon" title="Open sidebar" aria-label="Open sidebar">
+        <button id="openSidebarBtn" class="btn btn-ghost btn-icon mobile-only" title="Open sidebar" aria-label="Open sidebar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <div class="topbar-title">
-          <span id="modelLabel" class="model-label">AION</span>
-          <span id="modelName" class="model-name">kimi-k3</span>
-        </div>
+
+        <button id="modelPickerBtn" class="model-picker" aria-haspopup="listbox" aria-expanded="false" title="Pick a model">
+          <span class="picker-dot"></span>
+          <span id="pickerProvider" class="picker-provider">openrouter</span>
+          <span id="pickerLabel" class="picker-label">kimi-k3</span>
+          <svg class="picker-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
         <div class="topbar-actions">
           <span id="connectionDot" class="dot" title="Connection status"></span>
         </div>
       </header>
+
+      <!-- Model picker dropdown -->
+      <div id="pickerPanel" class="picker-panel" role="dialog" aria-label="Model picker" hidden>
+        <div class="picker-head">
+          <div class="picker-eyebrow">Runtime</div>
+          <div class="picker-title">Choose a model</div>
+          <input id="pickerSearch" class="picker-search" type="text" placeholder="Search models…" autocomplete="off" />
+        </div>
+        <div id="pickerList" class="picker-list" role="listbox">
+          <!-- populated by JS -->
+        </div>
+        <div class="picker-foot">
+          <span id="pickerInfo">0 models</span>
+          <button id="pickerReset" class="reset-btn">Reset to default</button>
+        </div>
+      </div>
 
       <section id="messages" class="messages" aria-live="polite">
         <!-- Welcome screen / messages injected here -->
@@ -108,14 +133,14 @@
   <div id="kernelPanel" class="modal" hidden>
     <div class="modal-backdrop" data-close></div>
     <div class="modal-panel" role="dialog" aria-labelledby="kernelTitle">
-      <header class="modal-header">
+      <div class="modal-head">
         <h2 id="kernelTitle">Kernel status</h2>
-        <button class="btn btn-ghost btn-icon" data-close aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <button class="modal-close" data-close aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
-      </header>
+      </div>
       <div class="modal-body" id="kernelBody">
-        <p class="muted">Loading…</p>
+        <!-- populated by JS -->
       </div>
     </div>
   </div>
@@ -124,46 +149,60 @@
   <div id="settingsPanel" class="modal" hidden>
     <div class="modal-backdrop" data-close></div>
     <div class="modal-panel" role="dialog" aria-labelledby="settingsTitle">
-      <header class="modal-header">
+      <div class="modal-head">
         <h2 id="settingsTitle">Settings</h2>
-        <button class="btn btn-ghost btn-icon" data-close aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <button class="modal-close" data-close aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
-      </header>
+      </div>
       <div class="modal-body">
-        <div class="setting-row">
-          <label for="apiBaseInput">Backend URL <span class="muted">defaults to same origin</span></label>
-          <input id="apiBaseInput" type="url" placeholder="https://your-backend.onrender.com" />
+        <div class="field">
+          <label for="tempInput">Temperature</label>
+          <div class="slider-row">
+            <input id="tempInput" type="range" min="0" max="2" step="0.05" value="0.7" />
+            <span id="tempVal" class="slider-val">0.70</span>
+          </div>
+          <div class="field-hint">0 = deterministic, 2 = chaotic. Default 0.7.</div>
         </div>
-        <div class="setting-row">
-          <label for="tempRange">Temperature <span id="tempValue" class="muted">0.7</span></label>
-          <input id="tempRange" type="range" min="0" max="2" step="0.05" value="0.7" />
+        <div class="field">
+          <label for="maxTokensInput">Max tokens</label>
+          <input id="maxTokensInput" type="number" min="50" max="8000" step="50" value="2048" />
+          <div class="field-hint">Upper bound on the model's reply length.</div>
         </div>
-        <div class="setting-row">
-          <label for="maxTokensRange">Max tokens <span id="maxTokensValue" class="muted">2048</span></label>
-          <input id="maxTokensRange" type="range" min="256" max="8192" step="128" value="2048" />
-        </div>
-        <div class="setting-row">
-          <label for="voiceSelect">Voice (TTS)</label>
+        <div class="field">
+          <label for="voiceSelect">Speech voice (TTS)</label>
           <select id="voiceSelect"></select>
         </div>
-        <div class="setting-row">
-          <label for="rateRange">Speech rate <span id="rateValue" class="muted">1.0</span></label>
-          <input id="rateRange" type="range" min="0.5" max="2" step="0.05" value="1.0" />
+        <div class="field">
+          <label for="rateRange">Speech rate</label>
+          <div class="slider-row">
+            <input id="rateRange" type="range" min="0.5" max="2" step="0.05" value="1" />
+            <span id="rateValue" class="slider-val">1.00</span>
+          </div>
         </div>
-        <div class="setting-row">
-          <label for="autoTts">Auto-speak replies</label>
-          <input id="autoTts" type="checkbox" />
+        <div class="field">
+          <label><input id="autoTts" type="checkbox" /> Auto-speak replies</label>
+          <div class="field-hint">Browser uses the Web Speech API — no key, no cost.</div>
         </div>
-        <div class="setting-row">
-          <button id="clearAllBtn" class="btn btn-ghost">Clear all conversations</button>
+        <div class="field">
+          <label for="apiBaseInput">API base URL</label>
+          <input id="apiBaseInput" type="text" placeholder="https://aion-backend-v2-jszgl.ondigitalocean.app" />
+          <div class="field-hint">Where the frontend talks to AION. Override if you self-host.</div>
+        </div>
+        <div class="field">
+          <label>Theme</label>
+          <div style="font-size: 12px; color: var(--text-3); padding: 4px 0;">AION ships dark. The single gold accent is the design contract.</div>
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <button id="exportAllBtn" class="btn btn-accent-outline">Export all conversations</button>
+          <button id="importAllBtn" class="btn btn-accent-outline">Import conversations</button>
+          <input id="importFileInput" type="file" accept="application/json" hidden />
+          <button id="clearAllBtn" class="btn btn-danger">Clear all conversations</button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Toast -->
-  <div id="toast" class="toast" hidden></div>
 
   <script src="/app.js" defer></script>
 </body>
