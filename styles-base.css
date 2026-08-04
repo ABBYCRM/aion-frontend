@@ -318,7 +318,7 @@ textarea:focus-visible {
   font-size: clamp(42px, 7.5vw, 78px);
   letter-spacing: 0.18em;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-2) 0%, #a5b4fc 45%, var(--gold-2) 100%);
+  background: linear-gradient(135deg, #22d3ee 0%, #67e8f9 40%, #a5b4fc 75%, #e0f2fe 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
