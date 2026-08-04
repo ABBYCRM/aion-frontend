@@ -181,14 +181,25 @@
     return p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
 
+  function _providerForChainModel(modelId) {
+    // If we have the pickerCache, find which provider serves it.
+    if (_pickerCache && _pickerCache.providers) {
+      for (const [name, info] of Object.entries(_pickerCache.providers)) {
+        if (info.ok && (info.models || []).includes(modelId)) return name;
+      }
+    }
+    return 'openrouter';  // default fallback
+  }
+
   function renderPickerLabel() {
     const sel = state.selectedModel;
     if (!sel) {
       // Default = first chain model
       const chain = state.models.chain || [];
       if (chain.length) {
-        dom.pickerProvider.textContent = 'default';
-        dom.pickerLabel.textContent = shortModelName(chain[0]);
+        const m = chain[0];
+        dom.pickerProvider.textContent = shortProviderName(_providerForChainModel(m));
+        dom.pickerLabel.textContent = shortModelName(m);
         return;
       }
       dom.pickerProvider.textContent = '—';
