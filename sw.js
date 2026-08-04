@@ -1,4 +1,4 @@
-const CACHE = 'aion-shell-2.0.1-20260804';
+const CACHE = 'aion-shell-2.1.0-20260804';
 const SHELL = [
   '/', '/index.html', '/styles-base.css', '/styles-ui.css', '/config.js',
   '/app-core.js', '/app-render-a.js', '/app-render-b.js',
@@ -27,7 +27,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (request.mode === 'navigate' || /\.(?:js|css|html)$/.test(url.pathname) || url.pathname === '/config.js') {
-    event.respondWith(fetch(request).then((response) => {
+    event.respondWith(fetch(request, { cache: 'no-store' }).then((response) => {
       if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
       return response;
     }).catch(() => caches.match(request).then((cached) => cached || caches.match('/index.html'))));
