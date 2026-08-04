@@ -178,7 +178,13 @@
   }
   function shortProviderName(p) {
     if (!p) return '';
-    return p.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    // Split on common separators, then title-case each word.
+    return p
+      .replace(/[-_/]+/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
   }
 
   function _providerForChainModel(modelId) {
