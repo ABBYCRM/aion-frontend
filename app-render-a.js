@@ -91,6 +91,31 @@
     }
     card.append(content);
 
+    // TTS audio element for this message (only rendered when message has been spoken at least once)
+    if (message.audioSrc) {
+      const audio = document.createElement('audio');
+      audio.className = 'message-audio';
+      audio.src = message.audioSrc;
+      audio.controls = true;
+      // Attach VTT track if we generated cues for this message
+      if (message.vttSrc) {
+        const track = document.createElement('track');
+        track.kind = 'captions';
+        track.label = 'English';
+        track.srclang = 'en';
+        track.src = message.vttSrc;
+        track.default = true;
+        audio.appendChild(track);
+        // Show a small caption status indicator
+        const cap = document.createElement('div');
+        cap.className = 'caption-status';
+        cap.textContent = 'Captions available';
+        card.append(audio, cap);
+      } else {
+        card.append(audio);
+      }
+    }
+
     const meta = document.createElement('div');
     meta.className = 'message-meta';
     if (message.decision) meta.append(makeBadge(message.decision.state, String(message.decision.state || '').toLowerCase()));
@@ -98,6 +123,73 @@
     if (message.attachments?.length) meta.append(makeBadge(`Attachments: ${message.attachments.map((item) => item.name).join(', ')}`));
     if (message.error && message.content) meta.append(makeBadge(message.error));
     card.append(meta);
+
+    // Action toolbar — only for assistant messages with content, never while streaming
+    if (message.role === 'assistant' && message.content && !message.streaming) {
+      card.append(buildMessageActions(message));
+    }
+
     wrapper.append(avatar, card);
     return wrapper;
+  }
+
+  // Build the per-message action bar (Copy / Download / Speak / Delete)
+  function buildMessageActions(message) {
+    const actions = document.createElement('div');
+    actions.className = 'message-actions';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'msg-action';
+    copyBtn.title = 'Copy message';
+    copyBtn.setAttribute('aria-label', 'Copy message');
+    copyBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copy</span>';
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(message.content || '');
+        const original = copyBtn.querySelector('span').textContent;
+        copyBtn.querySelector('span').textContent = 'Copied';
+        setTimeout(() => { copyBtn.querySelector('span').textContent = original; }, 1200);
+      } catch { showToast('Copy failed'); }
+    });
+    actions.append(copyBtn);
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.type = 'button';
+    downloadBtn.className = 'msg-action';
+    downloadBtn.title = 'Download as .md';
+    downloadBtn.setAttribute('aria-label', 'Download as markdown');
+    downloadBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>.md</span>';
+    downloadBtn.addEventListener('click', () => downloadMessageAs(message, 'md'));
+    actions.append(downloadBtn);
+
+    const downloadJsonBtn = document.createElement('button');
+    downloadJsonBtn.type = 'button';
+    downloadJsonBtn.className = 'msg-action';
+    downloadJsonBtn.title = 'Download as .json';
+    downloadJsonBtn.setAttribute('aria-label', 'Download as JSON');
+    downloadJsonBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span>.json</span>';
+    downloadJsonBtn.addEventListener('click', () => downloadMessageAs(message, 'json'));
+    actions.append(downloadJsonBtn);
+
+    const speakBtn = document.createElement('button');
+    speakBtn.type = 'button';
+    speakBtn.className = 'msg-action';
+    speakBtn.dataset.role = 'speak';
+    speakBtn.title = 'Speak this message';
+    speakBtn.setAttribute('aria-label', 'Speak this message');
+    speakBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg><span>Speak</span>';
+    speakBtn.addEventListener('click', () => speakMessage(message, speakBtn));
+    actions.append(speakBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'msg-action danger';
+    delBtn.title = 'Delete message';
+    delBtn.setAttribute('aria-label', 'Delete message');
+    delBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg><span>Delete</span>';
+    delBtn.addEventListener('click', () => deleteMessage(message.id));
+    actions.append(delBtn);
+
+    return actions;
   }

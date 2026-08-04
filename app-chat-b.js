@@ -53,6 +53,14 @@
       case 'done':
         assistant.model = `${event.provider}/${event.model}`;
         assistant.error = '';
+        // Auto-speak: if user enabled it, speak the completed reply
+        if (state.settings.autoSpeak && assistant.content && !assistant.error) {
+          // Defer one tick so the render flushes first
+          setTimeout(() => {
+            const btn = document.querySelector(`.message[data-id="${assistant.id}"] [data-role="speak"]`);
+            if (btn) btn.click();
+          }, 60);
+        }
         break;
       case 'error': assistant.error = event.message || event.kind || 'Generation failed'; break;
       default: break;

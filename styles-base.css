@@ -517,3 +517,93 @@ textarea:focus-visible {
 @keyframes blink {
   50% { opacity: 0; }
 }
+
+/* Per-message action bar (Copy / Download / Speak / Delete) */
+.message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  opacity: 0.55;
+  transition: opacity 0.18s ease;
+}
+
+.message:hover .message-actions,
+.message-actions:focus-within {
+  opacity: 1;
+}
+
+.msg-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.msg-action:hover {
+  background: var(--accent-dim);
+  color: var(--accent-2);
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.18);
+}
+
+.msg-action svg {
+  flex: none;
+  opacity: 0.85;
+}
+
+.msg-action.danger:hover {
+  background: var(--danger-bg);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.18);
+}
+
+.msg-action:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
+/* Audio + VTT caption controls rendered under a spoken message */
+.message-audio {
+  width: 100%;
+  max-width: 540px;
+  margin-top: 10px;
+  border-radius: 8px;
+  display: block;
+}
+
+.message-audio::cue {
+  background: rgba(7, 7, 11, 0.86);
+  color: var(--accent-2);
+  font-size: 14px;
+  font-family: var(--font);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.caption-status {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.caption-status::before {
+  content: "CC ";
+  color: var(--accent-2);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-right: 2px;
+}

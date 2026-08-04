@@ -6,6 +6,8 @@
     dom.maxTokens.value = String(state.settings.maxTokens);
     dom.persistHistory.checked = state.settings.persistHistory;
     dom.useNotes.checked = state.settings.useNotes;
+    dom.autoSpeak.checked = !!state.settings.autoSpeak;
+    if (dom.ttsVoiceSetting) dom.ttsVoiceSetting.value = state.settings.ttsVoice || 'alloy';
     if (!dom.settingsDialog.open) dom.settingsDialog.showModal();
   }
 
@@ -21,6 +23,8 @@
     state.settings.maxTokens = Math.min(4096, Math.max(32, Number(dom.maxTokens.value) || 1024));
     state.settings.persistHistory = dom.persistHistory.checked;
     state.settings.useNotes = dom.useNotes.checked;
+    state.settings.autoSpeak = dom.autoSpeak.checked;
+    if (dom.ttsVoiceSetting) state.settings.ttsVoice = dom.ttsVoiceSetting.value || 'alloy';
     try { sessionStorage.setItem(API_KEY_SESSION, dom.apiKey.value.trim()); } catch { /* ignored */ }
     if (!state.settings.persistHistory) localStorage.removeItem(HISTORY_KEY);
     saveSettings();

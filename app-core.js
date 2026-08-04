@@ -28,7 +28,7 @@
     settingsDialog: $('settingsDialog'), openSettings: $('openSettings'), backendUrl: $('backendUrl'),
     apiKey: $('apiKey'), temperature: $('temperature'), maxTokens: $('maxTokens'),
     persistHistory: $('persistHistory'), useNotes: $('useNotes'),
-    saveSettings: $('saveSettings'), clearHistory: $('clearHistory'),
+    saveSettings: $('saveSettings'), clearHistory: $('clearHistory'), autoSpeak: $('autoSpeak'), ttsVoiceSetting: $('ttsVoiceSetting'),
     notesDialog: $('notesDialog'), openNotes: $('openNotes'), noteForm: $('noteForm'),
     noteName: $('noteName'), noteKind: $('noteKind'), noteTags: $('noteTags'), noteValue: $('noteValue'),
     noteSearch: $('noteSearch'), refreshNotes: $('refreshNotes'), notesList: $('notesList'),
@@ -57,6 +57,8 @@
       maxTokens: 1024,
       persistHistory: false,
       useNotes: false,
+      autoSpeak: false,
+      ttsVoice: 'alloy',
     },
     selectedModel: null,
     modelsLoaded: false,
@@ -98,6 +100,8 @@
       if (Number.isInteger(saved.maxTokens)) state.settings.maxTokens = Math.min(4096, Math.max(32, saved.maxTokens));
       state.settings.persistHistory = saved.persistHistory === true;
       state.settings.useNotes = saved.useNotes === true;
+      state.settings.autoSpeak = saved.autoSpeak === true;
+      state.settings.ttsVoice = typeof saved.ttsVoice === 'string' ? saved.ttsVoice : 'alloy';
       const selected = JSON.parse(localStorage.getItem(MODEL_KEY) || 'null');
       if (selected && selected.provider && selected.model) state.selectedModel = selected;
     } catch { /* use secure defaults */ }
@@ -111,6 +115,8 @@
       useNotes: state.settings.useNotes,
     };
     if (CONFIG.allowCustomApiBase) saved.apiBase = state.settings.apiBase;
+    saved.autoSpeak = state.settings.autoSpeak;
+    saved.ttsVoice = state.settings.ttsVoice;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
     if (state.selectedModel) localStorage.setItem(MODEL_KEY, JSON.stringify(state.selectedModel));
     else localStorage.removeItem(MODEL_KEY);

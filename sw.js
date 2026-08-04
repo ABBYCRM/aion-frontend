@@ -1,4 +1,4 @@
-const CACHE = 'aion-shell-2.3.0-20260804';
+const CACHE = 'aion-shell-2.4.0-20260804';
 const SHELL = [
   '/', '/index.html', '/styles-base.css', '/styles-ui.css', '/config.js',
   '/app-core.js', '/app-render-a.js', '/app-render-b.js',
