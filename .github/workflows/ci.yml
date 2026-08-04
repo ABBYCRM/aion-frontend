@@ -20,4 +20,5 @@ jobs:
       - run: node --check config.js
       - run: node --check sw.js
       - run: python -m json.tool manifest.webmanifest >/dev/null
+      - run: node --test tests/*.test.mjs
       - run: test -f index.html && test -f styles-base.css && test -f styles-ui.css && test -f .do/app.yaml
