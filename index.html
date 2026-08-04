@@ -1,269 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#0b0b0f" />
-  <meta name="description" content="AION — Adaptive Intelligence Operating Nexus" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11100d">
+  <meta name="description" content="AION — authenticated tool-augmented assistant">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https:; img-src 'self' data:; style-src 'self'; script-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
   <title>AION</title>
-
-  <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="AION" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles-base.css">
+  <link rel="stylesheet" href="/styles-ui.css">
+  <script src="/config.js" defer></script>
+  <script src="/app-core.js" defer></script>
+  <script src="/app-render-a.js" defer></script>
+  <script src="/app-render-b.js" defer></script>
+  <script src="/app-chat-a.js" defer></script>
+  <script src="/app-chat-b.js" defer></script>
+  <script src="/app-tools.js" defer></script>
+  <script src="/app-boot.js" defer></script>
 </head>
 <body>
-  <div id="app" class="app">
-    <!-- Sidebar -->
+  <div id="app" class="app-shell">
     <aside id="sidebar" class="sidebar" aria-label="Conversation history">
-      <div class="sidebar-head">
-        <span class="brand">
-          <span class="brand-mark">A</span>
-          <span>AION</span>
-        </span>
-        <button id="closeSidebarBtn" class="btn btn-ghost btn-icon collapse-btn" title="Close sidebar" aria-label="Close sidebar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+      <div class="brand-row">
+        <div class="brand-mark">A</div>
+        <div>
+          <strong>AION</strong>
+          <span>Operating Nexus</span>
+        </div>
+        <button id="closeSidebar" class="icon-button mobile-only" aria-label="Close sidebar">×</button>
       </div>
-
-      <button id="newChatBtn" class="btn btn-ghost btn-block" title="New chat" style="margin: 10px 12px 0; width: calc(100% - 24px);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        <span>New chat</span>
-      </button>
-
-      <nav class="sidebar-nav" id="conversationList" aria-label="Conversations">
-        <!-- populated by JS -->
-      </nav>
-
-      <div class="sidebar-foot">
-        <button id="kernelBtn" class="nav-btn" title="Kernel status">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
-          <span>Kernel status</span>
-        </button>
-        <button id="settingsBtn" class="nav-btn" title="Settings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>Settings</span>
-        </button>
-        <button id="scratchpadBtn" class="nav-btn" title="Scratchpad — operator memory">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
-          <span>Scratchpad</span>
-        </button>
+      <button id="newChat" class="primary-button full">＋ New chat</button>
+      <nav id="conversationList" class="conversation-list"></nav>
+      <div class="sidebar-footer">
+        <button id="openGithub" class="nav-button">GitHub</button>
+        <button id="openNotes" class="nav-button">Notes</button>
+        <button id="openSettings" class="nav-button">Settings</button>
       </div>
     </aside>
 
-    <!-- Main -->
-    <main class="main">
+    <main class="main-panel">
       <header class="topbar">
-        <button id="openSidebarBtn" class="btn btn-ghost btn-icon mobile-only" title="Open sidebar" aria-label="Open sidebar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-
-        <button id="modelPickerBtn" class="model-picker" aria-haspopup="listbox" aria-expanded="false" title="Pick a model">
-          <span class="picker-dot"></span>
-          <span id="pickerProvider" class="picker-provider">openrouter</span>
-          <span id="pickerLabel" class="picker-label">kimi-k3</span>
-          <svg class="picker-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-
-        <div class="topbar-actions">
-          <span id="connectionDot" class="dot" title="Connection status"></span>
+        <button id="openSidebar" class="icon-button mobile-only" aria-label="Open sidebar">☰</button>
+        <div class="model-controls">
+          <label for="modelSelect">Model</label>
+          <select id="modelSelect" aria-label="Model selection">
+            <option value="">Default failover chain</option>
+          </select>
         </div>
+        <label class="search-toggle" title="Attach current web results to this turn">
+          <input id="webSearchToggle" type="checkbox">
+          <span>Search web</span>
+        </label>
+        <span id="connectionStatus" class="connection" aria-live="polite">Checking…</span>
       </header>
 
-      <!-- Model picker dropdown -->
-      <div id="pickerPanel" class="picker-panel" role="dialog" aria-label="Model picker" hidden>
-        <div class="picker-head">
-          <div class="picker-eyebrow">Runtime</div>
-          <div class="picker-title">Choose a model</div>
-          <input id="pickerSearch" class="picker-search" type="text" placeholder="Search models…" autocomplete="off" />
-        </div>
-        <div id="pickerList" class="picker-list" role="listbox">
-          <!-- populated by JS -->
-        </div>
-        <div class="picker-foot">
-          <span id="pickerInfo">0 models</span>
-          <button id="pickerReset" class="reset-btn">Reset to default</button>
-        </div>
-      </div>
+      <section id="messages" class="messages" aria-live="polite"></section>
 
-      <section id="messages" class="messages" aria-live="polite">
-        <!-- Welcome screen / messages injected here -->
-      </section>
-
-      <section class="composer-wrap">
-        <div id="decisionBadge" class="decision-badge" hidden></div>
-        <form id="composer" class="composer" autocomplete="off">
-          <button type="button" id="attachBtn" class="btn btn-icon" title="Attach files" aria-label="Attach files">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-          </button>
-          <button type="button" id="micBtn" class="btn btn-icon" title="Voice input" aria-label="Voice input">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
-          <textarea
-            id="prompt"
-            class="prompt"
-            placeholder="Message AION…"
-            rows="1"
-            aria-label="Message AION"
-            autocorrect="off"
-            autocapitalize="sentences"
-            spellcheck="true"
-          ></textarea>
-          <div id="attachments" class="attachments" hidden></div>
-          <button type="button" id="ttsBtn" class="btn btn-icon" title="Toggle speech output" aria-label="Toggle speech output" aria-pressed="false">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-          </button>
-          <button type="submit" id="sendBtn" class="btn btn-primary btn-icon" title="Send" aria-label="Send message" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
-          <button type="button" id="stopBtn" class="btn btn-danger btn-icon" title="Stop" aria-label="Stop generation" hidden>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-          </button>
+      <section class="composer-area">
+        <div id="attachmentList" class="attachment-list" hidden></div>
+        <form id="composer" class="composer">
+          <button id="attachButton" class="icon-button" type="button" aria-label="Attach image or text file">＋</button>
+          <textarea id="prompt" rows="1" maxlength="100000" placeholder="Message AION…" aria-label="Message AION"></textarea>
+          <button id="sendButton" class="send-button" type="submit" disabled>Send</button>
+          <button id="stopButton" class="danger-button" type="button" hidden>Stop</button>
         </form>
-        <p class="disclaimer">AION can make mistakes. Verify important info.</p>
+        <p class="composer-hint">Use <code>/search query</code> or <code>/github owner/repo issues</code>. Credentials belong in deployment secrets, never notes or chat.</p>
       </section>
     </main>
   </div>
 
-  <!-- Kernel panel -->
-  <div id="kernelPanel" class="modal" hidden>
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-panel" role="dialog" aria-labelledby="kernelTitle">
-      <div class="modal-head">
-        <h2 id="kernelTitle">Kernel status</h2>
-        <button class="modal-close" data-close aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+  <dialog id="settingsDialog" class="dialog">
+    <form method="dialog" class="dialog-card">
+      <header><h2>Settings</h2><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
+      <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" placeholder="https://api.example.com"></label>
+      <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored for this browser session only"></label>
+      <label>Temperature<input id="temperature" type="number" min="0" max="2" step="0.1"></label>
+      <label>Max completion tokens<input id="maxTokens" type="number" min="32" max="4096" step="32"></label>
+      <div class="dialog-actions">
+        <button id="clearHistory" class="danger-button" type="button">Clear local history</button>
+        <button id="saveSettings" class="primary-button" value="default">Save</button>
       </div>
-      <div class="modal-body" id="kernelBody">
-        <!-- populated by JS -->
-      </div>
+      <p class="muted">The API key is stored in <code>sessionStorage</code>, not local history.</p>
+    </form>
+  </dialog>
+
+  <dialog id="notesDialog" class="dialog wide">
+    <div class="dialog-card">
+      <header><h2>Owner-scoped notes</h2><button class="icon-button" data-close-dialog="notesDialog" aria-label="Close">×</button></header>
+      <form id="noteForm" class="note-form">
+        <input id="noteName" required maxlength="200" placeholder="Name">
+        <select id="noteKind"><option>note</option><option>project</option><option>url</option><option>instruction</option></select>
+        <input id="noteTags" maxlength="300" placeholder="tags, comma, separated">
+        <textarea id="noteValue" required maxlength="20000" placeholder="Non-secret note value"></textarea>
+        <button class="primary-button" type="submit">Add note</button>
+      </form>
+      <div class="toolbar"><input id="noteSearch" placeholder="Search notes"><button id="refreshNotes" type="button">Refresh</button></div>
+      <div id="notesList" class="stack-list"></div>
     </div>
-  </div>
+  </dialog>
 
-  <!-- Settings panel -->
-  <div id="settingsPanel" class="modal" hidden>
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-panel" role="dialog" aria-labelledby="settingsTitle">
-      <div class="modal-head">
-        <h2 id="settingsTitle">Settings</h2>
-        <button class="modal-close" data-close aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="field">
-          <label for="tempInput">Temperature</label>
-          <div class="slider-row">
-            <input id="tempInput" type="range" min="0" max="2" step="0.05" value="0.7" />
-            <span id="tempVal" class="slider-val">0.70</span>
-          </div>
-          <div class="field-hint">0 = deterministic, 2 = chaotic. Default 0.7.</div>
-        </div>
-        <div class="field">
-          <label for="maxTokensInput">Max tokens</label>
-          <input id="maxTokensInput" type="number" min="50" max="8000" step="50" value="2048" />
-          <div class="field-hint">Upper bound on the model's reply length.</div>
-        </div>
-        <div class="field">
-          <label for="voiceSelect">Speech voice (TTS)</label>
-          <select id="voiceSelect"></select>
-        </div>
-        <div class="field">
-          <label for="rateRange">Speech rate</label>
-          <div class="slider-row">
-            <input id="rateRange" type="range" min="0.5" max="2" step="0.05" value="1" />
-            <span id="rateValue" class="slider-val">1.00</span>
-          </div>
-        </div>
-        <div class="field">
-          <label><input id="autoTts" type="checkbox" /> Auto-speak replies</label>
-          <div class="field-hint">Browser uses the Web Speech API — no key, no cost.</div>
-        </div>
-        <div class="field">
-          <label for="apiBaseInput">API base URL</label>
-          <input id="apiBaseInput" type="text" placeholder="https://aion-backend-v2-jszgl.ondigitalocean.app" />
-          <div class="field-hint">Where the frontend talks to AION. Override if you self-host.</div>
-        </div>
-        <div class="field">
-          <label>Theme</label>
-          <div style="font-size: 12px; color: var(--text-3); padding: 4px 0;">AION ships dark. The single gold accent is the design contract.</div>
-        </div>
-        <div class="field">
-          <label>Data</label>
-          <button id="exportAllBtn" class="btn btn-accent-outline">Export all conversations</button>
-          <button id="importAllBtn" class="btn btn-accent-outline">Import conversations</button>
-          <input id="importFileInput" type="file" accept="application/json" hidden />
-          <button id="clearAllBtn" class="btn btn-danger">Clear all conversations</button>
+  <dialog id="githubDialog" class="dialog wide">
+    <div class="dialog-card">
+      <header><h2>GitHub</h2><button class="icon-button" data-close-dialog="githubDialog" aria-label="Close">×</button></header>
+      <div class="github-form">
+        <label>Repository<input id="githubRepository" value="ABBYCRM/aion-frontend" placeholder="owner/repo"></label>
+        <label>Path or search query<input id="githubArgument" placeholder="app.js or resolve_model_chain"></label>
+        <div class="button-row">
+          <button data-github-action="repository" type="button">Repository</button>
+          <button data-github-action="issues" type="button">Issues</button>
+          <button data-github-action="file" type="button">Read file</button>
+          <button data-github-action="search" type="button">Search code</button>
         </div>
       </div>
+      <pre id="githubOutput" class="json-output">Choose an action.</pre>
+      <p class="muted">GitHub credentials stay server-side. Write endpoints require an admin key, server-side enablement, and an explicit confirmation header.</p>
     </div>
-  </div>
+  </dialog>
 
-  <!-- Scratchpad panel -->
-  <div id="scratchpadPanel" class="modal scratchpad-modal" hidden>
-    <div class="modal-backdrop" data-close></div>
-    <div class="modal-panel scratchpad-panel" role="dialog" aria-labelledby="scratchpadTitle">
-      <div class="modal-head">
-        <h2 id="scratchpadTitle">Scratchpad</h2>
-        <span id="scratchpadStat" class="scratchpad-stat"></span>
-        <button class="modal-close" data-close aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="modal-body scratchpad-body">
-        <div class="scratchpad-toolbar">
-          <input id="spSearch" class="picker-search" type="text" placeholder="Search by name, tag, or value…" autocomplete="off" />
-          <select id="spKindFilter" class="sp-kind">
-            <option value="">all kinds</option>
-            <option value="api_key">api_key</option>
-            <option value="token">token</option>
-            <option value="env">env</option>
-            <option value="url">url</option>
-            <option value="command">command</option>
-            <option value="snippet">snippet</option>
-            <option value="note">note</option>
-          </select>
-          <button id="spReveal" class="btn btn-accent-outline" title="Reveal all values">Reveal</button>
-          <button id="spVerify" class="btn btn-accent-outline" title="Re-verify kernel signatures">Verify</button>
-        </div>
-        <form id="spAddForm" class="sp-add-form">
-          <input id="spName" type="text" placeholder="Name (e.g. Production OpenRouter key)" required />
-          <div class="sp-add-row">
-            <select id="spKind">
-              <option value="api_key">api_key</option>
-              <option value="token">token</option>
-              <option value="env" selected>env</option>
-              <option value="url">url</option>
-              <option value="command">command</option>
-              <option value="snippet">snippet</option>
-              <option value="note">note</option>
-            </select>
-            <input id="spTags" type="text" placeholder="tags (comma separated)" />
-          </div>
-          <textarea id="spValue" placeholder="Value (will be signed with the 7-law kernel)" required></textarea>
-          <div class="sp-add-actions">
-            <button type="submit" class="btn btn-primary">Save & sign</button>
-            <span id="spAddHint" class="sp-hint"></span>
-          </div>
-        </form>
-        <div id="spList" class="sp-list"></div>
-        <div id="spVerifyReport" class="sp-verify-report" hidden></div>
-      </div>
-    </div>
-  </div>
-
-  </div>
-
-  <div id="toast" class="toast" hidden></div>
-  <script src="/app.js" defer></script>
+  <div id="toast" class="toast" hidden role="status"></div>
 </body>
 </html>
