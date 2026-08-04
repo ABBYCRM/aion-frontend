@@ -32,6 +32,7 @@
     dom.saveSettings.addEventListener('click', persistSettings);
     dom.clearHistory.addEventListener('click', () => {
       if (!confirm('Clear all locally stored conversations?')) return;
+      localStorage.removeItem(HISTORY_KEY);
       state.conversations = [];
       createConversation();
       renderAll();

@@ -1,15 +1,17 @@
-
   function renderTool(tool) {
     const card = document.createElement('section');
     card.className = 'tool-card';
     const heading = document.createElement('h4');
-    heading.textContent = tool.type === 'tool_error' ? `${tool.tool || 'Tool'} error` : tool.tool === 'web_search' ? `Web search: ${tool.query}` : `${tool.tool || 'GitHub'} · ${tool.repository || ''}`;
+    if (tool.type === 'attempt_failed') heading.textContent = `Model attempt failed · ${tool.provider}/${tool.model}`;
+    else if (tool.type === 'tool_error') heading.textContent = `${tool.tool || 'Tool'} error`;
+    else if (tool.tool === 'web_search') heading.textContent = `Web search: ${tool.query}`;
+    else heading.textContent = `${tool.tool || 'GitHub'} · ${tool.repository || ''}`;
     card.append(heading);
-    if (tool.type === 'tool_error') {
-      const error = document.createElement('div');
-      error.className = 'error-box';
-      error.textContent = tool.message || 'Tool failed';
-      card.append(error);
+    if (tool.type === 'tool_error' || tool.type === 'attempt_failed') {
+      const detail = document.createElement('div');
+      detail.className = tool.type === 'tool_error' ? 'error-box' : 'muted';
+      detail.textContent = tool.message || 'Attempt failed';
+      card.append(detail);
       return card;
     }
     if (tool.tool === 'web_search') {
