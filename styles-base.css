@@ -502,6 +502,42 @@ textarea:focus-visible {
   background: var(--danger-bg);
 }
 
+.defer-notice {
+  margin: 6px 0 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-left: 3px solid #fbbf24;
+  border-radius: var(--radius-xs);
+  background: rgba(251, 191, 36, 0.08);
+  color: #fde68a;
+}
+
+.defer-notice .defer-title {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.defer-notice .defer-detail {
+  font-size: 13px;
+  color: #fef3c7;
+  font-family: var(--font-mono, monospace);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.defer-notice .defer-hint {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(251, 191, 36, 0.3);
+  font-size: 12px;
+  color: #fde68a;
+  font-style: italic;
+}
+
 .cursor {
   display: inline-block;
   width: 8px;

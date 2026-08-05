@@ -72,6 +72,40 @@
     head.append(author, time);
     card.append(head);
 
+    // DEFER notice — visible when a tool was requested and errored so
+    // the user sees the kernel's refusal BEFORE the model has a chance to
+    // bury it in prose. Sits at the top of the card.
+    if (message.decision && message.decision.state === 'DEFER') {
+      const deferNotice = document.createElement('div');
+      deferNotice.className = 'defer-notice';
+      const toolErr = (message.tools || []).find((t) => t.type === 'tool_error');
+      if (toolErr) {
+        const title = document.createElement('div');
+        title.className = 'defer-title';
+        title.textContent = `Refused — ${toolErr.tool || 'tool'} failed`;
+        const detail = document.createElement('div');
+        detail.className = 'defer-detail';
+        detail.textContent = toolErr.message || 'Tool returned an error';
+        deferNotice.append(title, detail);
+        const hint = document.createElement('div');
+        hint.className = 'defer-hint';
+        if ((toolErr.tool || '').toLowerCase().includes('github')) {
+          hint.textContent = 'Fix: add the repository to GITHUB_ALLOWED_REPOSITORIES, attach the README, or paste the text.';
+        } else if ((toolErr.tool || '').toLowerCase().includes('search')) {
+          hint.textContent = 'Fix: configure a search API key or rephrase the question.';
+        } else {
+          hint.textContent = 'Fix: see the error above. The kernel will not bluff an answer.';
+        }
+        deferNotice.append(hint);
+      } else {
+        const title = document.createElement('div');
+        title.className = 'defer-title';
+        title.textContent = 'Deferred — not enough evidence to answer yet';
+        deferNotice.append(title);
+      }
+      card.append(deferNotice);
+    }
+
     for (const tool of message.tools || []) card.append(renderTool(tool));
 
     const content = document.createElement('div');
