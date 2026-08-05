@@ -16,6 +16,12 @@
   async function refreshPolicy() {
     // Render runtime policy into the status panel. The endpoint requires
     // the user AION key, which is already set at this point.
+    // Re-entrancy guard: if apiFetch triggers openSettingsDialog (e.g.
+    // because the key was missing at the moment of the call), that
+    // callback chain re-enters refreshPolicy. We bail after the first
+    // attempt to break the cycle.
+    if (refreshPolicy._inFlight) return;
+    refreshPolicy._inFlight = true;
     const setText = (id, value, cls) => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -51,6 +57,8 @@
       setText('policyCors', (cors.origins || []).join(', ') || '—', 'is-ok');
     } catch (e) {
       setText('policyBackend', 'unreachable', 'is-bad');
+    } finally {
+      refreshPolicy._inFlight = false;
     }
   }
 
