@@ -5,10 +5,28 @@
     autosize();
   }
 
+  function closeSidebar() {
+    dom.app.classList.remove('sidebar-open');
+  }
+
   function bindEvents() {
-    dom.newChat.addEventListener('click', () => { createConversation(); renderAll(); dom.prompt.focus(); });
+    dom.newChat.addEventListener('click', () => { createConversation(); renderAll(); dom.prompt.focus(); closeSidebar(); });
     dom.openSidebar.addEventListener('click', () => dom.app.classList.add('sidebar-open'));
-    dom.closeSidebar.addEventListener('click', () => dom.app.classList.remove('sidebar-open'));
+    dom.closeSidebar.addEventListener('click', () => closeSidebar());
+    // Backdrop tap closes the mobile sidebar.
+    dom.app.addEventListener('click', (event) => {
+      if (!dom.app.classList.contains('sidebar-open')) return;
+      if (window.matchMedia('(max-width: 800px)').matches) {
+        // Click outside the sidebar = close.
+        if (!event.target.closest('#sidebar') && !event.target.closest('#openSidebar')) {
+          closeSidebar();
+        }
+      }
+    });
+    // Esc also closes the mobile sidebar.
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && dom.app.classList.contains('sidebar-open')) closeSidebar();
+    });
     dom.composer.addEventListener('submit', (event) => { event.preventDefault(); sendMessage(); });
     dom.prompt.addEventListener('input', autosize);
     dom.prompt.addEventListener('keydown', (event) => {

@@ -424,7 +424,7 @@ audio, video {
   .sidebar {
     position: fixed;
     inset: 0 auto 0 0;
-    z-index: 50;
+    z-index: 60;
     width: min(310px, 88vw);
     transform: translateX(-105%);
     transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
@@ -433,6 +433,16 @@ audio, video {
 
   .app-shell.sidebar-open .sidebar {
     transform: translateX(0);
+  }
+
+  /* Backdrop behind the open sidebar — only on mobile, only when open. */
+  .app-shell.sidebar-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 12, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 55;
   }
 
   .mobile-only {
@@ -444,8 +454,15 @@ audio, video {
   }
 
   .topbar {
-    gap: 8px;
-    padding: 9px 12px;
+    gap: 6px;
+    padding: 8px 10px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .model-controls {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .model-controls label {
@@ -453,11 +470,39 @@ audio, video {
   }
 
   .model-controls select {
-    max-width: 44vw;
+    max-width: 100%;
+    width: 100%;
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .search-toggle {
+    flex: none;
   }
 
   .search-toggle span {
     display: none;
+  }
+
+  .brain-signal {
+    flex: none;
+    margin-right: 4px;
+    padding: 3px 7px;
+    font-size: 10px;
+    gap: 5px;
+  }
+
+  .brain-signal .brain-label {
+    /* Keep pill readable on narrow phones — keep dot, allow label to ellipsize. */
+    max-width: 64px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .connection {
+    flex: none;
+    font-size: 10px;
+    padding: 3px 6px;
   }
 
   .messages {
