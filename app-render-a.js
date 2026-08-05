@@ -78,25 +78,39 @@
     if (message.decision && message.decision.state === 'DEFER') {
       const deferNotice = document.createElement('div');
       deferNotice.className = 'defer-notice';
+      // Prefer the structured failure block from the kernel (kind, next_step)
+      // over the tool_error string — it carries the operator-facing
+      // remediation hint with the actual repo name embedded.
+      const failure = message.decision.failure || {};
       const toolErr = (message.tools || []).find((t) => t.type === 'tool_error');
-      if (toolErr) {
+      if (failure.kind || toolErr) {
         const title = document.createElement('div');
         title.className = 'defer-title';
-        title.textContent = `Refused — ${toolErr.tool || 'tool'} failed`;
+        // Title: humanize the failure.kind when present
+        const kindLabel = failure.kind ? failure.kind.replace(/_/g, ' ').toUpperCase() : null;
+        const toolName = failure.tool || (toolErr && toolErr.tool) || 'tool';
+        title.textContent = kindLabel ? `Refused — ${kindLabel}` : `Refused — ${toolName} failed`;
         const detail = document.createElement('div');
         detail.className = 'defer-detail';
-        detail.textContent = toolErr.message || 'Tool returned an error';
+        detail.textContent = (toolErr && toolErr.message) || failure.errors?.[0] || 'Tool returned an error';
         deferNotice.append(title, detail);
-        const hint = document.createElement('div');
-        hint.className = 'defer-hint';
-        if ((toolErr.tool || '').toLowerCase().includes('github')) {
-          hint.textContent = 'Fix: add the repository to GITHUB_ALLOWED_REPOSITORIES, attach the README, or paste the text.';
-        } else if ((toolErr.tool || '').toLowerCase().includes('search')) {
-          hint.textContent = 'Fix: configure a search API key or rephrase the question.';
+        if (failure.next_step) {
+          const hint = document.createElement('div');
+          hint.className = 'defer-hint';
+          hint.textContent = `Fix: ${failure.next_step}`;
+          deferNotice.append(hint);
         } else {
-          hint.textContent = 'Fix: see the error above. The kernel will not bluff an answer.';
+          const hint = document.createElement('div');
+          hint.className = 'defer-hint';
+          if ((toolName || '').toLowerCase().includes('github')) {
+            hint.textContent = 'Fix: add the repository to GITHUB_ALLOWED_REPOSITORIES, attach the README, or paste the text.';
+          } else if ((toolName || '').toLowerCase().includes('search')) {
+            hint.textContent = 'Fix: configure a search API key or rephrase the question.';
+          } else {
+            hint.textContent = 'Fix: see the error above. The kernel will not bluff an answer.';
+          }
+          deferNotice.append(hint);
         }
-        deferNotice.append(hint);
       } else {
         const title = document.createElement('div');
         title.className = 'defer-title';

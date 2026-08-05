@@ -29,7 +29,7 @@
     settingsDialog: $('settingsDialog'), openSettings: $('openSettings'), backendUrl: $('backendUrl'),
     apiKey: $('apiKey'), temperature: $('temperature'), maxTokens: $('maxTokens'),
     persistHistory: $('persistHistory'), useNotes: $('useNotes'),
-    saveSettings: $('saveSettings'), clearHistory: $('clearHistory'), autoSpeak: $('autoSpeak'), ttsVoiceSetting: $('ttsVoiceSetting'),
+    saveSettings: $('saveSettings'), clearHistory: $('clearHistory'), autoSpeak: $('autoSpeak'), ttsVoiceSetting: $('ttsVoiceSetting'), refreshPolicy: $('refreshPolicy'),
     notesDialog: $('notesDialog'), openNotes: $('openNotes'), noteForm: $('noteForm'),
     noteName: $('noteName'), noteKind: $('noteKind'), noteTags: $('noteTags'), noteValue: $('noteValue'),
     noteSearch: $('noteSearch'), refreshNotes: $('refreshNotes'), notesList: $('notesList'),

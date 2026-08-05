@@ -10,6 +10,48 @@
     if (dom.ttsVoiceSetting) dom.ttsVoiceSetting.value = state.settings.ttsVoice || 'alloy';
     if (dom.forgetApiKeyOnClose) dom.forgetApiKeyOnClose.checked = state.settings.forgetApiKeyOnClose;
     if (!dom.settingsDialog.open) dom.settingsDialog.showModal();
+    refreshPolicy();
+  }
+
+  async function refreshPolicy() {
+    // Render runtime policy into the status panel. The endpoint requires
+    // the user AION key, which is already set at this point.
+    const setText = (id, value, cls) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = value;
+      el.classList.remove('is-ok', 'is-warn', 'is-bad');
+      if (cls) el.classList.add(cls);
+    };
+    setText('policyBackend', '…', 'muted');
+    setText('policyBrain', '…', 'muted');
+    setText('policyGhToken', '…', 'muted');
+    setText('policyGhApp', '…', 'muted');
+    setText('policyGhAllow', '…', 'muted');
+    setText('policyGhWrite', '…', 'muted');
+    setText('policyCors', '…', 'muted');
+    try {
+      const r = await apiFetch('/api/policy', {}, true);
+      if (!r.ok) {
+        setText('policyBackend', `http ${r.status}`, 'is-bad');
+        return;
+      }
+      const body = await r.json();
+      const gh = body.github || {};
+      const brain = body.brain || {};
+      const cors = body.cors || {};
+      setText('policyBackend', `${body.environment || '?'} · v${body.app_version || '?'}`, 'is-ok');
+      setText('policyBrain', brain.enabled ? `${(brain.url || '').replace(/^https?:\/\//, '')}` : 'disabled', brain.enabled ? 'is-ok' : 'is-warn');
+      setText('policyGhToken', gh.token_configured ? 'configured' : 'missing', gh.token_configured ? 'is-ok' : 'is-bad');
+      setText('policyGhApp', gh.app_configured ? 'configured' : 'not configured', gh.app_configured ? 'is-ok' : 'is-warn');
+      const allowMode = gh.allowlist_mode || (gh.allowed_repositories && gh.allowed_repositories.length ? 'restricted' : 'allow_all');
+      const allowText = allowMode === 'allow_all' ? 'allow all (empty)' : `${(gh.allowed_repositories || []).length} repo${(gh.allowed_repositories || []).length === 1 ? '' : 's'}`;
+      setText('policyGhAllow', allowText, allowMode === 'allow_all' ? 'is-warn' : 'is-ok');
+      setText('policyGhWrite', gh.write_enabled ? 'enabled' : 'disabled (read-only)', gh.write_enabled ? 'is-warn' : 'is-ok');
+      setText('policyCors', (cors.origins || []).join(', ') || '—', 'is-ok');
+    } catch (e) {
+      setText('policyBackend', 'unreachable', 'is-bad');
+    }
   }
 
   function persistSettings() {

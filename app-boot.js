@@ -48,6 +48,7 @@
     });
     dom.openSettings.addEventListener('click', openSettingsDialog);
     dom.saveSettings.addEventListener('click', persistSettings);
+    if (dom.refreshPolicy) dom.refreshPolicy.addEventListener('click', () => { refreshPolicy(); });
     dom.clearHistory.addEventListener('click', () => {
       if (!confirm('Clear all locally stored conversations?')) return;
       localStorage.removeItem(HISTORY_KEY);
