@@ -155,10 +155,21 @@
     startPolling,
   };
 
-  // Auto-start when DOM ready
+  // Auto-start when DOM ready AND apiFetch is defined.
+  // apiFetch lives in app-chat-a.js which loads after us. If we
+  // start polling too early, the first probe errors with
+  // "apiFetch is not defined" (cosmetic only — pill just shows DOWN
+  // for ~200ms then recovers on the next poll).
+  function whenReady() {
+    if (typeof window.apiFetch === 'function') {
+      startPolling();
+      return;
+    }
+    setTimeout(whenReady, 50);
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startPolling);
+    document.addEventListener('DOMContentLoaded', whenReady);
   } else {
-    startPolling();
+    whenReady();
   }
 })();
