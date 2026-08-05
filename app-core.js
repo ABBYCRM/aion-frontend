@@ -36,6 +36,7 @@
     githubDialog: $('githubDialog'), openGithub: $('openGithub'), githubRepository: $('githubRepository'),
     githubArgument: $('githubArgument'), githubOutput: $('githubOutput'),
     mediaDialog: $('mediaDialog'), openMedia: $('openMedia'),
+    codeDialog: $('codeDialog'), openCode: $('openCode'),
     vaultDialog: $('vaultDialog'), openVault: $('openVault'),
     vaultList: $('vaultList'), vaultRefresh: $('vaultRefresh'), vaultPingAll: $('vaultPingAll'),
     vaultFilter: $('vaultFilter'), vaultStatus: $('vaultStatus'),
@@ -68,6 +69,7 @@
     },
     selectedModel: null,
     modelsLoaded: false,
+    codeLanguagesLoaded: false,
   };
 
   function uid(prefix) {

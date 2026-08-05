@@ -62,6 +62,7 @@
     dom.refreshNotes.addEventListener('click', loadNotes);
     dom.noteSearch.addEventListener('input', debounce(loadNotes, 250));
     dom.openGithub.addEventListener('click', () => dom.githubDialog.showModal());
+    if (typeof wireCodeDialog === 'function') wireCodeDialog();
     document.querySelectorAll('[data-close-dialog]').forEach((button) => {
       button.addEventListener('click', () => $(button.dataset.closeDialog).close());
     });

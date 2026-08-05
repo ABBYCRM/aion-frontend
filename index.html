@@ -22,6 +22,7 @@
   <script src="/app-chat-b.js" defer></script>
   <script src="/app-media.js" defer></script>
   <script src="/app-gallery-vault.js" defer></script>
+  <script src="/app-code.js" defer></script>
   <script src="/app-tools.js" defer></script>
   <script src="/app-boot.js" defer></script>
 </head>
@@ -39,6 +40,7 @@
         <button id="openMedia" class="nav-button">Media</button>
         <button id="openVault" class="nav-button">Vault</button>
         <button id="openGithub" class="nav-button">GitHub</button>
+        <button id="openCode" class="nav-button">Aion Code</button>
         <button id="openNotes" class="nav-button">Notes</button>
         <button id="openSettings" class="nav-button">Settings</button>
       </div>
@@ -67,7 +69,7 @@
           <button id="sendButton" class="send-button" type="submit" disabled>Send</button>
           <button id="stopButton" class="danger-button" type="button" hidden>Stop</button>
         </form>
-        <p class="composer-hint">Use <code>/search query</code> or <code>/github owner/repo issues</code>. Credentials belong in deployment secrets, never notes or chat.</p>
+        <p class="composer-hint">Use <code>/search query</code> · <code>/search github.com for X</code> · <code>/search linkedin.com for X</code> · <code>/github owner/repo [issues|file|search]</code>. The <strong>Aion Code</strong> tab queries the code corpora (syntax / scenarios / tasks / books) directly. Credentials belong in deployment secrets, never notes or chat.</p>
       </section>
     </main>
   </div>
@@ -265,6 +267,100 @@
       </div>
       <pre id="githubOutput" class="json-output">Choose an action.</pre>
       <p class="muted">GitHub credentials stay server-side. Repository access is fail-closed; writes additionally require an admin key, server enablement, and explicit confirmation.</p>
+    </div>
+  </dialog>
+
+  <dialog id="codeDialog" class="dialog wide">
+    <div class="dialog-card">
+      <header>
+        <h2>Aion Code</h2>
+        <button class="icon-button" data-close-dialog="codeDialog" aria-label="Close">×</button>
+      </header>
+      <p class="muted">Real rows from the Aion code corpora: 9 × 100k syntax tokens, 29 × 100k engineering scenarios, 5,000 structured tasks, 39 open coding books. Click any row to copy its id. Use the chat for narrative answers; use this tab for direct corpus access.</p>
+      <nav class="code-tabs" role="tablist" aria-label="Aion Code corpus tabs">
+        <button class="code-tab active" data-code-tab="syntax" type="button" role="tab" aria-selected="true">Syntax</button>
+        <button class="code-tab" data-code-tab="scenarios" type="button" role="tab" aria-selected="false">Scenarios</button>
+        <button class="code-tab" data-code-tab="tasks" type="button" role="tab" aria-selected="false">Tasks</button>
+        <button class="code-tab" data-code-tab="books" type="button" role="tab" aria-selected="false">Books</button>
+        <button class="code-tab" data-code-tab="drill" type="button" role="tab" aria-selected="false">Give me a drill</button>
+      </nav>
+
+      <!-- syntax: 9 languages × 100k token-level code patterns -->
+      <section class="code-panel" data-code-panel="syntax">
+        <div class="toolbar">
+          <label>Language
+            <select id="codeSyntaxLanguage" aria-label="Syntax language">
+              <option value="">Loading…</option>
+            </select>
+          </label>
+          <label>Construct
+            <select id="codeSyntaxConstruct" aria-label="Syntax construct">
+              <option value="">All constructs</option>
+              <option value="class">class</option>
+              <option value="function">function</option>
+              <option value="loop">loop</option>
+              <option value="conditional">conditional</option>
+              <option value="import">import</option>
+              <option value="assignment">assignment</option>
+              <option value="error_handling">error_handling</option>
+              <option value="async">async</option>
+            </select>
+          </label>
+          <button id="codeSyntaxBrowse" type="button" class="primary-button">Browse</button>
+          <button id="codeSyntaxGet" type="button">Get by id</button>
+          <input id="codeSyntaxId" type="text" placeholder="id (e.g. python 000042)" maxlength="80">
+          <span class="muted" id="codeSyntaxStatus">Loading languages…</span>
+        </div>
+        <div id="codeSyntaxList" class="stack-list"></div>
+        <pre id="codeSyntaxSnippet" class="json-output" hidden></pre>
+      </section>
+
+      <!-- scenarios: extra.scenarios 29 languages × 100k engineering scenarios -->
+      <section class="code-panel" data-code-panel="scenarios" hidden>
+        <div class="toolbar">
+          <label>Language
+            <select id="codeScenariosLanguage" aria-label="Scenarios language">
+              <option value="">Loading…</option>
+            </select>
+          </label>
+          <input id="codeScenariosQuery" type="text" placeholder="query (e.g. goroutines, async, deadlock)" maxlength="200">
+          <button id="codeScenariosSearch" type="button" class="primary-button">Search</button>
+          <span class="muted" id="codeScenariosStatus">Loading languages…</span>
+        </div>
+        <div id="codeScenariosList" class="stack-list"></div>
+      </section>
+
+      <!-- tasks: coding.tasks 5,000 structured engineering tasks -->
+      <section class="code-panel" data-code-panel="tasks" hidden>
+        <div class="toolbar">
+          <input id="codeTasksQuery" type="text" placeholder="query (e.g. idempotent webhook, JWT rotation)" maxlength="200">
+          <button id="codeTasksSearch" type="button" class="primary-button">Search</button>
+          <button id="codeTasksCatalog" type="button">Browse catalog</button>
+          <span class="muted" id="codeTasksStatus">Pick a query and search.</span>
+        </div>
+        <div id="codeTasksList" class="stack-list"></div>
+      </section>
+
+      <!-- books: coding.books 39 open coding books -->
+      <section class="code-panel" data-code-panel="books" hidden>
+        <div class="toolbar">
+          <input id="codeBooksQuery" type="text" placeholder="query (e.g. python, distributed systems)" maxlength="200">
+          <button id="codeBooksSearch" type="button" class="primary-button">Search</button>
+          <button id="codeBooksCatalog" type="button">All books</button>
+          <span class="muted" id="codeBooksStatus">39 open books indexed. Pick a query and search.</span>
+        </div>
+        <div id="codeBooksList" class="stack-list"></div>
+      </section>
+
+      <!-- drill: combined intent router from chat Phase B (auto-detect which corpus) -->
+      <section class="code-panel" data-code-panel="drill" hidden>
+        <div class="toolbar">
+          <input id="codeDrillQuery" type="text" placeholder="e.g. give me a go concurrency drill" maxlength="200">
+          <button id="codeDrillRun" type="button" class="primary-button">Run</button>
+          <span class="muted" id="codeDrillStatus">Type a prompt — the Aion intent router picks the right corpus automatically.</span>
+        </div>
+        <div id="codeDrillList" class="stack-list"></div>
+      </section>
     </div>
   </dialog>
 
