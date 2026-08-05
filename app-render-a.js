@@ -119,6 +119,10 @@
     const meta = document.createElement('div');
     meta.className = 'message-meta';
     if (message.decision) meta.append(makeBadge(message.decision.state, String(message.decision.state || '').toLowerCase()));
+    if (message.brain && window.AION_BRAIN_SIGNAL) {
+      const bb = window.AION_BRAIN_SIGNAL.brainBadge(message);
+      if (bb) meta.append(bb);
+    }
     if (message.model) meta.append(makeBadge(message.model));
     if (message.attachments?.length) meta.append(makeBadge(`Attachments: ${message.attachments.map((item) => item.name).join(', ')}`));
     if (message.error && message.content) meta.append(makeBadge(message.error));

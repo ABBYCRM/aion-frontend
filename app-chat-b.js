@@ -44,6 +44,10 @@
 
   function handleStreamEvent(assistant, event) {
     switch (event.type) {
+      case 'brain':
+        if (window.AION_BRAIN_SIGNAL) window.AION_BRAIN_SIGNAL.onBrainEvent(event);
+        if (window.AION_BRAIN_SIGNAL) window.AION_BRAIN_SIGNAL.tagAssistantFromBrain(assistant);
+        break;
       case 'decision': assistant.decision = event.decision; break;
       case 'tool':
       case 'tool_error': assistant.tools.push(event); break;

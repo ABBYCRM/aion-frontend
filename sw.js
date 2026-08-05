@@ -1,7 +1,7 @@
-const CACHE = 'aion-shell-2.4.0-20260804';
+const CACHE = 'aion-shell-2.5.0-20260805';
 const SHELL = [
-  '/', '/index.html', '/styles-base.css', '/styles-ui.css', '/config.js',
-  '/app-core.js', '/app-render-a.js', '/app-render-b.js',
+  '/', '/index.html', '/styles-base.css', '/styles-ui.css', '/brain-signal.css', '/config.js',
+  '/app-core.js', '/app-brain-signal.js', '/app-render-a.js', '/app-render-b.js',
   '/app-chat-a.js', '/app-chat-b.js', '/app-tools.js', '/app-boot.js',
   '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png',
 ];
