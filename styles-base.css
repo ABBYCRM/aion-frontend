@@ -40,7 +40,9 @@ html, body {
 }
 
 body {
-  min-height: 100dvh;
+  height: 100dvh;
+  height: 100svh;            /* small viewport — stable when mobile address bar shows/hides */
+  height: 100vh;             /* legacy fallback */
   overflow: hidden;
   background-image:
     radial-gradient(ellipse 120% 80% at 50% -20%, rgba(34, 211, 238, 0.07), transparent 50%),
@@ -64,7 +66,10 @@ textarea:focus-visible {
 .app-shell {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  min-height: 100dvh;
+  height: 100dvh;
+  height: 100svh;
+  height: 100vh;
+  min-height: 0;            /* let the grid track shrink so messages can scroll */
 }
 
 .sidebar {
@@ -215,7 +220,9 @@ textarea:focus-visible {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-width: 0;
-  min-height: 100dvh;
+  min-height: 0;            /* critical: don't push the messages row off-screen */
+  height: 100%;
+  overflow: hidden;
 }
 
 .topbar {
@@ -302,9 +309,15 @@ textarea:focus-visible {
 
 .messages {
   min-height: 0;
-  overflow: auto;
+  height: 0;            /* shrink to fill the grid track so overflow:auto fires */
+  flex: 1 1 0;          /* belt-and-suspenders for any flex parent override */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
   padding: 28px max(20px, calc((100vw - 1160px) / 2));
   scroll-behavior: smooth;
+  overscroll-behavior: contain;       /* don't propagate scroll to body */
+  touch-action: pan-y;                /* allow vertical pan gestures */
 }
 
 .welcome {
