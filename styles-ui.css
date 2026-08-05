@@ -548,10 +548,26 @@ audio, video {
     text-overflow: ellipsis;
   }
 
+  /* Tightest phones: hide brain label, keep the dot. */
+  @media (max-width: 480px) {
+    .brain-signal .brain-label,
+    .brain-signal .brain-latency {
+      display: none;
+    }
+    .brain-signal {
+      padding: 3px 5px;
+    }
+  }
+
   .connection {
     flex: none;
     font-size: 10px;
     padding: 3px 6px;
+  }
+
+  /* On narrow phones, hide the verbose text and keep just the colored dot. */
+  .connection span:not(.connection-dot) {
+    display: none;
   }
 
   .messages {
