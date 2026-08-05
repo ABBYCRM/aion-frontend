@@ -72,14 +72,23 @@
     select.innerHTML = '';
     for (const item of items) {
       const opt = document.createElement('option');
-      // items can be ["python", 100000] OR {slug, name, count}
+      // items can be:
+      //   - "python" (string)
+      //   - ["python", 100000] (tuple)
+      //   - {technology, display, count} (syntax.list shape)
+      //   - {slug, name, count} or {language, count} (extra.scenarios.list shape)
       if (typeof item === 'string') {
         opt.value = item;
         opt.textContent = item;
+      } else if (Array.isArray(item)) {
+        opt.value = item[0];
+        opt.textContent = item[1] != null ? `${item[0]} (${item[1]})` : item[0];
       } else {
-        const slug = item.slug || item.name || item.id || String(item);
+        const slug = item.technology || item.slug || item.name || item.language || item.id || String(item);
+        const display = item.display || item.label || slug;
+        const count = item.count;
         opt.value = slug;
-        opt.textContent = item.count != null ? `${slug} (${item.count})` : slug;
+        opt.textContent = count != null ? `${display} (${count})` : display;
       }
       select.appendChild(opt);
     }
@@ -88,8 +97,8 @@
   // ---------- syntax tab -------------------------------------------------
 
   async function codeSyntaxBrowse() {
-    const lang = dom.codeSyntaxLanguage?.value;
-    if (!lang) { if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Pick a language.'; return; }
+    const tech = dom.codeSyntaxLanguage?.value;
+    if (!tech) { if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Pick a language.'; return; }
     const construct = dom.codeSyntaxConstruct?.value || '';
     if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Loading…';
     try {
@@ -97,14 +106,16 @@
         method: 'POST',
         body: JSON.stringify({
           skill_id: 'syntax.browse',
-          args: { language: lang, construct: construct, limit: 20 },
+          args: { technology: tech, construct: construct || undefined, limit: 20 },
         }),
       });
       const data = await r.json();
       const snippets = data?.data?.snippets || data?.data?.results || data?.data?.hits || [];
       renderSyntaxList(snippets);
       if (dom.codeSyntaxStatus) {
-        dom.codeSyntaxStatus.textContent = `${snippets.length} snippet(s). Total in file: ${data?.data?.total_in_file || data?.data?.total || '?'}.`;
+        const after = data?.data?.total_after_filter;
+        const inFile = data?.data?.total_in_technology;
+        dom.codeSyntaxStatus.textContent = `${snippets.length} snippet(s). ${after != null ? `${after} match the filter` : ''}${inFile != null ? ` out of ${inFile} in ${tech}.` : '.'}`;
       }
     } catch (err) {
       if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = `Browse failed: ${err.message}`;
@@ -112,16 +123,16 @@
   }
 
   async function codeSyntaxGet() {
-    const lang = dom.codeSyntaxLanguage?.value;
+    const tech = dom.codeSyntaxLanguage?.value;
     const id = dom.codeSyntaxId?.value?.trim();
-    if (!lang || !id) { if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Pick a language and enter an id.'; return; }
+    if (!tech || !id) { if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Pick a language and enter an id.'; return; }
     if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Loading…';
     try {
       const r = await apiFetch('/api/skills/run', {
         method: 'POST',
         body: JSON.stringify({
           skill_id: 'syntax.get',
-          args: { language: lang, id: id },
+          args: { technology: tech, id: id },
         }),
       });
       const data = await r.json();
@@ -146,8 +157,8 @@
     for (const s of snippets) {
       const row = document.createElement('div');
       row.className = 'stack-row';
-      const id = s.id || `${s.language || ''}/${s.construct || ''}/${s.seq || ''}`;
-      const text = s.text || s.snippet || s.code || JSON.stringify(s);
+      const id = s.id || `${s.technology || ''}/${s.construct || ''}/${s.seq || ''}`;
+      const text = s.snippet || s.text || s.code || JSON.stringify(s);
       row.innerHTML = `
         <div class="stack-row-head">
           <code class="stack-row-id">${escapeHtml(id)}</code>
