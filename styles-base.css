@@ -64,12 +64,13 @@ textarea:focus-visible {
 }
 
 .app-shell {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  display: flex;
+  flex-direction: row;
   height: 100dvh;
   height: 100svh;
   height: 100vh;
-  min-height: 0;            /* let the grid track shrink so messages can scroll */
+  min-height: 0;            /* critical: don't let flex grow beyond viewport */
+  overflow: hidden;         /* contain the sidebar position:fixed and main scroll */
 }
 
 .sidebar {
@@ -217,12 +218,12 @@ textarea:focus-visible {
 }
 
 .main-panel {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
   min-width: 0;
-  min-height: 0;            /* critical: don't push the messages row off-screen */
-  height: 100%;
-  overflow: hidden;
+  min-height: 0;
+  overflow: hidden;         /* contain the messages area scroll */
 }
 
 .topbar {
@@ -308,9 +309,8 @@ textarea:focus-visible {
 }
 
 .messages {
-  min-height: 0;
-  height: 0;            /* shrink to fill the grid track so overflow:auto fires */
-  flex: 1 1 0;          /* belt-and-suspenders for any flex parent override */
+  flex: 1 1 0;          /* take all remaining vertical space in the flex column */
+  min-height: 0;        /* allow it to shrink so overflow-y:auto fires */
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
