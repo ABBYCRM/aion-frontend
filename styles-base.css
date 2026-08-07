@@ -1,36 +1,126 @@
+/* ============================================================
+   AION — Harmonized Design System
+   Built from the 120-pattern CSS Playbook.
+   Each section header references the pattern(s) it implements.
+   ============================================================ */
+
+@property --aion-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --aion-progress {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
 :root {
   color-scheme: dark;
+  /* Pattern 101 — theme tokens (custom properties) */
   --bg: #07070b;
-  --bg-elevated: #0c0c12;
-  --panel: rgba(16, 18, 28, 0.72);
-  --panel-solid: #10121c;
-  --panel-2: #161925;
-  --panel-3: #1c2030;
+  --bg-2: #0b0b12;
+  --surface: rgba(16, 18, 28, 0.72);
+  --surface-solid: #10121c;
+  --surface-2: #161925;
+  --surface-3: #1c2030;
   --border: rgba(120, 140, 180, 0.14);
   --border-strong: rgba(100, 220, 255, 0.28);
   --text: #eef2ff;
+  --text-2: #c5cbe0;
   --muted: #8b93a8;
-  --accent: #22d3ee;
-  --accent-2: #67e8f9;
-  --accent-dim: rgba(34, 211, 238, 0.12);
-  --accent-glow: 0 0 24px rgba(34, 211, 238, 0.35);
-  --gold: #d4af37;
-  --gold-2: #f0d78c;
+  /* Pattern 105 — color-mix: define brand via tokens, derive shades */
+  --brand-cyan: #22d3ee;
+  --brand-cyan-2: #67e8f9;
+  --brand-violet: #7c3aed;
+  --brand-pink: #ec4899;
+  --accent: var(--brand-cyan);
+  --accent-2: var(--brand-cyan-2);
+  --accent-dim: color-mix(in oklab, var(--brand-cyan) 14%, transparent);
+  --accent-strong: color-mix(in oklab, var(--brand-cyan) 90%, white);
+  --accent-glow: 0 0 24px color-mix(in oklab, var(--brand-cyan) 35%, transparent);
+  --violet-glow: 0 0 24px color-mix(in oklab, var(--brand-violet) 35%, transparent);
   --danger: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.08);
+  --danger-bg: color-mix(in oklab, var(--danger) 8%, transparent);
   --success: #34d399;
-  --success-bg: rgba(52, 211, 153, 0.1);
+  --success-bg: color-mix(in oklab, var(--success) 10%, transparent);
+  /* Pattern 006 — layered elevation */
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
   --shadow-sm: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 36px rgba(0, 0, 0, 0.45);
   --radius: 14px;
   --radius-sm: 10px;
   --radius-xs: 8px;
+  /* Pattern 021 — fluid typography */
+  --fs-xs: clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem);
+  --fs-sm: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+  --fs-base: clamp(0.9rem, 0.86rem + 0.2vw, 1rem);
+  --fs-md: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --fs-lg: clamp(1.2rem, 1.1rem + 0.5vw, 1.4rem);
+  --fs-xl: clamp(1.6rem, 1.4rem + 1vw, 2.2rem);
+  /* Pattern 022 — fluid spacing */
+  --sp-1: clamp(0.25rem, 0.22rem + 0.15vw, 0.35rem);
+  --sp-2: clamp(0.5rem, 0.46rem + 0.2vw, 0.65rem);
+  --sp-3: clamp(0.75rem, 0.7rem + 0.25vw, 0.95rem);
+  --sp-4: clamp(1rem, 0.9rem + 0.5vw, 1.4rem);
+  --sp-5: clamp(1.5rem, 1.3rem + 1vw, 2.2rem);
+  --sp-6: clamp(2rem, 1.7rem + 1.5vw, 3.2rem);
   --font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --mono: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
   font-family: var(--font);
 }
 
+/* Pattern 103 — declare supported color schemes */
+html { color-scheme: dark; }
+
+/* Pattern 039 — graceful hyphenation + 035 readable measure for prose */
+.prose, .message-body {
+  max-inline-size: 70ch;
+  margin-inline: auto;
+  hyphens: auto;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+/* Pattern 033 — balanced headings */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Pattern 036 — better underlines */
+a {
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+  text-decoration-skip-ink: auto;
+}
+
 * { box-sizing: border-box; }
+
+/* Pattern 032 — single-line ellipsis (utility) */
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Pattern 046 — keyboard focus rings (replaces the old rule) */
+:focus-visible {
+  outline: 2px solid var(--brand-cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Pattern 047 — focus-within glow for grouped fields */
+.composer:focus-within,
+.field:focus-within,
+.input-group:focus-within {
+  border-color: var(--brand-cyan);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-cyan) 18%, transparent);
+}
 
 html, body {
   margin: 0;
@@ -41,46 +131,52 @@ html, body {
 
 body {
   height: 100dvh;
-  height: 100svh;            /* small viewport — stable when mobile address bar shows/hides */
-  height: 100vh;             /* legacy fallback */
+  height: 100svh;
+  height: 100vh;
   overflow: hidden;
-  background-image:
-    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(34, 211, 238, 0.07), transparent 50%),
-    radial-gradient(ellipse 80% 50% at 100% 100%, rgba(99, 102, 241, 0.05), transparent 45%),
+  /* Pattern 009 — spotlight + Pattern 101 tokens */
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%,
+      color-mix(in oklab, var(--brand-cyan) 7%, transparent), transparent 50%),
+    radial-gradient(ellipse 80% 50% at 100% 100%,
+      color-mix(in oklab, var(--brand-violet) 5%, transparent), transparent 45%),
     linear-gradient(180deg, #07070b 0%, #0a0a10 100%);
   background-attachment: fixed;
 }
 
 button, input, select, textarea { font: inherit; }
-button { color: inherit; }
+button { color: inherit; cursor: pointer; }
 code, pre { font-family: var(--mono); }
 
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+/* ============================================================
+   APP SHELL — Pattern 011 + 015 (Grid), 020 (min-inline-size:0)
+   ============================================================ */
 
 .app-shell {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
   height: 100dvh;
   height: 100svh;
   height: 100vh;
-  min-height: 0;            /* critical: don't let flex grow beyond viewport */
-  overflow: hidden;         /* contain the sidebar position:fixed and main scroll */
+  min-height: 0;
+  overflow: hidden;
 }
+
+/* ============================================================
+   SIDEBAR — Pattern 008 (frosted glass) + 014 (push to edge)
+   ============================================================ */
 
 .sidebar {
   display: flex;
   flex-direction: column;
   min-width: 0;
   border-right: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(10, 11, 16, 0.95) 0%, rgba(8, 9, 14, 0.98) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--surface-solid) 95%, transparent) 0%,
+      color-mix(in oklab, var(--surface-solid) 98%, transparent) 100%);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
 
 .brand-row {
@@ -89,6 +185,32 @@ textarea:focus-visible {
   gap: 12px;
   padding: 18px 16px;
   border-bottom: 1px solid var(--border);
+}
+
+/* Pattern 001 — rotating conic-gradient glow border on the brand mark */
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 800;
+  font-size: 17px;
+  background:
+    linear-gradient(#0c0c14, #0c0c14) padding-box,
+    conic-gradient(from var(--aion-angle),
+      var(--brand-cyan),
+      var(--brand-violet),
+      var(--brand-pink),
+      var(--brand-cyan)) border-box;
+  border: 2px solid transparent;
+  animation: aion-spin 4s linear infinite;
+  position: relative;
+}
+
+@keyframes aion-spin {
+  to { --aion-angle: 1turn; }
 }
 
 .brand-row strong {
@@ -107,47 +229,15 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(34, 211, 238, 0.45);
-  border-radius: 12px;
-  color: var(--accent-2);
-  font-weight: 800;
-  font-size: 16px;
-  background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.02));
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  position: relative;
-}
-
-.brand-mark::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: 12px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.5), transparent 60%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.full {
-  width: calc(100% - 24px);
-  margin: 12px;
-}
-
-.conversation-list {
+.brand-row > div:not(.brand-mark) {
   flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0 8px 12px;
+  min-width: 0;
 }
 
+/* Pattern 014 — push the close button to the far edge */
+.brand-row .icon-button { margin-inline-start: auto; }
+
+/* Pattern 041 — :has() to highlight active items */
 .conversation-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -157,19 +247,20 @@ textarea:focus-visible {
   border-radius: var(--radius-xs);
   cursor: pointer;
   color: var(--muted);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   border: 1px solid transparent;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, translate 0.18s ease;
 }
 
 .conversation-item:hover {
-  background: var(--panel-2);
+  background: var(--surface-2);
   color: var(--text);
+  translate: 0 -1px;
 }
 
 .conversation-item.active {
   background: var(--accent-dim);
   color: var(--text);
-  border-color: rgba(34, 211, 238, 0.2);
+  border-color: color-mix(in oklab, var(--brand-cyan) 28%, transparent);
 }
 
 .conversation-title {
@@ -188,9 +279,13 @@ textarea:focus-visible {
   transition: opacity 0.15s, color 0.15s;
 }
 
-.delete-conversation:hover {
-  opacity: 1;
-  color: var(--danger);
+.delete-conversation:hover { opacity: 1; color: var(--danger); }
+
+.conversation-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 8px 12px;
 }
 
 .sidebar-footer {
@@ -200,459 +295,768 @@ textarea:focus-visible {
   border-top: 1px solid var(--border);
 }
 
+.full {
+  width: calc(100% - 24px);
+  margin: 12px;
+}
+
+/* ============================================================
+   BUTTONS — Pattern 002 (gradient border) + 085 (translate hover)
+   ============================================================ */
+
+button, .primary-button, .nav-button, .icon-button, .send-button,
+.danger-button, .muted-button {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 9px 14px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: translate 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+button:hover, .nav-button:hover, .icon-button:hover, .muted-button:hover {
+  translate: 0 -1px;
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+button:active { translate: 0 0; }
+
+/* Pattern 002 — gradient border on the primary action */
+.primary-button {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface-solid), var(--surface-solid)) padding-box,
+    linear-gradient(135deg, var(--brand-cyan), var(--brand-violet)) border-box;
+  color: var(--text);
+  font-weight: 600;
+  position: relative;
+}
+
+.primary-button:hover {
+  box-shadow: var(--accent-glow);
+  translate: 0 -1px;
+}
+
+/* Pattern 059 — branded caret for inputs */
+input, textarea, [contenteditable] { caret-color: var(--brand-cyan); }
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
 .nav-button {
-  border: 0;
-  border-radius: var(--radius-xs);
-  padding: 10px 12px;
   text-align: left;
   background: transparent;
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 13.5px;
-  transition: background 0.15s, color 0.15s;
+  font-weight: 500;
 }
 
 .nav-button:hover {
-  background: var(--panel-2);
-  color: var(--text);
+  background: var(--surface-2);
 }
 
+/* Pattern 044 — exclude disabled + busy states */
+button:not(:disabled):not([aria-busy="true"]) { cursor: pointer; }
+button:disabled, .primary-button:disabled, .send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  translate: 0 0;
+}
+
+.muted-button {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--border);
+}
+
+/* ============================================================
+   TOPBAR — Pattern 093 (sticky) + 096 (scrollbar gutter)
+   ============================================================ */
+
 .main-panel {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;         /* contain the messages area scroll */
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 0%,
+      color-mix(in oklab, var(--brand-cyan) 4%, transparent), transparent 60%);
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-height: 60px;
-  padding: 10px 20px;
+  gap: 12px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
-  background: rgba(7, 7, 11, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: color-mix(in oklab, var(--bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .model-controls {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
-}
-
-.model-controls label {
+  font-size: var(--fs-sm);
   color: var(--muted);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .model-controls select {
-  max-width: 430px;
-  background: var(--panel-2);
-  border-color: var(--border);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  font-size: var(--fs-sm);
+  min-width: 200px;
 }
 
 .search-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  color: var(--muted);
-  white-space: nowrap;
-  font-size: 13px;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
   cursor: pointer;
+  background: transparent;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
 }
 
-.search-toggle input {
-  accent-color: var(--accent);
+.search-toggle:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.search-toggle:has(input:checked) {
+  border-color: var(--brand-cyan);
+  color: var(--text);
+  background: var(--accent-dim);
+  box-shadow: var(--accent-glow);
 }
 
 .connection {
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 12px;
+  margin-inline-start: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .connection::before {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--muted);
-  box-shadow: 0 0 0 0 transparent;
-}
-
-.connection.ok {
-  color: var(--success);
-}
-
-.connection.ok::before {
   background: var(--success);
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+  box-shadow: 0 0 6px var(--success);
 }
 
-.connection.error {
-  color: var(--danger);
-}
-
-.connection.error::before {
-  background: var(--danger);
-  box-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
-}
+/* ============================================================
+   MESSAGES — Pattern 017 (equal-height grid) + 069 (selection)
+   ============================================================ */
 
 .messages {
-  flex: 1 1 0;          /* take all remaining vertical space in the flex column */
-  min-height: 0;        /* allow it to shrink so overflow-y:auto fires */
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
-  padding: 28px max(20px, calc((100vw - 1160px) / 2));
-  scroll-behavior: smooth;
-  overscroll-behavior: contain;       /* don't propagate scroll to body */
-  touch-action: pan-y;                /* allow vertical pan gestures */
+  overflow: auto;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
 }
 
-.welcome {
-  max-width: 720px;
-  margin: 10vh auto 0;
-  text-align: center;
-}
-
-.welcome h1 {
-  margin: 0;
-  font-size: clamp(42px, 7.5vw, 78px);
-  letter-spacing: 0.18em;
-  font-weight: 700;
-  background: linear-gradient(135deg, #22d3ee 0%, #67e8f9 40%, #a5b4fc 75%, #e0f2fe 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 60px rgba(34, 211, 238, 0.25);
-}
-
-.welcome p {
-  color: var(--muted);
-  line-height: 1.7;
-  font-size: 15px;
-  max-width: 480px;
-  margin: 14px auto 0;
-}
-
-.suggestion-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 28px;
-}
-
-.suggestion-grid button {
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-.suggestion-grid button:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-  background: var(--panel-2);
-  box-shadow: 0 0 24px rgba(34, 211, 238, 0.08);
-  transform: translateY(-1px);
+/* Pattern 069 — branded text selection */
+::selection {
+  background: color-mix(in oklab, var(--brand-cyan) 40%, transparent);
+  color: var(--text);
 }
 
 .message {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   gap: 14px;
-  max-width: 920px;
-  margin: 0 auto 24px;
-  animation: messageIn 0.28s ease-out;
+  align-items: start;
+  animation: message-enter 0.3s ease-out both;
 }
 
-@keyframes messageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes message-enter {
+  from { opacity: 0; translate: 0 8px; }
 }
 
-.avatar {
-  display: grid;
-  place-items: center;
+.message-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 11px;
-  background: var(--panel-2);
-  color: var(--accent-2);
-  font-weight: 700;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
   font-size: 13px;
+  font-weight: 700;
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: var(--text-2);
 }
 
-.message.user .avatar {
+.message.user .message-avatar {
+  background:
+    linear-gradient(135deg,
+      color-mix(in oklab, var(--brand-cyan) 30%, var(--surface-2)),
+      color-mix(in oklab, var(--brand-violet) 30%, var(--surface-2)));
   color: var(--text);
-  background: linear-gradient(145deg, #1e2436, #161b28);
+  border-color: color-mix(in oklab, var(--brand-cyan) 50%, var(--border));
 }
 
-.message-card { min-width: 0; }
+.message.assistant .message-avatar {
+  background:
+    linear-gradient(135deg,
+      color-mix(in oklab, var(--brand-cyan) 30%, var(--surface-2)),
+      color-mix(in oklab, var(--brand-pink) 30%, var(--surface-2)));
+  color: var(--text);
+  border-color: color-mix(in oklab, var(--brand-cyan) 50%, var(--border));
+}
 
-.message-head {
+.message-header {
   display: flex;
-  gap: 10px;
-  align-items: baseline;
-  margin-bottom: 6px;
-}
-
-.message-head strong { font-size: 13px; letter-spacing: 0.02em; }
-.message-head span { color: var(--muted); font-size: 11px; }
-
-.message-content {
-  line-height: 1.65;
-  overflow-wrap: anywhere;
-  font-size: 14.5px;
-}
-
-.message-content p { margin: 0 0 12px; }
-
-.message-content pre {
-  overflow: auto;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: #06070c;
-  font-size: 13px;
-}
-
-.message-content code {
-  padding: 2px 6px;
-  border-radius: 5px;
-  background: var(--panel-2);
-  font-size: 0.92em;
-}
-
-.message-content pre code {
-  padding: 0;
-  background: transparent;
-}
-
-.message-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.badge {
-  padding: 3px 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-}
-
-.badge.commit {
-  border-color: rgba(52, 211, 153, 0.35);
-  color: var(--success);
-  background: var(--success-bg);
-}
-
-.badge.defer {
-  border-color: rgba(34, 211, 238, 0.35);
-  color: var(--accent-2);
-  background: var(--accent-dim);
-}
-
-.tool-card {
-  max-width: 920px;
-  margin: -6px auto 22px 54px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--panel);
-  backdrop-filter: blur(8px);
-}
-
-.tool-card h4 {
-  margin: 0 0 8px;
-  color: var(--accent-2);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.tool-result {
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
-}
-
-.tool-result:first-of-type { border-top: 0; }
-
-.tool-result a { color: var(--accent-2); }
-
-.tool-result p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.error-box {
-  padding: 12px 14px;
-  border: 1px solid rgba(248, 113, 113, 0.4);
-  border-radius: var(--radius-xs);
-  color: #fecaca;
-  background: var(--danger-bg);
-}
-
-.defer-notice {
-  margin: 6px 0 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-left: 3px solid #fbbf24;
-  border-radius: var(--radius-xs);
-  background: rgba(251, 191, 36, 0.08);
-  color: #fde68a;
-}
-
-.defer-notice .defer-title {
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #fbbf24;
-  margin-bottom: 6px;
-}
-
-.defer-notice .defer-detail {
-  font-size: 13px;
-  color: #fef3c7;
-  font-family: var(--font-mono, monospace);
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-
-.defer-notice .defer-hint {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(251, 191, 36, 0.3);
-  font-size: 12px;
-  color: #fde68a;
-  font-style: italic;
-}
-
-.cursor {
-  display: inline-block;
-  width: 8px;
-  height: 1.05em;
-  margin-left: 2px;
-  vertical-align: text-bottom;
-  background: var(--accent);
-  border-radius: 1px;
-  animation: blink 1s steps(2) infinite;
-  box-shadow: 0 0 8px var(--accent);
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-/* Per-message action bar (Copy / Download / Speak / Delete) */
-.message-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
-  opacity: 0.55;
-  transition: opacity 0.18s ease;
-}
-
-.message:hover .message-actions,
-.message-actions:focus-within {
-  opacity: 1;
-}
-
-.msg-action {
-  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--panel-2);
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.message-author {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.message-time {
+  font-size: var(--fs-xs);
   color: var(--muted);
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  font-variant-numeric: tabular-nums;
 }
 
-.msg-action:hover {
-  background: var(--accent-dim);
-  color: var(--accent-2);
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.18);
+.message-body {
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--text);
+  max-inline-size: 70ch;
 }
 
-.msg-action svg {
-  flex: none;
+.message-body p { margin: 0 0 0.6em; }
+.message-body p:last-child { margin-bottom: 0; }
+
+.message-body h1 { font-size: var(--fs-xl); margin: 0.6em 0 0.3em; }
+.message-body h2 { font-size: var(--fs-lg); margin: 0.6em 0 0.3em; }
+.message-body h3 { font-size: var(--fs-md); margin: 0.5em 0 0.25em; }
+.message-body ul, .message-body ol { padding-inline-start: 1.4em; margin: 0 0 0.6em; }
+.message-body li { margin: 0 0 0.25em; }
+
+/* Pattern 037 — tabular numbers in metrics */
+.metric, .timer, .status-value, code {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pattern 002 + 004 — gradient underline on inline links inside messages */
+.message-body a {
+  color: var(--text);
+  text-decoration: none;
+  background: linear-gradient(90deg, var(--brand-cyan), var(--brand-violet)) 0 100% / 100% 1px no-repeat;
+  padding-block-end: 0.1em;
+}
+
+.message-body a:hover {
+  background: linear-gradient(90deg, var(--brand-cyan), var(--brand-pink)) 0 100% / 100% 2px no-repeat;
+}
+
+/* Pattern 068 — first line of the first paragraph in a message gets weight */
+.message-body > p:first-of-type::first-line {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   CODE BLOCKS — Pattern 002 (gradient border) + 022 (fluid padding)
+   ============================================================ */
+
+.message-body pre, .json-output, .code-panel pre {
+  background: #06060c;
+  color: #e2e8f0;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: var(--sp-3) var(--sp-4);
+  overflow: auto;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  font-family: var(--mono);
+  position: relative;
+  background:
+    linear-gradient(#06060c, #06060c) padding-box,
+    linear-gradient(135deg,
+      color-mix(in oklab, var(--brand-cyan) 25%, transparent),
+      color-mix(in oklab, var(--brand-violet) 25%, transparent)) border-box;
+  margin: 0.6em 0;
+}
+
+.message-body code {
+  background: var(--surface-2);
+  color: var(--brand-cyan-2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.92em;
+  font-family: var(--mono);
+}
+
+.message-body pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ============================================================
+   COMPOSER — Pattern 053 (floating label) + 008 (frosted)
+   ============================================================ */
+
+.composer-area {
+  padding: 14px max(16px, calc((100vw - 1040px) / 2)) 22px;
+  background: linear-gradient(transparent,
+    color-mix(in oklab, var(--bg) 92%, transparent) 30%);
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 8px;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in oklab, var(--surface-solid) 85%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.composer:focus-within {
+  border-color: color-mix(in oklab, var(--brand-cyan) 40%, transparent);
+  box-shadow: var(--shadow-sm), 0 0 32px color-mix(in oklab, var(--brand-cyan) 10%, transparent);
+}
+
+.composer textarea {
+  width: 100%;
+  max-height: 180px;
+  resize: none;
+  border: 0;
+  padding: 11px 8px;
+  background: transparent;
+  color: var(--text);
+  outline: 0;
+  font-size: var(--fs-base);
+  line-height: 1.45;
+  font-family: var(--font);
+}
+
+.composer-hint {
+  margin: 10px 8px 0;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  text-align: center;
   opacity: 0.85;
 }
 
-.msg-action.danger:hover {
-  background: var(--danger-bg);
-  color: #fecaca;
-  border-color: rgba(248, 113, 113, 0.5);
-  box-shadow: 0 0 12px rgba(248, 113, 113, 0.18);
-}
-
-.msg-action:disabled {
-  opacity: 0.4;
-  cursor: wait;
-}
-
-/* Audio + VTT caption controls rendered under a spoken message */
-.message-audio {
-  width: 100%;
-  max-width: 540px;
-  margin-top: 10px;
-  border-radius: 8px;
-  display: block;
-}
-
-.message-audio::cue {
-  background: rgba(7, 7, 11, 0.86);
-  color: var(--accent-2);
-  font-size: 14px;
-  font-family: var(--font);
-  padding: 2px 6px;
+.composer-hint code {
+  background: var(--surface-2);
+  color: var(--brand-cyan-2);
+  padding: 1px 5px;
   border-radius: 4px;
+  font-size: 0.95em;
+  font-family: var(--mono);
 }
 
-.caption-status {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 2px 8px;
-  font-size: 10.5px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.caption-status::before {
-  content: "CC ";
-  color: var(--accent-2);
+/* Pattern 002 — gradient border on the send button */
+.send-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+    linear-gradient(135deg, var(--brand-cyan), var(--brand-violet)) border-box;
+  color: var(--text);
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  margin-right: 2px;
+}
+
+.send-button:hover:not(:disabled) {
+  translate: 0 -1px;
+  box-shadow: var(--accent-glow);
+}
+
+.danger-button {
+  background: var(--danger-bg);
+  border-color: color-mix(in oklab, var(--danger) 30%, var(--border));
+  color: var(--danger);
+}
+
+.danger-button:hover {
+  background: color-mix(in oklab, var(--danger) 18%, transparent);
+  border-color: var(--danger);
+}
+
+.attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 300px;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: var(--fs-xs);
+}
+
+.attachment-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-chip button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+/* ============================================================
+   DIALOGS / MODALS — Pattern 070 (backdrop) + 110 (nested)
+   ============================================================ */
+
+.dialog {
+  background: var(--surface-solid);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0;
+  max-width: 600px;
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.dialog.wide { max-width: 900px; }
+
+/* Pattern 070 — branded backdrop */
+.dialog::backdrop {
+  background: color-mix(in oklab, #06060c 75%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.dialog-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  max-height: inherit;
+}
+
+.dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dialog header h2 { font-size: var(--fs-md); font-weight: 600; }
+
+.dialog-content {
+  padding: 18px 20px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* ============================================================
+   TABS — Pattern 050 (data-state) + 015 (subgrid-ready)
+   ============================================================ */
+
+.code-tabs, .media-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.code-tab, .media-tab {
+  flex: 1;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.code-tab:hover, .media-tab:hover {
+  color: var(--text);
+  background: color-mix(in oklab, var(--surface-3) 50%, transparent);
+}
+
+.code-tab.active, .media-tab.active {
+  background: var(--surface-3);
+  color: var(--text);
+  /* Pattern 050 — active state with brand underline */
+  border-bottom: 2px solid var(--brand-violet);
+  border-radius: 6px 6px 4px 4px;
+}
+
+.code-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-height: 240px;
+  max-height: 400px;
+  overflow: auto;
+}
+
+.code-panel pre {
+  margin: 0;
+  font-size: var(--fs-sm);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--text-2);
+}
+
+/* ============================================================
+   STATUS PANEL — Pattern 048 (:target highlight)
+   ============================================================ */
+
+.status-panel {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.status-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  font-size: var(--fs-sm);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.status-row:hover {
+  background: var(--surface-3);
+}
+
+.status-row .status-key { color: var(--muted); }
+.status-row .status-value { color: var(--text); font-family: var(--mono); font-size: var(--fs-xs); }
+
+.muted { color: var(--muted); }
+
+/* ============================================================
+   MEDIA + GALLERY — Pattern 071 (clean crop) + 073 (circular)
+   ============================================================ */
+
+.media-panel, .image-gallery, .json-output {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.media-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+}
+
+/* Pattern 071 — clean image crop */
+.media-thumb, .image-thumb, .gallery-thumb {
+  inline-size: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Pattern 073 — circular crop for avatars */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  clip-path: circle(50% at 50% 50%);
+}
+
+/* Pattern 079 — drop-shadow for transparent media */
+.media-thumb.transparent, .gallery-thumb.transparent {
+  filter: drop-shadow(0 0.5rem 1rem rgba(0, 0, 0, 0.4));
+}
+
+.image-gallery {
+  grid-template-columns: repeat(auto-fill, minmax(min(8rem, 100%), 1fr));
+}
+
+/* ============================================================
+   TOASTS — Pattern 088 (@starting-style entry)
+   ============================================================ */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  translate: -50% 0;
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+  animation: toast-in 0.25s ease-out;
+  opacity: 1;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    translate: -50% 1rem;
+  }
+}
+
+.toast.error {
+  border-color: color-mix(in oklab, var(--danger) 50%, transparent);
+  color: var(--danger);
+}
+
+.toast.success {
+  border-color: color-mix(in oklab, var(--success) 50%, transparent);
+  color: var(--success);
+}
+
+/* ============================================================
+   REDUCED MOTION — Pattern 081
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — Pattern 029 (modern ranges) + 025 (dvh)
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas: "main";
+  }
+  .sidebar { display: none; }
+  .sidebar.open {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--surface-solid);
+  }
+  .main-panel { grid-area: main; }
+  .topbar { padding: 12px 14px; }
+  .messages { padding: 16px 12px; }
+  .composer-area { padding: 10px 12px 16px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Pattern 030 — hover only on capable devices */
+  button:hover, .nav-button:hover, .conversation-item:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Pattern 098 — phone safe areas */
+@supports (padding: max(0px)) {
+  .composer-area {
+    padding-block-end: max(22px, env(safe-area-inset-bottom));
+    padding-inline: max(16px, env(safe-area-inset-left))
+                   max(16px, env(safe-area-inset-right));
+  }
+}
+
+/* Pattern 113 — forced-colors survival */
+@media (forced-colors: active) {
+  button, .primary-button, .nav-button, .icon-button, .send-button {
+    border: 1px solid ButtonText;
+  }
+  .brand-mark { border: 2px solid ButtonText; background: ButtonFace; }
+}
+
+/* Pattern 115 — larger touch targets on coarse pointers */
+@media (pointer: coarse) {
+  button, .nav-button, .icon-button {
+    min-block-size: 44px;
+  }
 }
