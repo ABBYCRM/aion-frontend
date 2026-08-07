@@ -1,224 +1,78 @@
-/* ============================================================
+/* =============================================================
    AION — Component-specific styles
-   Consolidated with the base design system in styles-base.css.
-   ============================================================ */
-
-/* ============================================================
-   FORM CONTROLS — Pattern 051 (accent-color), 055, 060
-   ============================================================ */
+   Most component styling lives in styles-base.css. This file
+   keeps a few element-level rules that need to live outside
+   the cascade or that target brain-signal / a few app-specific
+   micro-components.
+   ============================================================= */
 
 :root {
-  accent-color: var(--brand-cyan);
+  /* 051 — accent-color for native form controls */
+  accent-color: var(--brand);
 }
 
-label {
-  display: block;
-  font-size: var(--fs-sm);
-  color: var(--muted);
-  margin-bottom: 6px;
+input,
+textarea,
+[contenteditable] {
+  /* 059 — branded caret */
+  caret-color: var(--brand);
 }
 
-label > input[type="text"],
-label > input[type="url"],
-label > input[type="password"],
-label > input[type="email"],
-label > input[type="number"],
-label > textarea,
-label > select {
-  display: block;
-  width: 100%;
-  margin-top: 4px;
-  padding: 9px 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  color: var(--text);
-  font: inherit;
-  font-size: var(--fs-base);
-  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
-}
-
-label > input:focus,
-label > textarea:focus,
-label > select:focus {
-  outline: none;
-  border-color: var(--brand-cyan);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-cyan) 18%, transparent);
-  background: var(--surface-3);
-}
-
-/* Pattern 060 — auto-growing text controls */
+/* 060 — auto-growing textareas */
 textarea {
   field-sizing: content;
   min-block-size: 4lh;
   max-block-size: 20lh;
 }
 
-/* Pattern 055 — native file-input button */
-input[type="file"]::file-selector-button {
-  border: 0;
-  border-radius: var(--radius-xs);
-  padding: 7px 12px;
-  background: var(--surface-3);
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-  margin-inline-end: 8px;
-}
-
-input[type="file"]::file-selector-button:hover {
-  background: color-mix(in oklab, var(--brand-cyan) 18%, var(--surface-3));
-}
-
-/* Pattern 054 — validation only after user interaction */
+/* 054 — validation only after user interaction */
 input:user-invalid,
 textarea:user-invalid {
   border-color: var(--danger);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 12%, transparent);
+  background: color-mix(in oklab, var(--danger) 8%, var(--surface-2));
 }
 
-/* Pattern 056 — custom select arrow */
+/* 056 — custom select arrow (no image) */
 select {
   appearance: none;
   -webkit-appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
                     linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
-  background-size: 5px 5px, 5px 5px;
+  background-size: 5px 5px;
   background-repeat: no-repeat;
   padding-inline-end: 28px;
 }
 
-/* ============================================================
-   DIALOG DETAILS — Pattern 110 (nesting), 049 (open state)
-   ============================================================ */
+/* 055 — native file-input button */
+input[type="file"]::file-selector-button {
+  border: 0;
+  border-radius: var(--r-sm);
+  padding: 0 var(--s-3);
+  height: 32px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  margin-inline-end: var(--s-2);
+  transition: background var(--t-fast) var(--ease);
+}
+input[type="file"]::file-selector-button:hover { background: var(--surface-3); }
 
-.dialog-card label { color: var(--muted); }
-.dialog-card label > input,
-.dialog-card label > select { background: var(--surface-2); }
-
-dialog header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-dialog header h2 { font-size: var(--fs-md); font-weight: 600; }
-dialog header button { border: 0; background: transparent; color: var(--muted); width: 28px; height: 28px; padding: 0; border-radius: 6px; }
-dialog header button:hover { background: var(--surface-2); color: var(--text); }
-
-/* Pattern 049 — details open state */
+/* 049 — details[open] summary gets brand color */
 details summary {
   cursor: pointer;
   list-style: none;
   color: var(--text-2);
-  padding: 4px 0;
+  padding: var(--s-2) 0;
 }
 details summary::-webkit-details-marker { display: none; }
-details[open] summary { color: var(--brand-cyan-2); }
+details[open] summary { color: var(--text); }
 
-/* ============================================================
-   MEDIA PANEL — Pattern 077 (mix-blend) + 078 (background-blend)
-   ============================================================ */
-
-.media-panel label { color: var(--muted); }
-.media-row { gap: 10px; padding: 10px; }
-.media-row .media-thumb {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-/* ============================================================
-   CODE PANEL
-   ============================================================ */
-
-.code-panel { font-family: var(--mono); }
-.code-panel[hidden] { display: none; }
-.code-panel .toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-.code-panel .toolbar label { margin: 0; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: var(--fs-xs); }
-.code-panel .toolbar input[type="text"],
-.code-panel .toolbar select {
-  padding: 6px 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  color: var(--text);
-  font: inherit;
-  font-size: var(--fs-sm);
-}
-
-/* ============================================================
-   BRAIN SIGNAL (existing module, harmonized)
-   ============================================================ */
-
-.brain-signal {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-2);
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
-
-.brain-signal .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 6px color-mix(in oklab, var(--success) 60%, transparent);
-}
-
-.brain-signal.inactive .dot { background: var(--muted); box-shadow: none; }
-.brain-signal.thinking .dot {
-  background: var(--brand-cyan);
-  animation: aion-pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes aion-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-.brain-signal .brain-label {
-  font-size: var(--fs-xs);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-inline-size: 14ch;
-}
-
-/* ============================================================
-   UTILITY — Pattern 020, 026
-   ============================================================ */
-
-.flex-child, .grid-child { min-inline-size: 0; }
-
-.tag {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: var(--fs-xs);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--muted);
-  inline-size: fit-content;
-  max-inline-size: 100%;
-}
-
-.sr-only {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+/* 048 — :target highlight (no JS scroll) */
+section:target,
+[id]:target {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
 }
