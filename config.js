@@ -2,7 +2,7 @@ window.AION_CONFIG = Object.freeze({
   apiBase: 'https://aion-backend-v2-jszgl.ondigitalocean.app',
   allowedApiOrigins: Object.freeze(['https://aion-backend-v2-jszgl.ondigitalocean.app']),
   allowCustomApiBase: false,
-  appVersion: '2.8.2',
+  appVersion: '2.8.3',
   maxAttachmentCount: 6,
   maxImageBytes: 900000,
   maxTextFileBytes: 100000,

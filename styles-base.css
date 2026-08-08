@@ -413,7 +413,20 @@ textarea:focus-visible { outline: none; }
   outline-offset: -2px;
 }
 
-.primary-button.full { width: 100%; margin: var(--s-3); }
+/* Primary action in the sidebar — auto-width, centered, comfortable padding. */
+.primary-button.full {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: auto;
+  min-inline-size: 0;
+  margin: var(--s-3) auto;
+  padding: 0 var(--s-4);
+  height: 36px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
 
 /* ----- 4d. MOBILE TAB BAR (bottom of viewport, only <900px) -----
    Replaces the drawer for the workspace tools. Same sliding pill mechanic.
@@ -979,9 +992,9 @@ button:disabled,
   position: relative;
   inline-size: 100%;
   max-inline-size: var(--content-max);
-  margin: var(--s-7) 0 0;
+  margin: var(--s-7) auto 0;  /* center horizontally in the chat surface */
   padding: var(--s-5);
-  text-align: left;
+  text-align: center;  /* center the headline + description */
   box-sizing: border-box;
   align-self: stretch;
   /* 009 — soft CSS spotlight. The ::before glow sits inside the welcome
