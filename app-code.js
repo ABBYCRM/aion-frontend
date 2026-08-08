@@ -29,15 +29,15 @@
   function openCodeDialog() {
     if (!dom.codeDialog) return;
     if (!dom.codeDialog.open) dom.codeDialog.showModal();
-    if (state.languagesLoaded !== true) {
+    if (codeState.languagesLoaded !== true) {
       loadLanguagesIntoTiles();
-      state.languagesLoaded = true;
+      codeState.languagesLoaded = true;
     }
   }
 
   // ----- state + dom map -----------------------------------------------
 
-  const state = { languagesLoaded: false };
+  const codeState = { languagesLoaded: false };
 
   // ----- language list loaders (fill the two per-corpus selects) ------
 
