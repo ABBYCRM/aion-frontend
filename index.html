@@ -365,6 +365,23 @@
             <span class="muted" id="vaultStatus">Loading…</span>
           </div>
         </section>
+        <!-- Legacy hidden <select> — refreshVault() reads dom.vaultFilter.value
+             to build the API query string. The pill tabs above drive this select
+             via setVaultCategory() and trigger refreshVault() on click. -->
+        <select id="vaultFilter" hidden aria-hidden="true">
+          <option value=""></option>
+          <option value="llm">LLM</option>
+          <option value="search">Search</option>
+          <option value="scraping">Scraping</option>
+          <option value="github">GitHub</option>
+          <option value="email">Email</option>
+          <option value="browser">Browser</option>
+          <option value="screenshot">Screenshot</option>
+          <option value="vector">Vector</option>
+          <option value="inngest">Inngest</option>
+          <option value="discord">Discord</option>
+          <option value="other">Other</option>
+        </select>
         <div id="vaultList" class="vault-list"></div>
       </div>
     </div>

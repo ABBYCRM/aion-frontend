@@ -168,10 +168,10 @@
         if (response.status === 403) {
           dom.vaultStatus.textContent = 'Admin required to view the vault.';
           dom.vaultList.replaceChildren();
-          const p = document.createElement('p');
-          p.className = 'muted';
-          p.textContent = 'Your AION key is not an admin key. The vault is admin-only.';
-          dom.vaultList.append(p);
+          const empty = document.createElement('p');
+          empty.className = 'code-empty-state';
+          empty.innerHTML = '<strong>Admin required.</strong> Your AION key is not an admin key. The vault is admin-only — set <code>AION_ADMIN_KEYS</code> on the backend to access it from this client.';
+          dom.vaultList.append(empty);
           return;
         }
         throw new Error(detail(payload, response));
