@@ -31,39 +31,43 @@
 :root {
   color-scheme: dark;
 
-  /* Surfaces — 5 levels, layered, dark. The depth is the design. */
-  --bg:            #0a0b10;  /* page background, deep */
-  --surface:       #11131a;  /* primary surface (cards, dialogs) */
-  --surface-2:     #181b25;  /* raised (input bg, hovered list item) */
-  --surface-3:     #21242f;  /* higher (hovered surface-2) */
-  --surface-inset: #07080c;  /* deeper than bg (code blocks, code panel) */
+  /* Surfaces — 4 levels of warm-neutral charcoal (Z.ai style). The depth
+     is the design — each level earns its place via contrast, not color.
+     The page is a hair deeper than the panels; the inputs step up. */
+  --bg:            #161616;  /* page background, near-black with warmth */
+  --surface:       #1a1a1a;  /* primary surface (cards, dialogs) */
+  --surface-2:     #1e1e1e;  /* raised (list items, secondary panels) */
+  --surface-3:     #292929;  /* higher (input bg, hovered list item) */
+  --surface-inset: #0d0d0d;  /* deeper than bg (code blocks, code panel) */
 
-  /* Text — 4 levels, all WCAG AA on --bg */
-  --text:        #e6e9f2;  /* primary body */
-  --text-2:      #b6bbcd;  /* secondary, descriptions */
-  --muted:       #7a8093;  /* metadata, timestamps, placeholders */
-  --text-faint:  #565b6c;  /* disabled, very-low-emphasis (still legible) */
+  /* Text — 4 levels, all WCAG AA on --bg. Slightly cool gray, not pure white. */
+  --text:        #e6e8ec;  /* primary body */
+  --text-2:      #b3b7c0;  /* secondary, descriptions */
+  --muted:       #7a7e87;  /* metadata, timestamps, placeholders */
+  --text-faint:  #525660;  /* disabled, very-low-emphasis (still legible) */
 
-  /* Brand — single accent, derived shades */
-  --brand:        #7ab8d4;  /* one accent, calm blue-cyan */
-  --brand-soft:   #2a3a4a;  /* brand-tinted neutral (for selected rows) */
-  --brand-fg-on:  #0a0b10;  /* text on brand-colored surfaces */
+  /* Brand — single accent, derived shades. Calm blue, used sparingly. */
+  --brand:        #0881f0;  /* one accent, Z.ai blue */
+  --brand-soft:   #1c2a3a;  /* brand-tinted neutral (for selected rows) */
+  --brand-tint:   #f0f7fe;  /* very soft blue, for active text/bg (dark mode: white/10) */
+  --brand-fg-on:  #ffffff;  /* text on brand-colored surfaces */
 
   /* Semantic — three, each with a surface and a foreground */
-  --ok:        #5fb88a;  --ok-soft:    #1a2c25;  --ok-fg:    #b6e0c4;
+  --ok:        #5fb88a;  --ok-soft:    #1a2820;  --ok-fg:    #b6e0c4;
   --warn:      #d4a85a;  --warn-soft:  #2c2418;  --warn-fg:  #eccea0;
   --danger:    #d97a7a;  --danger-soft: #2c1d1d;  --danger-fg: #ecc4c4;
 
-  /* Borders — 3 levels, all subtle */
-  --border:        #232631;
-  --border-strong: #353846;
-  --border-brand:  #3a5868;
+  /* Borders — 3 levels, all subtle, on white at low alpha (Z.ai style) */
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-brand:  rgba(8, 129, 240, 0.45);
 
-  /* Radius — 4 sizes, consistent across all components */
+  /* Radius — 4 sizes, consistent across all components (slightly larger
+     to match Z.ai's rounded-xl / rounded-2xl feel) */
   --r-xs: 4px;   /* checkboxes, small chips */
-  --r-sm: 6px;   /* buttons, inputs, pills */
-  --r-md: 10px;  /* cards, dialogs, code blocks */
-  --r-lg: 14px;  /* composer, top-level surfaces */
+  --r-sm: 8px;   /* buttons, inputs, pills */
+  --r-md: 12px;  /* cards, dialogs, code blocks */
+  --r-lg: 16px;  /* composer, top-level surfaces */
 
   /* Spacing — 4px base, with fluid type ramp */
   --s-1: 4px;
@@ -74,9 +78,18 @@
   --s-6: 32px;
   --s-7: 48px;
 
-  /* Shadows — 2 levels, restrained */
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / .35);
-  --shadow-md: 0 8px 24px rgb(0 0 0 / .45);
+  /* Shadows — Z.ai layered style. The "lifted glass" feel comes from an
+     inset highlight at the top edge + a soft outer drop + a 1px outer ring. */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / .45);
+  --shadow-md:
+    0 1px 2px 0 rgb(0 0 0 / .35),
+    0 0 0 1px rgb(255 255 255 / .04);
+  --shadow-lg:
+    0 4px 16px 0 rgb(0 0 0 / .35),
+    0 0 0 1px rgb(255 255 255 / .06),
+    inset 0 1px 0 0 rgb(255 255 255 / .08);
+  --shadow-active:
+    0 0 0 4px rgb(0 0 0 / .15);
 
   /* Type — fluid via clamp() */
   --fs-xs:   clamp(11px, 0.69rem + 0.05vw, 12px);
@@ -99,7 +112,7 @@
   --topbar-h:  56px;
   --content-max: 900px;
 
-  --font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
@@ -331,12 +344,15 @@ textarea:focus-visible { outline: none; }
   /* Translate by N * (cell-width + gap). 100% here = pill's own width =
      cell-width. Plus 4px for the gap between cells. */
   transform: translateX(calc(var(--active) * (100% + 4px)));
-  background: linear-gradient(180deg, var(--brand-soft) 0%, color-mix(in oklab, var(--brand-soft) 80%, var(--bg)) 100%);
-  border: 1px solid var(--border-brand);
+  /* Z.ai "soft white on dark" — the pill is just slightly lifted off the bar.
+     The accent comes from the conic beam behind the active button, not the pill. */
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
   box-shadow:
-    inset 0 1px 0 0 color-mix(in oklab, var(--brand) 25%, transparent),
-    0 6px 20px -8px color-mix(in oklab, var(--brand) 50%, transparent);
+    inset 0 1px 0 0 rgb(255 255 255 / .08),
+    0 1px 2px 0 rgb(0 0 0 / .35),
+    0 0 0 1px rgb(255 255 255 / .04);
   transition: transform var(--t-base) var(--ease);
   pointer-events: none;
 }
@@ -399,14 +415,16 @@ textarea:focus-visible { outline: none; }
 .tab-bar button:hover svg {
   transform: translateY(-1px);
 }
-/* Active state — driven by the radio on the sidebar, or aria-current on mobile. */
+/* Active state — driven by the radio on the sidebar, or aria-current on mobile.
+   Z.ai style: active = brighter text/icon, no color change. The visual lift
+   comes from the selector pill + (on mobile) the rotating conic beam. */
 .tab-bar label:has(input:checked),
 .tab-bar button[aria-current="true"] {
   color: var(--text);
 }
 .tab-bar label:has(input:checked) svg,
 .tab-bar button[aria-current="true"] svg {
-  color: var(--brand);
+  color: var(--text);
 }
 .tab-bar input[type="radio"]:focus-visible + label {
   outline: 2px solid var(--brand);
@@ -458,31 +476,35 @@ textarea:focus-visible { outline: none; }
   /* Adjust the main-panel bottom so content isn't covered by the mobile tab bar. */
   .main-panel { padding-block-end: 72px; }
 
-  /* The rotating glow behind each mobile tab button. */
+  /* The rotating glow behind each mobile tab button. Z.ai bb-1 style:
+     multi-hue conic that cycles through warm accents (orange/yellow/red)
+     in a tight arc, masked to look like a moving spot. Slow rotation,
+     brand-tinted so it feels like part of the system, not a clown. */
   .tab-bar-mobile button {
     position: relative;
     isolation: isolate;  /* keep the glow inside the button's stacking context */
     overflow: hidden;
+    border-radius: 999px;  /* round the button so the mask reads cleanly */
   }
   .tab-bar-mobile button::before {
     content: "";
     position: absolute;
-    inset: -50%;
+    inset: -25%;
     z-index: -1;
     background: conic-gradient(
       from var(--tab-glow),
-      color-mix(in oklab, var(--brand) 60%, transparent) 0deg,
-      color-mix(in oklab, var(--brand) 30%, transparent) 60deg,
-      transparent 120deg,
-      transparent 240deg,
-      color-mix(in oklab, var(--brand) 30%, transparent) 300deg,
-      color-mix(in oklab, var(--brand) 60%, transparent) 360deg
+      transparent 0%,
+      transparent 60%,
+      color-mix(in oklab, var(--brand) 35%, transparent) 70%,
+      color-mix(in oklab, var(--brand) 55%, transparent) 78%,
+      color-mix(in oklab, var(--brand) 35%, transparent) 86%,
+      transparent 100%
     );
     animation: tab-glow-spin 6s linear infinite;
     opacity: 0.0;
     transition: opacity var(--t-base) var(--ease);
   }
-  .tab-bar-mobile button:hover::before { opacity: 0.35; }
+  .tab-bar-mobile button:hover::before { opacity: 0.30; }
   .tab-bar-mobile button[aria-current="true"]::before { opacity: 0.55; }
   /* Reduced motion: kill the rotation. The glow is still visible on
      active/hover, just static. */
@@ -514,10 +536,12 @@ button,
   color: var(--text);
   padding: 0 var(--s-3);
   height: 32px;
+  box-shadow: var(--shadow-sm);
   transition:
     background var(--t-fast) var(--ease),
     border-color var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+    color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
   white-space: nowrap;
 }
 
@@ -533,14 +557,32 @@ button:active,
 button:not(:disabled):not([aria-busy="true"]):hover,
 .nav-button:not(:disabled):not([aria-busy="true"]):hover { /* placeholder for future states */ }
 
-/* Primary — the ONE place where brand color earns its place. */
+/* Primary — Z.ai style. In dark mode this is a filled "inverted" pill
+   (near-white on near-black) — the same as their `bg-white dark:bg-stone-950`
+   pattern reversed. This is the default "primary" surface across the app.
+   The truly-committal CTA (e.g. "Save") uses .primary-button.cta to get
+   the brand-blue fill instead. */
 .primary-button {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: var(--brand-fg-on);
+  background: color-mix(in oklab, var(--text) 92%, transparent);
+  border-color: transparent;
+  color: var(--bg);
   font-weight: 600;
 }
 .primary-button:hover:not(:disabled) {
+  background: var(--text);
+  border-color: transparent;
+}
+.primary-button:active:not(:disabled) {
+  box-shadow: var(--shadow-active);
+}
+/* CTA — the rare "this is a real commit" button (e.g. Save in Settings).
+   Filled brand blue with white text — the ONE place brand color earns it. */
+.primary-button.cta {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-fg-on);
+}
+.primary-button.cta:hover:not(:disabled) {
   background: color-mix(in oklab, var(--brand) 88%, white);
   border-color: color-mix(in oklab, var(--brand) 88%, white);
 }
@@ -549,8 +591,10 @@ button:not(:disabled):not([aria-busy="true"]):hover,
 .muted-button {
   background: transparent;
   color: var(--text-2);
+  border-color: transparent;
+  box-shadow: none;
 }
-.muted-button:hover { color: var(--text); }
+.muted-button:hover { color: var(--text); background: var(--surface-2); }
 
 /* Danger */
 .danger-button {
@@ -563,24 +607,30 @@ button:not(:disabled):not([aria-busy="true"]):hover,
 /* Icon button */
 .icon-button { width: 32px; padding: 0; }
 
-/* Send button (composer) — sized to its label, not a fixed square */
+/* Send button (composer) — sized to its label, not a fixed square.
+   Z.ai style: filled neutral, slight inner highlight, gets an active ring. */
 .send-button {
   height: 36px;
   min-width: 36px;
   padding: 0 var(--s-3);
-  background: var(--brand);
-  color: var(--brand-fg-on);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--text);
   font-size: var(--fs-sm);
   font-weight: 600;
   letter-spacing: 0.02em;
+  box-shadow: var(--shadow-md);
+}
+.send-button:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--surface-3) 88%, white);
+  border-color: var(--border-strong);
+}
+.send-button:active:not(:disabled) {
+  box-shadow: var(--shadow-active);
 }
 
 /* [hidden] must win over display: flex/grid from base button rules. */
 [hidden] { display: none !important; }
-.send-button:hover:not(:disabled) {
-  background: color-mix(in oklab, var(--brand) 88%, white);
-  border-color: color-mix(in oklab, var(--brand) 88%, white);
-}
 
 /* Disabled */
 button:disabled,
@@ -598,8 +648,21 @@ button:disabled,
   background: transparent;
   color: var(--text-2);
   border-color: transparent;
+  box-shadow: none;
 }
 .nav-button:hover { background: var(--surface-2); border-color: transparent; color: var(--text); }
+
+/* [data-active="true"] — used by nav, tabs, settings sections. The Z.ai
+   active state is a soft blue tint, not a bold color. Text goes brand. */
+[data-active="true"]:not(button):not(.tab-bar):not(.tab-bar-mobile) {
+  /* a base hook for non-button active elements (e.g. settings rows) */
+  color: var(--brand);
+}
+.nav-button[data-active="true"] {
+  background: color-mix(in oklab, var(--brand) 14%, transparent);
+  color: var(--brand);
+  border-color: transparent;
+}
 
 /* ----- 6. TOPBAR — single horizontal flow, no overflow ----- */
 
@@ -1010,8 +1073,8 @@ button:disabled,
   block-size: 60%;
   background: radial-gradient(
     ellipse at 50% 0%,
-    color-mix(in oklab, var(--brand) 18%, transparent) 0%,
-    color-mix(in oklab, var(--brand) 6%, transparent) 28%,
+    color-mix(in oklab, var(--brand) 12%, transparent) 0%,
+    color-mix(in oklab, var(--brand) 4%, transparent) 28%,
     transparent 60%
   );
   pointer-events: none;
@@ -1055,10 +1118,13 @@ button:disabled,
   font-family: var(--mono);
   line-height: var(--lh-snug);
   cursor: pointer;
+  /* Z.ai "lifted glass" — soft outer drop + 1px outer ring + inner highlight. */
+  box-shadow: var(--shadow-md);
   transition:
     background var(--t-fast) var(--ease),
     color var(--t-fast) var(--ease),
     border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
     translate var(--t-fast) var(--ease);
   min-height: 64px;
   position: relative;
@@ -1090,6 +1156,10 @@ button:disabled,
   color: var(--text);
   border-color: var(--border-strong);
   translate: 0 -1px;
+  box-shadow:
+    0 4px 12px 0 rgb(0 0 0 / .45),
+    0 0 0 1px rgb(255 255 255 / .08),
+    inset 0 1px 0 0 rgb(255 255 255 / .10);
 }
 .suggestion-grid button:hover::after { opacity: 1; }
 .suggestion-grid button:active {
@@ -1113,15 +1183,20 @@ button:disabled,
   align-items: end;
   gap: var(--s-2);
   padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
-  background: var(--surface);
+  background: var(--surface-3);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  transition: border-color var(--t-base) var(--ease), background var(--t-base) var(--ease);
+  /* Z.ai "lifted glass" — soft outer drop + 1px outer ring + inner highlight. */
+  box-shadow: var(--shadow-lg);
+  transition: border-color var(--t-base) var(--ease), background var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
 }
-/* 047 — focus-within glow */
+/* 047 — focus-within: lift the inner highlight, deepen the ring */
 .composer:focus-within {
-  border-color: var(--border-brand);
-  background: var(--surface-2);
+  border-color: var(--border-strong);
+  box-shadow:
+    0 4px 16px 0 rgb(0 0 0 / .45),
+    0 0 0 1px rgb(255 255 255 / .10),
+    inset 0 1px 0 0 rgb(255 255 255 / .12);
 }
 
 .composer textarea {
@@ -1199,7 +1274,11 @@ button:disabled,
   max-width: 560px;
   width: min(560px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
-  box-shadow: var(--shadow-md);
+  /* Z.ai "lifted glass" — strong outer drop + 1px outer ring + inner highlight. */
+  box-shadow:
+    0 24px 48px -12px rgb(0 0 0 / .55),
+    0 0 0 1px rgb(255 255 255 / .06),
+    inset 0 1px 0 0 rgb(255 255 255 / .08);
   overflow: hidden;
   /* 088 — entry / exit. Restrained: small translate + opacity.
      Same motion language as the rest of the system. */
