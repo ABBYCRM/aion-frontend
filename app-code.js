@@ -57,10 +57,10 @@
       fillLanguageSelect(dom.codeSyntaxLanguage, langs, 'technology', 'display', 'count');
       fillLanguageSelect(dom.codeScenariosLanguage, scenariosLangs, 'language', 'technology', 'count');
 
-      // Update the tile counts
-      if (dom.codeSyntaxCount) dom.codeSyntaxCount.textContent = `${langs.length} langs · 100k each`;
-      if (dom.codeScenariosCount) dom.codeScenariosCount.textContent = `${scenariosLangs.length} langs · 100k each`;
-      if (dom.codeTasksCount) dom.codeTasksCount.textContent = '5,000 rows';
+      // Update the tile counts (short, never truncate)
+      if (dom.codeSyntaxCount) dom.codeSyntaxCount.textContent = `${langs.length} langs · 900k`;
+      if (dom.codeScenariosCount) dom.codeScenariosCount.textContent = `${scenariosLangs.length} langs · 2.9M`;
+      if (dom.codeTasksCount) dom.codeTasksCount.textContent = '5,000 tasks';
       if (dom.codeBooksCount) dom.codeBooksCount.textContent = '39 books';
 
       setStatus('Press Enter or click Search to query all four corpora at once.');
@@ -480,9 +480,6 @@
   // ----- wiring --------------------------------------------------------
 
   function wireCodeDialog() {
-    if (!dom.openCode) return;
-    dom.openCode.addEventListener('click', openCodeDialog);
-
     // The hero search bar
     if (dom.codeSearchForm) {
       dom.codeSearchForm.addEventListener('submit', (e) => {
@@ -496,6 +493,11 @@
     if (dom.codeScenariosBrowse) dom.codeScenariosBrowse.addEventListener('click', browseScenarios);
     if (dom.codeTasksBrowse) dom.codeTasksBrowse.addEventListener('click', browseTasks);
     if (dom.codeBooksBrowse) dom.codeBooksBrowse.addEventListener('click', browseBooks);
+
+    // The Code tab is opened via the data-action="code" tab-bar elements
+    // (sidebar + mobile). The tab-bar's openTab() calls
+    // window.AION_CODE.openCodeDialog() — we don't wire a click handler
+    // here because that path is already taken.
 
     // Copy-on-click (delegated on the results area so it works for any
     // future result section we add)
