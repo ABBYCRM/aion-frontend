@@ -48,6 +48,12 @@
     });
     dom.openSettings.addEventListener('click', openSettingsDialog);
     dom.saveSettings.addEventListener('click', persistSettings);
+    // Live-sync the temperature <output> as the slider moves.
+    if (dom.temperature && dom.temperatureValue) {
+      const syncTemp = () => { dom.temperatureValue.textContent = Number(dom.temperature.value).toFixed(1); };
+      dom.temperature.addEventListener('input', syncTemp);
+      syncTemp();
+    }
     if (dom.refreshPolicy) dom.refreshPolicy.addEventListener('click', () => { refreshPolicy(); });
     dom.clearHistory.addEventListener('click', () => {
       if (!confirm('Clear all locally stored conversations?')) return;

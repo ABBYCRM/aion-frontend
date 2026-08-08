@@ -27,7 +27,7 @@
     attachmentList: $('attachmentList'), sendButton: $('sendButton'), stopButton: $('stopButton'),
     webSearchToggle: $('webSearchToggle'), modelSelect: $('modelSelect'), connectionStatus: $('connectionStatus'),
     settingsDialog: $('settingsDialog'), openSettings: $('openSettings'), backendUrl: $('backendUrl'),
-    apiKey: $('apiKey'), temperature: $('temperature'), maxTokens: $('maxTokens'),
+    apiKey: $('apiKey'), temperature: $('temperature'), temperatureValue: $('temperatureValue'), maxTokens: $('maxTokens'),
     persistHistory: $('persistHistory'), useNotes: $('useNotes'),
     saveSettings: $('saveSettings'), clearHistory: $('clearHistory'), autoSpeak: $('autoSpeak'), ttsVoiceSetting: $('ttsVoiceSetting'), refreshPolicy: $('refreshPolicy'),
     notesDialog: $('notesDialog'), openNotes: $('openNotes'), noteForm: $('noteForm'),

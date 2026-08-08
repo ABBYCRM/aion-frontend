@@ -140,6 +140,10 @@ code, pre, kbd, samp { font-family: var(--mono); }
   outline-offset: 2px;
   border-radius: var(--r-xs);
 }
+/* Keep the focus ring inside the composer so it doesn't draw outside the rounded card. */
+.composer :focus-visible { outline-offset: -2px; }
+/* Don't outline the whole field on textarea focus — the border-color change carries it. */
+textarea:focus-visible { outline: none; }
 
 /* Reduced motion — 081 */
 @media (prefers-reduced-motion: reduce) {
@@ -606,6 +610,11 @@ button:disabled,
   font-size: var(--fs-sm);
   line-height: 1.5;
   border: 1px solid var(--border);
+  /* Ambient elevation — soft, two-layer, sits in the message surface.
+     First layer is the close hairline, second is the larger ambient blur. */
+  box-shadow:
+    0 1px 0 0 rgb(0 0 0 / .25),
+    0 6px 20px -8px rgb(0 0 0 / .45);
   /* 020 — children can't overflow */
   min-width: 0;
 }
@@ -786,10 +795,35 @@ button:disabled,
 /* ----- WELCOME (empty state) ----- */
 
 .welcome {
-  max-width: var(--content-max);
-  margin: var(--s-7) auto 0;
+  position: relative;
+  inline-size: 100%;  /* fill the cross-axis even when auto margins are present */
+  max-inline-size: var(--content-max);
+  margin: var(--s-7) 0 0;
   padding: var(--s-5);
   text-align: left;
+  box-sizing: border-box;
+  /* Override the default flex-column cross-axis behavior so the welcome
+     fills the parent width on mobile while still being capped by
+     content-max on desktop. */
+  align-self: stretch;
+  /* 009 — soft CSS spotlight on the welcome state. Subtle, behind the
+     content, single brand color, fades to bg. Pointer-events-none so
+     it never blocks the suggestion grid. */
+  isolation: isolate;
+}
+.welcome::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto -20%;
+  block-size: 60%;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    color-mix(in oklab, var(--brand) 14%, transparent) 0%,
+    color-mix(in oklab, var(--brand) 6%, transparent) 28%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: -1;
 }
 .welcome h1 {
   font-size: var(--fs-lg);
@@ -805,12 +839,18 @@ button:disabled,
   line-height: var(--lh-base);
   margin: 0 0 var(--s-5);
   max-inline-size: 60ch;
+  text-wrap: pretty;
 }
 
 .suggestion-grid {
   display: grid;
   gap: var(--s-2);
-  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  /* 013 — auto-fill responsive. minmax(0, 1fr) at narrow widths so the
+     cards stack to one column; 280px columns at wider widths. */
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .suggestion-grid { grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); }
 }
 .suggestion-grid button {
   text-align: left;
@@ -823,15 +863,47 @@ button:disabled,
   font-family: var(--mono);
   line-height: var(--lh-snug);
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    translate var(--t-fast) var(--ease);
   min-height: 64px;
+  position: relative;
+  overflow: hidden;
+  /* Override base button's `white-space: nowrap` so suggestion text wraps */
+  white-space: normal;
+  /* 020 — children can wrap and the card can shrink past its content */
+  min-inline-size: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  /* Block display so the wrapped text fills the card width naturally. */
+  display: block;
+  /* 034 — pretty wrap so we don't end a line with a single character */
+  text-wrap: pretty;
+}
+.suggestion-grid button::after {
+  /* 047 — focus-within style, on hover, on the whole card. Subtle brand edge. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+  box-shadow: inset 0 0 0 1px var(--border-brand);
 }
 .suggestion-grid button:hover {
   background: var(--surface-2);
   color: var(--text);
   border-color: var(--border-strong);
+  translate: 0 -1px;
 }
-.suggestion-grid button:active { background: var(--surface-3); }
+.suggestion-grid button:hover::after { opacity: 1; }
+.suggestion-grid button:active {
+  background: var(--surface-3);
+  translate: 0 0;
+}
 
 /* ----- 8. COMPOSER — single field, focus glow ----- */
 
@@ -924,7 +996,7 @@ button:disabled,
 .attachment-chip button { color: var(--muted); font-size: 14px; }
 .attachment-chip button:hover { color: var(--danger); }
 
-/* ----- 9. DIALOGS — one shape, one backdrop ----- */
+/* ----- 9. DIALOGS — one shape, one backdrop, one entry ----- */
 
 .dialog {
   background: var(--surface);
@@ -937,13 +1009,41 @@ button:disabled,
   max-height: calc(100dvh - 32px);
   box-shadow: var(--shadow-md);
   overflow: hidden;
+  /* 088 — entry / exit. Restrained: small translate + opacity.
+     Same motion language as the rest of the system. */
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity var(--t-base) var(--ease),
+    translate var(--t-base) var(--ease),
+    overlay var(--t-base) var(--ease) allow-discrete,
+    display var(--t-base) var(--ease) allow-discrete;
 }
 .dialog.wide { max-width: 880px; }
 
 /* 070 — backdrop. Subtle, just a darker overlay. No blur (blur in a dialog
    feels heavy; the visual hierarchy comes from the elevation shadow). */
 .dialog::backdrop {
+  background: rgb(0 0 0 / 0);
+  transition:
+    background-color var(--t-base) var(--ease),
+    overlay var(--t-base) var(--ease) allow-discrete,
+    display var(--t-base) var(--ease) allow-discrete;
+}
+.dialog[open]::backdrop {
   background: rgb(0 0 0 / .55);
+}
+
+/* @starting-style — the first frame when the dialog opens. Pairs with the
+   transition above for the exit (browser reverses opacity/translate on close). */
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  .dialog[open]::backdrop {
+    background: rgb(0 0 0 / 0);
+  }
 }
 
 .dialog-card {
@@ -1054,6 +1154,91 @@ dialog label.search-toggle:has(input:checked) {
   color: var(--text);
 }
 dialog label.search-toggle input { position: relative; opacity: 1; pointer-events: auto; margin-top: 2px; }
+
+/* ----- 9b. RANGE-ROW (Temperature slider + value readout) ----- */
+
+.range-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-1);
+}
+.range-row output {
+  min-inline-size: 4ch;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;  /* 037 — steady width as value changes */
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0 var(--s-2);
+  height: 32px;
+  line-height: 30px;  /* match input height */
+}
+
+/* 057 — custom range slider. Track + thumb in the system language.
+   -webkit- first (Chrome/Safari), -moz- (Firefox), then standard. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 32px;  /* hit area, not the track */
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+input[type="range"]:focus { outline: none; }
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+  border-radius: var(--r-xs);
+}
+
+/* Track (the line) */
+input[type="range"]::-webkit-slider-runnable-track {
+  block-size: 4px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+input[type="range"]::-moz-range-track {
+  block-size: 4px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+
+/* Thumb (the knob) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--bg);  /* ring against the surface for separation */
+  margin-block-start: -7px;     /* center on 4px track */
+  box-shadow: 0 1px 4px rgb(0 0 0 / .45);
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+input[type="range"]::-moz-range-thumb {
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 4px rgb(0 0 0 / .45);
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.1); }
+input[type="range"]:hover::-moz-range-thumb { transform: scale(1.1); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(.95); background: var(--brand-fg-on); border-color: var(--brand); }
+input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background: var(--brand-fg-on); border-color: var(--brand); }
 
 /* ----- 10. TABS — one shape, one indicator ----- */
 

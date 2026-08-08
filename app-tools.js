@@ -3,6 +3,7 @@
     dom.backendUrl.readOnly = !CONFIG.allowCustomApiBase;
     dom.apiKey.value = apiKey();
     dom.temperature.value = String(state.settings.temperature);
+    if (dom.temperatureValue) dom.temperatureValue.textContent = Number(state.settings.temperature).toFixed(1);
     dom.maxTokens.value = String(state.settings.maxTokens);
     dom.persistHistory.checked = state.settings.persistHistory;
     dom.useNotes.checked = state.settings.useNotes;

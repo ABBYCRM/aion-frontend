@@ -79,7 +79,7 @@
       <header><h2>Settings</h2><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
       <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" readonly></label>
       <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored locally on this device"></label>
-      <label>Temperature<input id="temperature" type="number" min="0" max="2" step="0.1"></label>
+      <label>Temperature<div class="range-row"><input id="temperature" type="range" min="0" max="2" step="0.1" value="0.7" aria-label="Temperature"><output id="temperatureValue" for="temperature">0.7</output></div></label>
       <label>Max completion tokens<input id="maxTokens" type="number" min="32" max="4096" step="32"></label>
       <label class="search-toggle"><input id="useNotes" type="checkbox"><span>Include matching notes in model context</span></label>
       <label class="search-toggle"><input id="persistHistory" type="checkbox"><span>Persist sanitized chat history on this device</span></label>
