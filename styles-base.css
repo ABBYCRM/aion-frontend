@@ -1649,6 +1649,7 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   align-items: baseline;
   justify-content: space-between;
   gap: var(--s-2);
+  min-inline-size: 0;
 }
 .code-corpus h3 {
   margin: 0;
@@ -1656,12 +1657,16 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .code-corpus-count {
-  font-size: var(--fs-xs);
+  font-size: 11px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
 }
 .code-corpus p {
   margin: 0;

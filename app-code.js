@@ -92,6 +92,26 @@
 
   // ----- the one big search -------------------------------------------
 
+  // Heuristically detect a language name in the user's query. If the
+  // query mentions a language that's in our scenarios corpus, select
+  // that language for the search. Falls back to whatever the user
+  // already had selected.
+  function detectLanguageInQuery(query, langs) {
+    const q = query.toLowerCase();
+    // Check both the language slug and the display name
+    for (const lang of langs) {
+      const slug = (lang.language || lang.technology || '').toLowerCase();
+      const display = (lang.technology || lang.language || '').toLowerCase();
+      // Match whole-word boundary
+      const re = new RegExp(`\\b(${escapeRegex(slug)}|${escapeRegex(display)})\\b`, 'i');
+      if (re.test(q)) return lang;
+    }
+    return null;
+  }
+  function escapeRegex(s) {
+    return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   async function runGlobalSearch() {
     const query = dom.codeSearchInput?.value?.trim();
     if (!query) {
@@ -102,12 +122,28 @@
     setStatus(`Searching all corpora for "${query}"…`);
     hideAllResults();
 
+    // Auto-pick the scenarios language if the query mentions one
+    const scnSelect = dom.codeScenariosLanguage;
+    let scnLang = scnSelect?.value;
+    if (scnSelect) {
+      // Find all options as {value, text} pairs
+      const opts = Array.from(scnSelect.options).map((o) => {
+        const [slug, display] = o.text.split(' (');
+        return { language: o.value, technology: display || slug };
+      });
+      const detected = detectLanguageInQuery(query, opts);
+      if (detected) {
+        scnSelect.value = detected.language;
+        scnLang = detected.language;
+      }
+    }
+
     // Run the four searches in parallel. Each one is independent — if a
     // corpus errors out, we still show the other three. The user sees
     // the union of real rows.
     const [syntax, scenarios, tasks, books] = await Promise.allSettled([
-      searchSyntax({ query }),
-      searchScenarios({ query }),
+      searchSyntax({ query, lang: scnLang }),
+      searchScenarios({ query, lang: scnLang }),
       searchTasks({ query }),
       searchBooks({ query }),
     ]);
@@ -127,8 +163,8 @@
 
   // ----- per-corpus search/browse ------------------------------------
 
-  async function searchSyntax({ query }) {
-    const tech = dom.codeSyntaxLanguage?.value;
+  async function searchSyntax({ query, lang }) {
+    const tech = lang || dom.codeSyntaxLanguage?.value;
     if (!tech) return { hits: [], note: 'no language selected' };
     // The syntax corpus is a per-language file. We post-filter the
     // results client-side by the query (the corpus itself is 100k lines
@@ -170,15 +206,15 @@
     setStatus(`Showing ${hits.length} syntax snippet(s) from ${tech}.`);
   }
 
-  async function searchScenarios({ query }) {
-    const lang = dom.codeScenariosLanguage?.value;
-    if (!lang) return { hits: [], note: 'no language selected' };
+  async function searchScenarios({ query, lang }) {
+    const effectiveLang = lang || dom.codeScenariosLanguage?.value;
+    if (!effectiveLang) return { hits: [], note: 'no language selected' };
     try {
       const r = await apiFetch('/api/skills/run', {
         method: 'POST',
         body: JSON.stringify({
           skill_id: 'extra.scenarios.search',
-          args: { language: lang, query, limit: 12 },
+          args: { language: effectiveLang, query, limit: 12 },
         }),
       });
       const data = await r.json();
@@ -189,7 +225,7 @@
       }
       const hits = data?.data?.hits || data?.data?.results || [];
       renderScenariosList(hits);
-      setResultMeta('scenarios', `${hits.length} scenario(s) for "${query}" in ${lang}.`);
+      setResultMeta('scenarios', `${hits.length} scenario(s) for "${query}" in ${effectiveLang}.`);
       showResult('scenarios', hits.length > 0);
       return { hits };
     } catch (err) {
