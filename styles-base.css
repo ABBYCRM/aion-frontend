@@ -181,6 +181,8 @@ textarea:focus-visible { outline: none; }
 .main-panel {
   display: grid;
   grid-template-rows: var(--topbar-h) minmax(0, 1fr) auto;
+  grid-column: 2;  /* always land in the content column, regardless of
+                     whether the sidebar is positioned or in-flow */
   min-width: 0;
   min-height: 0;
   background: var(--bg);
@@ -554,12 +556,14 @@ button:not(:disabled):not([aria-busy="true"]):hover,
   min-width: 36px;
   padding: 0 var(--s-3);
   background: var(--brand);
-  border-color: var(--brand);
   color: var(--brand-fg-on);
   font-size: var(--fs-sm);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
+
+/* [hidden] must win over display: flex/grid from base button rules. */
+[hidden] { display: none !important; }
 .send-button:hover:not(:disabled) {
   background: color-mix(in oklab, var(--brand) 88%, white);
   border-color: color-mix(in oklab, var(--brand) 88%, white);
@@ -973,29 +977,27 @@ button:disabled,
 
 .welcome {
   position: relative;
-  inline-size: 100%;  /* fill the cross-axis even when auto margins are present */
+  inline-size: 100%;
   max-inline-size: var(--content-max);
   margin: var(--s-7) 0 0;
   padding: var(--s-5);
   text-align: left;
   box-sizing: border-box;
-  /* Override the default flex-column cross-axis behavior so the welcome
-     fills the parent width on mobile while still being capped by
-     content-max on desktop. */
   align-self: stretch;
-  /* 009 — soft CSS spotlight on the welcome state. Subtle, behind the
-     content, single brand color, fades to bg. Pointer-events-none so
-     it never blocks the suggestion grid. */
+  /* 009 — soft CSS spotlight. The ::before glow sits inside the welcome
+     box (clipped via overflow: hidden + isolation: isolate). */
   isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--r-md);
 }
 .welcome::before {
   content: "";
   position: absolute;
-  inset: -40% -20% auto -20%;
+  inset: 0 0 auto 0;
   block-size: 60%;
   background: radial-gradient(
     ellipse at 50% 0%,
-    color-mix(in oklab, var(--brand) 14%, transparent) 0%,
+    color-mix(in oklab, var(--brand) 18%, transparent) 0%,
     color-mix(in oklab, var(--brand) 6%, transparent) 28%,
     transparent 60%
   );
@@ -1745,13 +1747,11 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
     background: rgb(0 0 0 / .5);
     z-index: 40;
   }
-  .main-panel { grid-column: 1; }
   .topbar { padding: 0 var(--s-3); gap: var(--s-2); }
   .model-controls select { min-width: 120px; max-width: 200px; }
   .messages { padding: var(--s-4); gap: var(--s-4); }
   .composer-area { padding: var(--s-3); }
   .connection .label-text { display: none; }
-  .search-toggle span { display: none; }
 }
 
 @media (max-width: 560px) {
@@ -1759,11 +1759,23 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   .topbar { gap: var(--s-2); padding: 0 var(--s-2); }
   .model-controls select { font-size: var(--fs-xs); max-width: 26vw; }
   .search-toggle { padding: 0 var(--s-2); }
+  .search-toggle span { display: none; }
   .connection { padding: 0 var(--s-2); font-size: 10px; }
-  /* When stop is showing, swap send→stop in the same cell */
-  .composer { grid-template-columns: auto minmax(0, 1fr) auto; padding-right: var(--s-2); gap: var(--s-1); }
-  .composer .send-button,
-  .composer .stop-button { grid-column: 3; grid-row: 1; }
+  /* Composer: tighter, send on its own row next to textarea, stop hidden when not streaming */
+  .composer { grid-template-columns: auto minmax(0, 1fr) auto; padding: 6px 8px; gap: 6px; }
+  .composer .send-button { grid-column: 3; grid-row: 1; }
+  /* Stop button: only shown mid-stream; when shown, replaces send in col 3 */
+  .composer .stop-button:not([hidden]) { grid-column: 3; grid-row: 1; }
+  /* Composer-area gets less padding on mobile so the chat surface has more room */
+  .composer-area { padding: 8px 12px; }
+  /* Welcome is too tall on mobile — tighten margins and type size */
+  .welcome { margin-top: var(--s-4); padding: var(--s-3) var(--s-3) var(--s-4); }
+  .welcome h1 { font-size: var(--fs-md); margin-bottom: var(--s-1); }
+  .welcome p { font-size: var(--fs-sm); margin-bottom: var(--s-3); }
+  .suggestion-grid button { min-height: 52px; padding: 8px 10px; font-size: 12px; }
+  /* Composer hint is too long on mobile — keep only the first part */
+  .composer-hint { font-size: 10px; line-height: 1.4; padding: 0 4px; }
+  .composer-hint code { font-size: 10px; }
   .message { grid-template-columns: 28px minmax(0, 1fr); }
   .avatar { width: 28px; height: 28px; font-size: 11px; }
 }
