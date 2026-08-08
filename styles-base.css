@@ -414,7 +414,18 @@ textarea:focus-visible { outline: none; }
 .primary-button.full { width: 100%; margin: var(--s-3); }
 
 /* ----- 4d. MOBILE TAB BAR (bottom of viewport, only <900px) -----
-   Replaces the drawer for the workspace tools. Same sliding pill mechanic. */
+   Replaces the drawer for the workspace tools. Same sliding pill mechanic.
+   Behind each button sits a slow rotating conic-gradient glow (CSS
+   trick 001) — brand colors only, gentle 6s rotation, behind the
+   icon. The active button (where the pill is) gets the full glow;
+   inactive buttons get a dimmer version. Respects prefers-reduced-motion. */
+@property --tab-glow {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes tab-glow-spin { to { --tab-glow: 360deg; } }
+
 .tab-bar-mobile {
   display: none;
 }
@@ -431,6 +442,38 @@ textarea:focus-visible { outline: none; }
   }
   /* Adjust the main-panel bottom so content isn't covered by the mobile tab bar. */
   .main-panel { padding-block-end: 72px; }
+
+  /* The rotating glow behind each mobile tab button. */
+  .tab-bar-mobile button {
+    position: relative;
+    isolation: isolate;  /* keep the glow inside the button's stacking context */
+    overflow: hidden;
+  }
+  .tab-bar-mobile button::before {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    z-index: -1;
+    background: conic-gradient(
+      from var(--tab-glow),
+      color-mix(in oklab, var(--brand) 60%, transparent) 0deg,
+      color-mix(in oklab, var(--brand) 30%, transparent) 60deg,
+      transparent 120deg,
+      transparent 240deg,
+      color-mix(in oklab, var(--brand) 30%, transparent) 300deg,
+      color-mix(in oklab, var(--brand) 60%, transparent) 360deg
+    );
+    animation: tab-glow-spin 6s linear infinite;
+    opacity: 0.0;
+    transition: opacity var(--t-base) var(--ease);
+  }
+  .tab-bar-mobile button:hover::before { opacity: 0.35; }
+  .tab-bar-mobile button[aria-current="true"]::before { opacity: 0.55; }
+  /* Reduced motion: kill the rotation. The glow is still visible on
+     active/hover, just static. */
+  @media (prefers-reduced-motion: reduce) {
+    .tab-bar-mobile button::before { animation: none; }
+  }
 }
 
 /* ----- 5. BUTTONS — one language ----- */
