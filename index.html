@@ -36,14 +36,39 @@
       </div>
       <button id="newChat" class="primary-button full">＋ New chat</button>
       <nav id="conversationList" class="conversation-list"></nav>
-      <div class="sidebar-footer">
-        <button id="openMedia" class="nav-button">Media</button>
-        <button id="openVault" class="nav-button">Vault</button>
-        <button id="openGithub" class="nav-button">GitHub</button>
-        <button id="openCode" class="nav-button">Aion Code</button>
-        <button id="openNotes" class="nav-button">Notes</button>
-        <button id="openSettings" class="nav-button">Settings</button>
-      </div>
+      <nav id="tabBar" class="tab-bar" data-active="0" aria-label="Workspace tools">
+        <input type="radio" name="tab" id="tab-0" value="0" checked>
+        <input type="radio" name="tab" id="tab-1" value="1">
+        <input type="radio" name="tab" id="tab-2" value="2">
+        <input type="radio" name="tab" id="tab-3" value="3">
+        <input type="radio" name="tab" id="tab-4" value="4">
+        <input type="radio" name="tab" id="tab-5" value="5">
+        <span class="selector" aria-hidden="true"></span>
+        <label for="tab-0" data-action="media" title="Media">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 6l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>Media</span>
+        </label>
+        <label for="tab-1" data-action="vault" title="Vault">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v9H5zM7 11V7a5 5 0 0110 0v4M9 15h2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>Vault</span>
+        </label>
+        <label for="tab-2" data-action="github" title="GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.4-4-2-6-2m12 4v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.3 5.5-6a4.7 4.7 0 00-1.3-3.2 4.3 4.3 0 00-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 00-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.3 4.3 0 00-.1 3.2A4.7 4.7 0 004 12.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>GitHub</span>
+        </label>
+        <label for="tab-3" data-action="code" title="Aion Code">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l-6-6 6-6M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>Code</span>
+        </label>
+        <label for="tab-4" data-action="notes" title="Notes">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h11l3 3v11H5zM8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>Notes</span>
+        </label>
+        <label for="tab-5" data-action="settings" title="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8v0a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>Settings</span>
+        </label>
+      </nav>
     </aside>
 
     <main class="main-panel">
@@ -72,6 +97,33 @@
         <p class="composer-hint">Use <code>/search query</code> · <code>/search github.com for X</code> · <code>/search linkedin.com for X</code> · <code>/github owner/repo [issues|file|search]</code>. The <strong>Aion Code</strong> tab queries the code corpora (syntax / scenarios / tasks / books) directly. Credentials belong in deployment secrets, never notes or chat.</p>
       </section>
     </main>
+    <nav id="tabBarMobile" class="tab-bar tab-bar-mobile" data-active="0" aria-label="Workspace tools">
+      <span class="selector" aria-hidden="true"></span>
+      <button type="button" data-action="media" aria-label="Media">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM4 6l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>Media</span>
+      </button>
+      <button type="button" data-action="vault" aria-label="Vault">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v9H5zM7 11V7a5 5 0 0110 0v4M9 15h2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>Vault</span>
+      </button>
+      <button type="button" data-action="github" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.4-4-2-6-2m12 4v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.3 5.5-6a4.7 4.7 0 00-1.3-3.2 4.3 4.3 0 00-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 00-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.3 4.3 0 00-.1 3.2A4.7 4.7 0 004 12.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>GitHub</span>
+      </button>
+      <button type="button" data-action="code" aria-label="Aion Code">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l-6-6 6-6M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>Code</span>
+      </button>
+      <button type="button" data-action="notes" aria-label="Notes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h11l3 3v11H5zM8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>Notes</span>
+      </button>
+      <button type="button" data-action="settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8v0a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
   </div>
 
   <dialog id="settingsDialog" class="dialog">

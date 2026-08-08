@@ -289,15 +289,149 @@ textarea:focus-visible { outline: none; }
 .conversation-item:focus-within .delete-conversation { opacity: 1; }
 .delete-conversation:hover { color: var(--danger); background: var(--surface-3); }
 
-/* Sidebar footer */
-.sidebar-footer {
+/* ----- 4c. TAB BAR — sliding selector pill, Iconic Tab Bar pattern -----
+   Driven by a radio group (sidebar) or a data-active attribute (mobile).
+   The .selector pill uses transform: translateX(calc(var(--i) * width))
+   so it smoothly slides to the active tab. Each tab is one of 6 equal cells.
+   The pill sits behind the labels (z-index 0), labels on top (z-index 1). */
+
+.tab-bar {
+  --tab-count: 6;
+  --active: 0;  /* 0..5 — set by JS on click, or by CSS :has() on the radio */
+  position: relative;
   display: grid;
-  gap: 1px;
-  padding: var(--s-3);
+  grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
+  align-items: stretch;
+  padding: 6px;
+  gap: 4px;
+  background: var(--surface);
   border-top: 1px solid var(--border);
+  isolation: isolate;  /* keep the pill within the bar's stacking context */
+}
+.tab-bar input[type="radio"] {
+  /* Hidden but accessible — drives the CSS-only pill position fallback. */
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  inline-size: 1px;
+  block-size: 1px;
+}
+.tab-bar .selector {
+  position: absolute;
+  z-index: 0;
+  top: 6px;
+  bottom: 6px;
+  /* Pill width = one grid cell width. Cells are (bar-content - 5*gap) / 6.
+     Bar's content = bar's box width - 2*padding. The pill's 100% resolves
+     against the bar's box width (its containing block is the bar). */
+  inline-size: calc((100% - 12px - 5 * 4px) / var(--tab-count));
+  left: 6px;
+  /* Translate by N * (cell-width + gap). 100% here = pill's own width =
+     cell-width. Plus 4px for the gap between cells. */
+  transform: translateX(calc(var(--active) * (100% + 4px)));
+  background: linear-gradient(180deg, var(--brand-soft) 0%, color-mix(in oklab, var(--brand-soft) 80%, var(--bg)) 100%);
+  border: 1px solid var(--border-brand);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, var(--brand) 25%, transparent),
+    0 6px 20px -8px color-mix(in oklab, var(--brand) 50%, transparent);
+  transition: transform var(--t-base) var(--ease);
+  pointer-events: none;
+}
+/* When the radio is checked (sidebar uses radios), set --active via sibling position. */
+.tab-bar:has(#tab-0:checked) { --active: 0; }
+.tab-bar:has(#tab-1:checked) { --active: 1; }
+.tab-bar:has(#tab-2:checked) { --active: 2; }
+.tab-bar:has(#tab-3:checked) { --active: 3; }
+.tab-bar:has(#tab-4:checked) { --active: 4; }
+.tab-bar:has(#tab-5:checked) { --active: 5; }
+.tab-bar[data-active="0"] { --active: 0; }
+.tab-bar[data-active="1"] { --active: 1; }
+.tab-bar[data-active="2"] { --active: 2; }
+.tab-bar[data-active="3"] { --active: 3; }
+.tab-bar[data-active="4"] { --active: 4; }
+.tab-bar[data-active="5"] { --active: 5; }
+
+.tab-bar label,
+.tab-bar button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color var(--t-fast) var(--ease);
+  min-inline-size: 0;
+  min-block-size: 48px;  /* 115 — touch target */
+  text-align: center;
+  line-height: 1.1;
+}
+.tab-bar label span,
+.tab-bar button span {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.tab-bar label svg,
+.tab-bar button svg {
+  inline-size: 18px;
+  block-size: 18px;
+  color: currentColor;
+  flex-shrink: 0;
+  transition: transform var(--t-fast) var(--ease);
+}
+.tab-bar label:hover,
+.tab-bar button:hover {
+  color: var(--text);
+}
+.tab-bar label:hover svg,
+.tab-bar button:hover svg {
+  transform: translateY(-1px);
+}
+/* Active state — driven by the radio on the sidebar, or aria-current on mobile. */
+.tab-bar label:has(input:checked),
+.tab-bar button[aria-current="true"] {
+  color: var(--text);
+}
+.tab-bar label:has(input:checked) svg,
+.tab-bar button[aria-current="true"] svg {
+  color: var(--brand);
+}
+.tab-bar input[type="radio"]:focus-visible + label {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
 }
 
 .primary-button.full { width: 100%; margin: var(--s-3); }
+
+/* ----- 4d. MOBILE TAB BAR (bottom of viewport, only <900px) -----
+   Replaces the drawer for the workspace tools. Same sliding pill mechanic. */
+.tab-bar-mobile {
+  display: none;
+}
+@media (max-width: 900px) {
+  .tab-bar-mobile {
+    display: grid;
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    padding: 6px;
+    padding-block-end: max(6px, env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  /* Adjust the main-panel bottom so content isn't covered by the mobile tab bar. */
+  .main-panel { padding-block-end: 72px; }
+}
 
 /* ----- 5. BUTTONS — one language ----- */
 

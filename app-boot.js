@@ -9,6 +9,50 @@
     dom.app.classList.remove('sidebar-open');
   }
 
+  // Map tab-bar action → index + open behavior. Single source of truth for
+  // both the sidebar tab bar (radios) and the mobile bottom bar (buttons).
+  const TAB_ACTIONS = {
+    media:    { index: 0, open: () => { if (typeof openMediaDialog === 'function') openMediaDialog(); else if (dom.mediaDialog) dom.mediaDialog.showModal(); } },
+    vault:    { index: 1, open: () => { if (dom.vaultDialog) dom.vaultDialog.showModal(); } },
+    github:   { index: 2, open: () => { if (dom.githubDialog) dom.githubDialog.showModal(); } },
+    code:     { index: 3, open: () => { if (dom.codeDialog) dom.codeDialog.showModal(); } },
+    notes:    { index: 4, open: () => { if (dom.notesDialog) { dom.notesDialog.showModal(); if (typeof loadNotes === 'function') loadNotes(); } } },
+    settings: { index: 5, open: () => { if (typeof openSettingsDialog === 'function') openSettingsDialog(); } },
+  };
+
+  // Keep both tab bars in sync with the currently active action.
+  function setActiveTab(index) {
+    document.querySelectorAll('.tab-bar').forEach((bar) => {
+      bar.setAttribute('data-active', String(index));
+      // Drive the radio in the sidebar version so :has() CSS also fires.
+      const radio = bar.querySelector(`#tab-${index}`);
+      if (radio) radio.checked = true;
+      // Mark the active button on mobile (no radios there).
+      bar.querySelectorAll('[data-action]').forEach((btn, i) => {
+        if (i === index) btn.setAttribute('aria-current', 'true');
+        else btn.removeAttribute('aria-current');
+      });
+    });
+  }
+
+  function openTab(action) {
+    const tab = TAB_ACTIONS[action];
+    if (!tab) return;
+    setActiveTab(tab.index);
+    tab.open();
+    closeSidebar();  // on mobile, tapping a tab also closes the drawer
+  }
+
+  // When a dialog closes (cancel, X, backdrop, escape), reset the active
+  // tab to 0 so the pill returns to Media — the first item. The chat
+  // surface has no tab representation, so "no tab" maps to the default
+  // position. (If you prefer the pill to disappear entirely on chat,
+  // set data-active to -1 in the CSS rule above; we keep it visible to
+  // make the next action obvious.)
+  function resetActiveTab() {
+    setActiveTab(0);
+  }
+
   function bindEvents() {
     dom.newChat.addEventListener('click', () => { createConversation(); renderAll(); dom.prompt.focus(); closeSidebar(); });
     dom.openSidebar.addEventListener('click', () => dom.app.classList.add('sidebar-open'));
@@ -46,7 +90,7 @@
       state.selectedModel = provider && modelParts.length ? { provider, model: modelParts.join('::') } : null;
       saveSettings();
     });
-    dom.openSettings.addEventListener('click', openSettingsDialog);
+    if (dom.openSettings) dom.openSettings.addEventListener('click', openSettingsDialog);
     dom.saveSettings.addEventListener('click', persistSettings);
     // Live-sync the temperature <output> as the slider moves.
     if (dom.temperature && dom.temperatureValue) {
@@ -63,18 +107,39 @@
       renderAll();
       showToast('Local history cleared.');
     });
-    dom.openNotes.addEventListener('click', () => { dom.notesDialog.showModal(); loadNotes(); });
+    if (dom.openNotes) dom.openNotes.addEventListener('click', () => { dom.notesDialog.showModal(); loadNotes(); });
     dom.noteForm.addEventListener('submit', addNote);
     dom.refreshNotes.addEventListener('click', loadNotes);
     dom.noteSearch.addEventListener('input', debounce(loadNotes, 250));
-    dom.openGithub.addEventListener('click', () => dom.githubDialog.showModal());
+    if (dom.openGithub) dom.openGithub.addEventListener('click', () => dom.githubDialog.showModal());
     if (typeof wireCodeDialog === 'function') wireCodeDialog();
     document.querySelectorAll('[data-close-dialog]').forEach((button) => {
-      button.addEventListener('click', () => $(button.dataset.closeDialog).close());
+      button.addEventListener('click', () => { $(button.dataset.closeDialog).close(); resetActiveTab(); });
     });
     document.querySelectorAll('[data-github-action]').forEach((button) => {
       button.addEventListener('click', () => runGithubAction(button.dataset.githubAction));
     });
+
+    // Tab bars (sidebar + mobile bottom). Clicking a tab opens its dialog
+    // AND moves the sliding pill. The radios in the sidebar version also
+    // drive the pill via :has() CSS, but the click handler is what runs
+    // the open() logic. For labels (sidebar), we DON'T preventDefault so
+    // the radio gets checked. For buttons (mobile), we don't need to
+    // preventDefault either (button type="button" doesn't submit), so we
+    // can call openTab in both cases.
+    document.querySelectorAll('.tab-bar [data-action]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        openTab(btn.dataset.action);
+      });
+    });
+    // Native close on any <dialog> resets the active tab so the pill
+    // returns to the default position.
+    document.querySelectorAll('dialog').forEach((d) => {
+      d.addEventListener('close', () => { resetActiveTab(); });
+    });
+    // Esc also closes dialogs natively, and the close event fires, which
+    // already resets the tab. So we don't need a separate Esc handler here.
+
     window.addEventListener('online', healthCheck);
     window.addEventListener('offline', healthCheck);
   }
