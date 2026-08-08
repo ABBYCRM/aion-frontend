@@ -16,10 +16,15 @@
 // This is still the Aion Code tab: it calls /api/skills/run and never
 // invokes the LLM. Every row is a real row from a real corpus.
 
-(function () {
-  'use strict';
+// NOTE: This file is intentionally NOT wrapped in an IIFE — the other
+// AION PWA scripts (app-chat-a.js, app-render-*.js, app-tools.js, etc.)
+// all expose their helpers (apiFetch, dom, state, escapeHtml, etc.) at
+// the top level so any later script can call them. The old Aion Code
+// file followed the same convention. If you wrap this in an IIFE the
+// closure will not see apiFetch and loadLanguagesIntoTiles() will fail
+// silently.
 
-  // ----- public entry points -------------------------------------------
+// ----- public entry points -------------------------------------------
 
   function openCodeDialog() {
     if (!dom.codeDialog) return;
@@ -524,7 +529,8 @@
     }
   }
 
-  // Expose to the global namespace
+  // Expose to the global namespace so app-boot.js's tab-bar can call
+  // openCodeDialog() (the tab-bar data-action="code" handler).
   window.AION_CODE = {
     openCodeDialog,
     runGlobalSearch,
@@ -536,4 +542,3 @@
   } else {
     wireCodeDialog();
   }
-})();
