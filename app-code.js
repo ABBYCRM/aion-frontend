@@ -1,43 +1,43 @@
+// Aion Code tab — single search bar + 4 corpus tiles + result cards.
+//
+// The previous design was a 5-tab form (Syntax / Scenarios / Tasks / Books /
+// Drill) with per-tab <select> filters that only a corpus engineer could
+// use. v2.8.5 replaces that with:
+//
+//   1. One big search bar — type a query, hit Enter, Aion searches all
+//      4 corpora in parallel and shows the results below.
+//   2. 4 corpus tiles — always visible. Each shows its name, count, and
+//      a one-liner explaining what's in it, plus a per-corpus "Browse"
+//      button. Syntax and Scenarios have a Language <select> inline.
+//   3. 4 result sections — populated as the user searches or browses.
+//      Each card has the corpus id (click to copy) plus type-specific
+//      body content.
+//
+// This is still the Aion Code tab: it calls /api/skills/run and never
+// invokes the LLM. Every row is a real row from a real corpus.
+
+(function () {
   'use strict';
 
-  // Aion Code tab — direct access to the 4 code corpora:
-  //   1. syntax      (9 languages × 100k token-level patterns)
-  //   2. scenarios   (29 languages × 100k engineering scenarios)
-  //   3. tasks       (5,000 structured engineering tasks)
-  //   4. books       (39 open coding books)
-  //   5. drill       (auto-routes by intent, like the chat Phase B)
-  //
-  // This tab is the "Code workspace" of the Aion frontend. It does NOT
-  // install Cline or any other agent. It calls the same /api/skills/run
-  // endpoint the operator/admin already uses; the LLM is never invoked.
-  // Every result row is a real row from a real corpus (CSV/RAG/on-disk
-  // txt). The model never invents a CT- id, a book title, or a snippet.
+  // ----- public entry points -------------------------------------------
 
   function openCodeDialog() {
     if (!dom.codeDialog) return;
     if (!dom.codeDialog.open) dom.codeDialog.showModal();
-    // Lazy-load the language lists the first time the tab is opened.
-    if (state.codeLanguagesLoaded !== true) {
-      loadCodeLanguages();
-      state.codeLanguagesLoaded = true;
+    if (state.languagesLoaded !== true) {
+      loadLanguagesIntoTiles();
+      state.languagesLoaded = true;
     }
   }
 
-  function setCodeTab(name) {
-    document.querySelectorAll('.code-tab').forEach((tab) => {
-      const active = tab.dataset.codeTab === name;
-      tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-    document.querySelectorAll('.code-panel').forEach((panel) => {
-      panel.hidden = panel.dataset.codePanel !== name;
-    });
-  }
+  // ----- state + dom map -----------------------------------------------
 
-  // ---------- language list loaders (call /api/skills/run list/browse) -----
+  const state = { languagesLoaded: false };
 
-  async function loadCodeLanguages() {
-    // syntax.list + extra.scenarios.list in parallel
+  // ----- language list loaders (fill the two per-corpus selects) ------
+
+  async function loadLanguagesIntoTiles() {
+    setStatus('Loading corpora…');
     try {
       const [synR, scnR] = await Promise.all([
         apiFetch('/api/skills/run', {
@@ -49,415 +49,394 @@
           body: JSON.stringify({ skill_id: 'extra.scenarios.list', args: {} }),
         }),
       ]);
-      const synData = await synR.json();
-      const scnData = await scnR.json();
-      populateSelectFromList(dom.codeSyntaxLanguage, synData?.data?.technologies || synData?.data?.list || []);
-      populateSelectFromList(dom.codeScenariosLanguage, scnData?.data?.languages || scnData?.data?.list || []);
-      if (dom.codeSyntaxStatus) {
-        const synCount = (synData?.data?.technologies || synData?.data?.list || []).length;
-        dom.codeSyntaxStatus.textContent = `${synCount} languages, 100k snippets each.`;
-      }
-      if (dom.codeScenariosStatus) {
-        const scnCount = (scnData?.data?.languages || scnData?.data?.list || []).length;
-        dom.codeScenariosStatus.textContent = `${scnCount} languages, 100k scenarios each.`;
-      }
+      const syn = await synR.json();
+      const scn = await scnR.json();
+      const langs = (syn.data?.technologies) || [];
+      const scenariosLangs = (scn.data?.languages) || [];
+
+      fillLanguageSelect(dom.codeSyntaxLanguage, langs, 'technology', 'display', 'count');
+      fillLanguageSelect(dom.codeScenariosLanguage, scenariosLangs, 'language', 'technology', 'count');
+
+      // Update the tile counts
+      if (dom.codeSyntaxCount) dom.codeSyntaxCount.textContent = `${langs.length} langs · 100k each`;
+      if (dom.codeScenariosCount) dom.codeScenariosCount.textContent = `${scenariosLangs.length} langs · 100k each`;
+      if (dom.codeTasksCount) dom.codeTasksCount.textContent = '5,000 rows';
+      if (dom.codeBooksCount) dom.codeBooksCount.textContent = '39 books';
+
+      setStatus('Press Enter or click Search to query all four corpora at once.');
     } catch (err) {
-      if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = `Load failed: ${err.message}`;
-      if (dom.codeScenariosStatus) dom.codeScenariosStatus.textContent = `Load failed: ${err.message}`;
+      setStatus(`Load failed: ${err.message}`);
     }
   }
 
-  function populateSelectFromList(select, items) {
+  function fillLanguageSelect(select, items, valueKey, labelKey, countKey) {
     if (!select) return;
+    const prev = select.value;
     select.innerHTML = '';
     for (const item of items) {
       const opt = document.createElement('option');
-      // items can be:
-      //   - "python" (string)
-      //   - ["python", 100000] (tuple)
-      //   - {technology, display, count} (syntax.list shape)
-      //   - {slug, name, count} or {language, count} (extra.scenarios.list shape)
-      if (typeof item === 'string') {
-        opt.value = item;
-        opt.textContent = item;
-      } else if (Array.isArray(item)) {
-        opt.value = item[0];
-        opt.textContent = item[1] != null ? `${item[0]} (${item[1]})` : item[0];
-      } else {
-        const slug = item.technology || item.slug || item.name || item.language || item.id || String(item);
-        const display = item.display || item.label || slug;
-        const count = item.count;
-        opt.value = slug;
-        opt.textContent = count != null ? `${display} (${count})` : display;
-      }
+      const value = item[valueKey];
+      const label = item[labelKey] || value;
+      const count = item[countKey];
+      opt.value = value;
+      opt.textContent = count != null ? `${label} (${count.toLocaleString()})` : label;
       select.appendChild(opt);
     }
+    if (prev && items.find((i) => i[valueKey] === prev)) select.value = prev;
   }
 
-  // ---------- syntax tab -------------------------------------------------
+  // ----- the one big search -------------------------------------------
 
-  async function codeSyntaxBrowse() {
-    const tech = dom.codeSyntaxLanguage?.value;
-    if (!tech) { if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Pick a language.'; return; }
-    const construct = dom.codeSyntaxConstruct?.value || '';
-    if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Loading…';
-    try {
-      const r = await apiFetch('/api/skills/run', {
-        method: 'POST',
-        body: JSON.stringify({
-          skill_id: 'syntax.browse',
-          args: { technology: tech, construct: construct || undefined, limit: 20 },
-        }),
-      });
-      const data = await r.json();
-      const snippets = data?.data?.snippets || data?.data?.results || data?.data?.hits || [];
-      renderSyntaxList(snippets);
-      if (dom.codeSyntaxStatus) {
-        const after = data?.data?.total_after_filter;
-        const inFile = data?.data?.total_in_technology;
-        dom.codeSyntaxStatus.textContent = `${snippets.length} snippet(s). ${after != null ? `${after} match the filter` : ''}${inFile != null ? ` out of ${inFile} in ${tech}.` : '.'}`;
-      }
-    } catch (err) {
-      if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = `Browse failed: ${err.message}`;
-    }
-  }
-
-  async function codeSyntaxGet() {
-    const tech = dom.codeSyntaxLanguage?.value;
-    const id = dom.codeSyntaxId?.value?.trim();
-    if (!tech || !id) { if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Pick a language and enter an id.'; return; }
-    if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = 'Loading…';
-    try {
-      const r = await apiFetch('/api/skills/run', {
-        method: 'POST',
-        body: JSON.stringify({
-          skill_id: 'syntax.get',
-          args: { technology: tech, id: id },
-        }),
-      });
-      const data = await r.json();
-      const snippet = data?.data?.snippet || data?.data;
-      if (dom.codeSyntaxSnippet) {
-        dom.codeSyntaxSnippet.hidden = false;
-        dom.codeSyntaxSnippet.textContent = JSON.stringify(snippet, null, 2);
-      }
-      if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = `id=${id} loaded.`;
-    } catch (err) {
-      if (dom.codeSyntaxStatus) dom.codeSyntaxStatus.textContent = `Get failed: ${err.message}`;
-    }
-  }
-
-  function renderSyntaxList(snippets) {
-    if (!dom.codeSyntaxList) return;
-    dom.codeSyntaxList.innerHTML = '';
-    if (!snippets.length) {
-      dom.codeSyntaxList.innerHTML = '<p class="muted">No snippets for this filter.</p>';
+  async function runGlobalSearch() {
+    const query = dom.codeSearchInput?.value?.trim();
+    if (!query) {
+      setStatus('Type a query to search all four corpora.');
+      dom.codeSearchInput?.focus();
       return;
     }
-    for (const s of snippets) {
-      const row = document.createElement('div');
-      row.className = 'stack-row';
-      const id = s.id || `${s.technology || ''}/${s.construct || ''}/${s.seq || ''}`;
-      const text = s.snippet || s.text || s.code || JSON.stringify(s);
-      row.innerHTML = `
-        <div class="stack-row-head">
-          <code class="stack-row-id">${escapeHtml(id)}</code>
-          <span class="muted">${escapeHtml(s.construct || '')}</span>
-        </div>
-        <pre class="json-output">${escapeHtml(text.slice(0, 600))}${text.length > 600 ? '\n…' : ''}</pre>
-      `;
-      dom.codeSyntaxList.appendChild(row);
-    }
+    setStatus(`Searching all corpora for "${query}"…`);
+    hideAllResults();
+
+    // Run the four searches in parallel. Each one is independent — if a
+    // corpus errors out, we still show the other three. The user sees
+    // the union of real rows.
+    const [syntax, scenarios, tasks, books] = await Promise.allSettled([
+      searchSyntax({ query }),
+      searchScenarios({ query }),
+      searchTasks({ query }),
+      searchBooks({ query }),
+    ]);
+
+    const totalHits =
+      (syntax.status === 'fulfilled' ? syntax.value.hits.length : 0) +
+      (scenarios.status === 'fulfilled' ? scenarios.value.hits.length : 0) +
+      (tasks.status === 'fulfilled' ? tasks.value.hits.length : 0) +
+      (books.status === 'fulfilled' ? books.value.hits.length : 0);
+
+    setStatus(
+      totalHits > 0
+        ? `${totalHits} real row(s) across all corpora for "${query}". Click any id to copy.`
+        : `No rows in any corpus match "${query}". Try a different phrasing — the corpora are the source of truth, so an empty result means no real row matched.`
+    );
   }
 
-  // ---------- scenarios tab ----------------------------------------------
+  // ----- per-corpus search/browse ------------------------------------
 
-  async function codeScenariosSearch() {
+  async function searchSyntax({ query }) {
+    const tech = dom.codeSyntaxLanguage?.value;
+    if (!tech) return { hits: [], note: 'no language selected' };
+    // The syntax corpus is a per-language file. We post-filter the
+    // results client-side by the query (the corpus itself is 100k lines
+    // per language — there are no full-text indexes for ad-hoc terms).
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({
+        skill_id: 'syntax.browse',
+        args: { technology: tech, limit: 200 },  // over-fetch; we filter
+      }),
+    });
+    const data = await r.json();
+    const all = data?.data?.snippets || [];
+    const q = query.toLowerCase();
+    const hits = all.filter((s) => (s.snippet || '').toLowerCase().includes(q)).slice(0, 20);
+    renderSyntaxList(hits);
+    setResultMeta('syntax', `${hits.length} of ${all.length} in ${tech} match "${query}".`);
+    showResult('syntax', hits.length > 0);
+    return { hits };
+  }
+
+  async function browseSyntax() {
+    const tech = dom.codeSyntaxLanguage?.value;
+    if (!tech) {
+      setStatus('Pick a language to browse syntax.');
+      return;
+    }
+    setStatus(`Browsing syntax for ${tech}…`);
+    hideAllResults();
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({ skill_id: 'syntax.browse', args: { technology: tech, limit: 12 } }),
+    });
+    const data = await r.json();
+    const hits = data?.data?.snippets || [];
+    renderSyntaxList(hits);
+    setResultMeta('syntax', `${hits.length} snippet(s) from ${tech} (showing first 12 of ${data?.data?.total_in_technology || '?'}).`);
+    showResult('syntax', hits.length > 0);
+    setStatus(`Showing ${hits.length} syntax snippet(s) from ${tech}.`);
+  }
+
+  async function searchScenarios({ query }) {
     const lang = dom.codeScenariosLanguage?.value;
-    const query = dom.codeScenariosQuery?.value?.trim();
-    if (!lang) { if (dom.codeScenariosStatus) dom.codeScenariosStatus.textContent = 'Pick a language.'; return; }
-    if (!query) { if (dom.codeScenariosStatus) dom.codeScenariosStatus.textContent = 'Enter a query.'; return; }
-    if (dom.codeScenariosStatus) dom.codeScenariosStatus.textContent = 'Loading…';
+    if (!lang) return { hits: [], note: 'no language selected' };
     try {
       const r = await apiFetch('/api/skills/run', {
         method: 'POST',
         body: JSON.stringify({
           skill_id: 'extra.scenarios.search',
-          args: { language: lang, query, limit: 15 },
+          args: { language: lang, query, limit: 12 },
         }),
       });
       const data = await r.json();
+      if (data?.ok === false) {
+        setResultMeta('scenarios', data.message || 'Search unavailable.');
+        showResult('scenarios', false);
+        return { hits: [] };
+      }
       const hits = data?.data?.hits || data?.data?.results || [];
       renderScenariosList(hits);
-      if (dom.codeScenariosStatus) {
-        dom.codeScenariosStatus.textContent = `${hits.length} real scenario(s) for "${query}" in ${lang}.`;
-      }
+      setResultMeta('scenarios', `${hits.length} scenario(s) for "${query}" in ${lang}.`);
+      showResult('scenarios', hits.length > 0);
+      return { hits };
     } catch (err) {
-      if (dom.codeScenariosStatus) dom.codeScenariosStatus.textContent = `Search failed: ${err.message}`;
+      setResultMeta('scenarios', `Scenarios: ${err.message}`);
+      showResult('scenarios', false);
+      return { hits: [] };
     }
   }
 
+  async function browseScenarios() {
+    const lang = dom.codeScenariosLanguage?.value;
+    if (!lang) {
+      setStatus('Pick a language to browse scenarios.');
+      return;
+    }
+    setStatus(`Browsing scenarios for ${lang}…`);
+    hideAllResults();
+    // The browse case uses a no-op query — we just want the first N
+    // scenarios. extra.scenarios.search with empty query returns the
+    // head of the file.
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({ skill_id: 'extra.scenarios.search', args: { language: lang, query: '', limit: 12 } }),
+    });
+    const data = await r.json();
+    if (data?.ok === false) {
+      setResultMeta('scenarios', data.message || 'Search unavailable.');
+      showResult('scenarios', false);
+      setStatus(`Scenarios: ${data.message || 'unavailable'}`);
+      return;
+    }
+    const hits = data?.data?.hits || data?.data?.results || [];
+    renderScenariosList(hits);
+    setResultMeta('scenarios', `${hits.length} scenario(s) from ${lang}.`);
+    showResult('scenarios', hits.length > 0);
+    setStatus(`Showing ${hits.length} scenario(s) from ${lang}.`);
+  }
+
+  async function searchTasks({ query }) {
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({
+        skill_id: 'coding.tasks.search',
+        args: { query, limit: 8 },
+      }),
+    });
+    const data = await r.json();
+    const hits = data?.data?.hits || [];
+    renderTasksList(hits);
+    setResultMeta('tasks', `${hits.length} task(s) for "${query}".`);
+    showResult('tasks', hits.length > 0);
+    return { hits };
+  }
+
+  async function browseTasks() {
+    setStatus('Browsing task catalog…');
+    hideAllResults();
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({ skill_id: 'coding.tasks.catalog', args: { limit: 8 } }),
+    });
+    const data = await r.json();
+    const hits = data?.data?.tasks || data?.data?.results || data?.data?.hits || [];
+    renderTasksList(hits);
+    setResultMeta('tasks', `${hits.length} task(s) from catalog (first page of 5,000).`);
+    showResult('tasks', hits.length > 0);
+    setStatus(`Showing ${hits.length} task(s) from the catalog.`);
+  }
+
+  async function searchBooks({ query }) {
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({
+        skill_id: 'coding.books.search',
+        args: { query, limit: 8 },
+      }),
+    });
+    const data = await r.json();
+    const hits = data?.data?.hits || [];
+    renderBooksList(hits);
+    setResultMeta('books', `${hits.length} book(s) for "${query}".`);
+    showResult('books', hits.length > 0);
+    return { hits };
+  }
+
+  async function browseBooks() {
+    setStatus('Browsing book catalog…');
+    hideAllResults();
+    const r = await apiFetch('/api/skills/run', {
+      method: 'POST',
+      body: JSON.stringify({ skill_id: 'coding.books.catalog', args: { limit: 39 } }),
+    });
+    const data = await r.json();
+    const hits = data?.data?.books || data?.data?.results || data?.data?.hits || [];
+    renderBooksList(hits);
+    setResultMeta('books', `${hits.length} book(s) from catalog.`);
+    showResult('books', hits.length > 0);
+    setStatus(`Showing ${hits.length} book(s) from the catalog.`);
+  }
+
+  // ----- result rendering ---------------------------------------------
+
+  function showResult(name, hasContent) {
+    const section = document.querySelector(`.code-result-section[data-result="${name}"]`);
+    if (!section) return;
+    section.hidden = !hasContent;
+  }
+  function hideAllResults() {
+    document.querySelectorAll('.code-result-section').forEach((s) => { s.hidden = true; });
+  }
+  function setResultMeta(name, text) {
+    const el = document.getElementById(`code${capitalize(name)}Meta`);
+    if (el) el.textContent = text || '';
+  }
+  function setStatus(text) {
+    if (dom.codeSearchStatus) dom.codeSearchStatus.textContent = text || '';
+  }
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function emptyState(text) {
+    return `<p class="code-empty-state">${escapeHtml(text)}</p>`;
+  }
+
+  // Syntax: one-line code snippet + construct tag.
+  function renderSyntaxList(snippets) {
+    if (!dom.codeSyntaxList) return;
+    if (!snippets.length) {
+      dom.codeSyntaxList.innerHTML = emptyState('No syntax snippets match. The corpus is the source of truth — try a different word or pick another language.');
+      return;
+    }
+    dom.codeSyntaxList.innerHTML = snippets.map((s) => {
+      const id = s.id || `${s.technology}/${s.construct}/${s.seq || ''}`;
+      return `
+        <article class="code-card">
+          <header class="code-card-head">
+            <span class="code-card-id" data-copy-id="${escapeAttr(id)}" role="button" tabindex="0" title="Click to copy id">${escapeHtml(id)}</span>
+            <span class="code-card-meta">
+              <span class="chip">${escapeHtml(s.construct || 'snippet')}</span>
+              <span>${escapeHtml(s.display || s.technology || '')}</span>
+            </span>
+          </header>
+          <pre class="code-snippet">${escapeHtml(s.snippet || s.text || '')}</pre>
+        </article>
+      `;
+    }).join('');
+  }
+
+  // Scenarios: action / constraint / failure-mode paragraphs.
+  // The real keys are `action`, `constraint`, `failure_mode` (or `failure`).
   function renderScenariosList(hits) {
     if (!dom.codeScenariosList) return;
-    dom.codeScenariosList.innerHTML = '';
     if (!hits.length) {
-      dom.codeScenariosList.innerHTML = '<p class="muted">No scenarios match. The corpus is the source of truth; an empty result means the operator corpus has no row for that query.</p>';
+      dom.codeScenariosList.innerHTML = emptyState('No scenarios match. Scenarios are organized by language — try a different one, or phrase the query more broadly.');
       return;
     }
-    for (const h of hits) {
-      const row = document.createElement('div');
-      row.className = 'stack-row';
+    dom.codeScenariosList.innerHTML = hits.map((h) => {
       const id = h.id || '';
-      const concept = h.concept || h.domain || '';
-      const action = h.action || '';
-      const constraint = h.constraint || '';
-      const failure = h.failure || '';
-      row.innerHTML = `
-        <div class="stack-row-head">
-          <code class="stack-row-id">${escapeHtml(id)}</code>
-          <span class="muted">${escapeHtml(concept)}</span>
-        </div>
-        <p><strong>Action:</strong> ${escapeHtml(action)}</p>
-        <p><strong>Constraint:</strong> ${escapeHtml(constraint)}</p>
-        <p><strong>Failure mode:</strong> ${escapeHtml(failure)}</p>
+      const action = h.action || h.task || h.scenario || '';
+      const constraint = h.constraint || h.constraints || '';
+      const failure = h.failure_mode || h.failure || '';
+      return `
+        <article class="code-card">
+          <header class="code-card-head">
+            <span class="code-card-id" data-copy-id="${escapeAttr(id)}" role="button" tabindex="0" title="Click to copy id">${escapeHtml(id)}</span>
+            <span class="code-card-meta">
+              ${h.concept ? `<span class="chip">${escapeHtml(h.concept)}</span>` : ''}
+              ${h.domain ? `<span class="chip">${escapeHtml(h.domain)}</span>` : ''}
+            </span>
+          </header>
+          <div class="code-card-body">
+            ${action ? `<p>${escapeHtml(action)}</p>` : '<p class="code-empty">No action recorded.</p>'}
+            ${constraint ? `<p><strong>Constraint:</strong> ${escapeHtml(constraint)}</p>` : ''}
+            ${failure ? `<p><strong>Failure mode:</strong> ${escapeHtml(failure)}</p>` : ''}
+          </div>
+        </article>
       `;
-      dom.codeScenariosList.appendChild(row);
-    }
+    }).join('');
   }
 
-  // ---------- tasks tab --------------------------------------------------
-
-  async function codeTasksSearch() {
-    const query = dom.codeTasksQuery?.value?.trim();
-    if (!query) { if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = 'Enter a query.'; return; }
-    if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = 'Loading…';
-    try {
-      const r = await apiFetch('/api/skills/run', {
-        method: 'POST',
-        body: JSON.stringify({
-          skill_id: 'coding.tasks.search',
-          args: { query, limit: 15 },
-        }),
-      });
-      const data = await r.json();
-      const hits = data?.data?.hits || data?.data?.results || [];
-      renderTasksList(hits);
-      if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = `${hits.length} task(s) for "${query}".`;
-    } catch (err) {
-      if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = `Search failed: ${err.message}`;
-    }
-  }
-
-  async function codeTasksCatalog() {
-    if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = 'Loading catalog…';
-    try {
-      const r = await apiFetch('/api/skills/run', {
-        method: 'POST',
-        body: JSON.stringify({ skill_id: 'coding.tasks.catalog', args: { limit: 50 } }),
-      });
-      const data = await r.json();
-      const hits = data?.data?.tasks || data?.data?.results || data?.data?.hits || [];
-      renderTasksList(hits);
-      if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = `${hits.length} task(s) from catalog.`;
-    } catch (err) {
-      if (dom.codeTasksStatus) dom.codeTasksStatus.textContent = `Catalog failed: ${err.message}`;
-    }
-  }
-
+  // Tasks: the structured CSV row. Real fields:
+  //   id, domain, task_type, system, title, objective, context_name,
+  //   principal_risks, edge_cases, required_validation.
   function renderTasksList(hits) {
     if (!dom.codeTasksList) return;
-    dom.codeTasksList.innerHTML = '';
     if (!hits.length) {
-      dom.codeTasksList.innerHTML = '<p class="muted">No tasks match. The CSV is the source of truth.</p>';
+      dom.codeTasksList.innerHTML = emptyState('No tasks match. The CSV is the source of truth — try a broader query.');
       return;
     }
-    for (const t of hits) {
-      const row = document.createElement('div');
-      row.className = 'stack-row';
+    dom.codeTasksList.innerHTML = hits.map((t) => {
       const id = t.id || '';
-      const title = t.title || '';
-      const objective = t.objective || t.description || '';
-      const tags = Array.isArray(t.tags) ? t.tags.join(', ') : (t.tags || '');
-      row.innerHTML = `
-        <div class="stack-row-head">
-          <code class="stack-row-id">${escapeHtml(id)}</code>
-          <span class="muted">${escapeHtml(tags)}</span>
-        </div>
-        <p><strong>${escapeHtml(title)}</strong></p>
-        <p>${escapeHtml(objective)}</p>
+      const title = t.title || t.system || '';
+      return `
+        <article class="code-card">
+          <header class="code-card-head">
+            <span class="code-card-id" data-copy-id="${escapeAttr(id)}" role="button" tabindex="0" title="Click to copy id">${escapeHtml(id)}</span>
+            <span class="code-card-meta">
+              ${t.domain ? `<span class="chip">${escapeHtml(t.domain)}</span>` : ''}
+              ${t.task_type ? `<span class="chip">${escapeHtml(t.task_type)}</span>` : ''}
+            </span>
+          </header>
+          <div class="code-card-body">
+            <p class="code-title">${escapeHtml(title)}</p>
+            ${t.objective ? `<p>${escapeHtml(t.objective)}</p>` : ''}
+            ${t.principal_risks ? `<p><strong>Risks:</strong> ${escapeHtml(t.principal_risks)}</p>` : ''}
+            ${t.edge_cases ? `<p><strong>Edge cases:</strong> ${escapeHtml(t.edge_cases)}</p>` : ''}
+            ${t.required_validation ? `<p><strong>Validation:</strong> ${escapeHtml(t.required_validation)}</p>` : ''}
+          </div>
+        </article>
       `;
-      dom.codeTasksList.appendChild(row);
-    }
+    }).join('');
   }
 
-  // ---------- books tab --------------------------------------------------
-
-  async function codeBooksSearch() {
-    const query = dom.codeBooksQuery?.value?.trim();
-    if (!query) { if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = 'Enter a query.'; return; }
-    if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = 'Loading…';
-    try {
-      const r = await apiFetch('/api/skills/run', {
-        method: 'POST',
-        body: JSON.stringify({
-          skill_id: 'coding.books.search',
-          args: { query, limit: 15 },
-        }),
-      });
-      const data = await r.json();
-      const hits = data?.data?.hits || data?.data?.results || [];
-      renderBooksList(hits);
-      if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = `${hits.length} book(s) for "${query}".`;
-    } catch (err) {
-      if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = `Search failed: ${err.message}`;
-    }
-  }
-
-  async function codeBooksCatalog() {
-    if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = 'Loading catalog…';
-    try {
-      const r = await apiFetch('/api/skills/run', {
-        method: 'POST',
-        body: JSON.stringify({ skill_id: 'coding.books.catalog', args: { limit: 50 } }),
-      });
-      const data = await r.json();
-      const hits = data?.data?.books || data?.data?.results || data?.data?.hits || [];
-      renderBooksList(hits);
-      if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = `${hits.length} book(s) from catalog.`;
-    } catch (err) {
-      if (dom.codeBooksStatus) dom.codeBooksStatus.textContent = `Catalog failed: ${err.message}`;
-    }
-  }
-
+  // Books: title with link + structured meta.
   function renderBooksList(hits) {
     if (!dom.codeBooksList) return;
-    dom.codeBooksList.innerHTML = '';
     if (!hits.length) {
-      dom.codeBooksList.innerHTML = '<p class="muted">No books match. The catalog JSON is the source of truth.</p>';
+      dom.codeBooksList.innerHTML = emptyState('No books match. The 39-book catalog is the source of truth — try a topic like "python", "DDD", "compilers".');
       return;
     }
-    for (const b of hits) {
-      // search returns {text, meta:{title,level,url_primary,...}} ; catalog returns the flat book
+    dom.codeBooksList.innerHTML = hits.map((b) => {
       const meta = b.meta || b;
-      const title = meta.title || '';
       const id = meta.book_id || b.id || '';
+      const title = meta.title || b.text?.split('\n')[0]?.replace(/^BOOK:\s*/, '') || '';
       const level = meta.level || '';
-      const topic = meta.topic || '';
+      const topics = Array.isArray(meta.topics) ? meta.topics.join(', ') : (meta.topics || '');
+      const langs = Array.isArray(meta.languages) ? meta.languages.join(', ') : (meta.languages || '');
       const url = meta.url_primary || meta.url || '';
-      const desc = (meta.description || b.text || '').slice(0, 200);
-      const row = document.createElement('div');
-      row.className = 'stack-row';
-      row.innerHTML = `
-        <div class="stack-row-head">
-          <code class="stack-row-id">${escapeHtml(id)}</code>
-          <span class="muted">${escapeHtml(level)} · ${escapeHtml(topic)}</span>
-        </div>
-        <p><strong><a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a></strong></p>
-        <p class="muted">${escapeHtml(desc)}</p>
+      return `
+        <article class="code-card">
+          <header class="code-card-head">
+            <span class="code-card-id" data-copy-id="${escapeAttr(id)}" role="button" tabindex="0" title="Click to copy id">${escapeHtml(id)}</span>
+            <span class="code-card-meta">
+              ${level ? `<span class="chip">${escapeHtml(level)}</span>` : ''}
+              ${meta.year ? `<span>${escapeHtml(String(meta.year))}</span>` : ''}
+            </span>
+          </header>
+          <div class="code-card-body">
+            <p class="code-title">
+              ${url
+                ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`
+                : escapeHtml(title)}
+            </p>
+            ${topics ? `<p><strong>Topics:</strong> ${escapeHtml(topics)}</p>` : ''}
+            ${langs ? `<p><strong>Languages:</strong> ${escapeHtml(langs)}</p>` : ''}
+            ${url ? `<a class="code-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>` : ''}
+          </div>
+        </article>
       `;
-      dom.codeBooksList.appendChild(row);
-    }
+    }).join('');
   }
 
-  // ---------- drill tab (intent router, same as chat Phase B) ------------
-
-  async function codeDrillRun() {
-    const text = dom.codeDrillQuery?.value?.trim();
-    if (!text) { if (dom.codeDrillStatus) dom.codeDrillStatus.textContent = 'Enter a prompt.'; return; }
-    if (dom.codeDrillStatus) dom.codeDrillStatus.textContent = 'Routing…';
-    if (!dom.codeDrillList) return;
-    dom.codeDrillList.innerHTML = '';
-    // The backend already has _gather_corpus_evidence in app/main.py. We
-    // could expose it as a /api/code/evidence endpoint, but the simplest
-    // path is to re-use the chat SSE stream and pluck out the tool
-    // events. Tradeoff: a tiny /api/code/evidence endpoint is cleaner
-    // and avoids LLM involvement. Below we use the per-corpus skills
-    // directly with regex priority matching the chat (most specific first).
-    const m = text.match(/\b(go|rust|python|typescript|javascript|java|php|ruby|swift|kotlin|c#|csharp)\b/i);
-    const langAlias = { go: 'go', rust: 'rust', python: 'python', typescript: 'typescript', javascript: 'javascript', java: 'java', php: 'php', ruby: 'ruby', swift: 'swift', kotlin: 'kotlin', 'c#': 'c_sharp', csharp: 'c_sharp' };
-    const lang = m ? langAlias[m[1].toLowerCase()] : null;
-    const routedTo = [];
-    if (lang) {
-      routedTo.push(['extra.scenarios.search', { language: lang, query: text, limit: 5 }]);
-    }
-    if (/drill|interview|practice\s+task|coding\s+task/i.test(text)) {
-      routedTo.push(['coding.tasks.search', { query: text, limit: 5 }]);
-    }
-    if (/book|textbook|recommend|cite/i.test(text)) {
-      routedTo.push(['coding.books.search', { query: text, limit: 5 }]);
-    }
-    if (!routedTo.length) {
-      // Fall back: send to extra.scenarios.search with the first known
-      // language, or to coding.tasks.search if no language is in the text.
-      routedTo.push(['coding.tasks.search', { query: text, limit: 5 }]);
-    }
-    const allHits = [];
-    for (const [skillId, args] of routedTo) {
-      try {
-        const r = await apiFetch('/api/skills/run', {
-          method: 'POST',
-          body: JSON.stringify({ skill_id: skillId, args }),
-        });
-        const data = await r.json();
-        const hits = data?.data?.hits || data?.data?.results || [];
-        allHits.push({ skill: skillId, hits });
-      } catch (err) {
-        allHits.push({ skill: skillId, error: err.message });
-      }
-    }
-    renderDrillList(allHits, text);
-    if (dom.codeDrillStatus) {
-      const total = allHits.reduce((n, r) => n + (r.hits?.length || 0), 0);
-      dom.codeDrillStatus.textContent = `${total} real row(s) from ${allHits.length} corpus/corpora.`;
-    }
-  }
-
-  function renderDrillList(routed, query) {
-    if (!dom.codeDrillList) return;
-    if (!routed.length) return;
-    const header = document.createElement('p');
-    header.className = 'muted';
-    header.textContent = `Routed "${query}" by intent — most-specific corpus first.`;
-    dom.codeDrillList.appendChild(header);
-    for (const r of routed) {
-      const blockHeader = document.createElement('h3');
-      blockHeader.textContent = `${r.skill}${r.hits ? ` (${r.hits.length} hits)` : ` (error: ${r.error})`}`;
-      dom.codeDrillList.appendChild(blockHeader);
-      if (!r.hits) continue;
-      if (!r.hits.length) {
-        const empty = document.createElement('p');
-        empty.className = 'muted';
-        empty.textContent = 'No rows. The corpus is the source of truth.';
-        dom.codeDrillList.appendChild(empty);
-        continue;
-      }
-      // Reuse renderers
-      const wrap = document.createElement('div');
-      wrap.className = 'stack-list';
-      dom.codeDrillList.appendChild(wrap);
-      // Re-route by skill id
-      if (r.skill === 'extra.scenarios.search') {
-        // render into wrap via a temporary list trick: just re-call render
-        // into wrap by swapping dom.codeScenariosList
-        const prev = dom.codeScenariosList;
-        dom.codeScenariosList = wrap;
-        renderScenariosList(r.hits);
-        dom.codeScenariosList = prev;
-      } else if (r.skill === 'coding.tasks.search') {
-        const prev = dom.codeTasksList;
-        dom.codeTasksList = wrap;
-        renderTasksList(r.hits);
-        dom.codeTasksList = prev;
-      } else if (r.skill === 'coding.books.search') {
-        const prev = dom.codeBooksList;
-        dom.codeBooksList = wrap;
-        renderBooksList(r.hits);
-        dom.codeBooksList = prev;
-      }
-    }
-  }
-
-  // ---------- utilities ---------------------------------------------------
+  // ----- utilities -----------------------------------------------------
 
   function escapeHtml(s) {
     if (s == null) return '';
@@ -466,47 +445,93 @@
     }[c]));
   }
   function escapeAttr(s) {
-    return escapeHtml(s).replace(/javascript:/gi, '');
+    return escapeHtml(s).replace(/javascript:/gi, '').replace(/"/g, '&quot;');
   }
+
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      // Fallback for non-secure contexts
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+  }
+
+  function flashCopied(el) {
+    const orig = el.textContent;
+    el.textContent = '✓ Copied';
+    el.style.color = 'var(--ok)';
+    setTimeout(() => {
+      el.textContent = orig;
+      el.style.color = '';
+    }, 1200);
+  }
+
+  // ----- wiring --------------------------------------------------------
 
   function wireCodeDialog() {
     if (!dom.openCode) return;
     dom.openCode.addEventListener('click', openCodeDialog);
-    // tab switcher
-    document.querySelectorAll('.code-tab').forEach((tab) => {
-      tab.addEventListener('click', () => setCodeTab(tab.dataset.codeTab));
-    });
-    // syntax
-    if (dom.codeSyntaxBrowse) dom.codeSyntaxBrowse.addEventListener('click', codeSyntaxBrowse);
-    if (dom.codeSyntaxGet) dom.codeSyntaxGet.addEventListener('click', codeSyntaxGet);
-    // scenarios
-    if (dom.codeScenariosSearch) dom.codeScenariosSearch.addEventListener('click', codeScenariosSearch);
-    if (dom.codeScenariosQuery) {
-      dom.codeScenariosQuery.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); codeScenariosSearch(); }
+
+    // The hero search bar
+    if (dom.codeSearchForm) {
+      dom.codeSearchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        runGlobalSearch();
       });
     }
-    // tasks
-    if (dom.codeTasksSearch) dom.codeTasksSearch.addEventListener('click', codeTasksSearch);
-    if (dom.codeTasksCatalog) dom.codeTasksCatalog.addEventListener('click', codeTasksCatalog);
-    if (dom.codeTasksQuery) {
-      dom.codeTasksQuery.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); codeTasksSearch(); }
+
+    // Per-corpus browse buttons
+    if (dom.codeSyntaxBrowse) dom.codeSyntaxBrowse.addEventListener('click', browseSyntax);
+    if (dom.codeScenariosBrowse) dom.codeScenariosBrowse.addEventListener('click', browseScenarios);
+    if (dom.codeTasksBrowse) dom.codeTasksBrowse.addEventListener('click', browseTasks);
+    if (dom.codeBooksBrowse) dom.codeBooksBrowse.addEventListener('click', browseBooks);
+
+    // Copy-on-click (delegated on the results area so it works for any
+    // future result section we add)
+    const results = document.querySelector('.code-results');
+    if (results) {
+      results.addEventListener('click', async (e) => {
+        const target = e.target.closest('.code-card-id');
+        if (!target) return;
+        const id = target.getAttribute('data-copy-id');
+        if (!id) return;
+        const ok = await copyToClipboard(id);
+        if (ok) flashCopied(target);
       });
-    }
-    // books
-    if (dom.codeBooksSearch) dom.codeBooksSearch.addEventListener('click', codeBooksSearch);
-    if (dom.codeBooksCatalog) dom.codeBooksCatalog.addEventListener('click', codeBooksCatalog);
-    if (dom.codeBooksQuery) {
-      dom.codeBooksQuery.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); codeBooksSearch(); }
-      });
-    }
-    // drill
-    if (dom.codeDrillRun) dom.codeDrillRun.addEventListener('click', codeDrillRun);
-    if (dom.codeDrillQuery) {
-      dom.codeDrillQuery.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); codeDrillRun(); }
+      results.addEventListener('keydown', async (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const target = e.target.closest('.code-card-id');
+        if (!target) return;
+        e.preventDefault();
+        const id = target.getAttribute('data-copy-id');
+        if (!id) return;
+        const ok = await copyToClipboard(id);
+        if (ok) flashCopied(target);
       });
     }
   }
+
+  // Expose to the global namespace
+  window.AION_CODE = {
+    openCodeDialog,
+    runGlobalSearch,
+    browseSyntax, browseScenarios, browseTasks, browseBooks,
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireCodeDialog);
+  } else {
+    wireCodeDialog();
+  }
+})();

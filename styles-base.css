@@ -1563,6 +1563,331 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   word-break: break-word;
 }
 
+/* ----- Aion Code (v2.8.5) — single search bar + 4 corpus tiles + result cards -----
+   The previous 5-tab form required users to pick a language, pick a construct,
+   type an id, and click Browse. The new layout is:
+     1. Big search bar at the top — type a query, hit all 4 corpora at once.
+     2. Four corpus tiles with at-a-glance count + per-corpus "Browse" button.
+     3. Four result sections, populated as the user searches or browses.
+   Each result is a card with type-specific fields + a "Copy id" button. */
+
+.code-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-2);
+  margin: var(--s-4) 0 var(--s-2);
+}
+.code-search input {
+  height: 44px;
+  padding: 0 var(--s-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-family: var(--font);
+  /* the lifted-glass shadow on a primary input — the operator-facing entry point */
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+}
+.code-search input:focus,
+.code-search input:focus-visible {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow:
+    0 4px 16px 0 rgb(0 0 0 / .45),
+    0 0 0 1px rgb(255 255 255 / .10),
+    inset 0 1px 0 0 rgb(255 255 255 / .12);
+}
+.code-search input::placeholder { color: var(--muted); }
+.code-search button {
+  /* auto width, slightly taller than default to match the input */
+  height: 44px;
+  padding: 0 var(--s-5);
+}
+.code-status {
+  margin: 0 0 var(--s-4);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.code-status kbd {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+/* 4 corpus tiles — always visible, at-a-glance what each one has */
+.code-corpus-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+@media (min-width: 720px) {
+  .code-corpus-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1080px) {
+  .code-corpus-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.code-corpus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  min-inline-size: 0;
+}
+.code-corpus header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+.code-corpus h3 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.code-corpus-count {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.code-corpus p {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  line-height: var(--lh-snug);
+  flex: 1 0 auto;
+  /* 034 — pretty wrap so the tile description reads cleanly */
+  text-wrap: pretty;
+}
+.code-corpus-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+.code-corpus-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1 1 0;
+}
+.code-corpus-pick span {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.code-corpus-pick select {
+  width: 100%;
+  min-inline-size: 0;
+  height: 32px;
+  padding: 0 var(--s-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-family: var(--font);
+  /* override the styles-ui.css 45° chevron — smaller pad for inline use */
+  background-position: calc(100% - 12px) 50%, calc(100% - 8px) 50%;
+  padding-inline-end: 24px;
+}
+
+/* Result sections — populated as the user searches/browses */
+.code-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+}
+.code-result-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+  min-inline-size: 0;
+}
+.code-result-section > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+.code-result-section > header h3 {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+.code-result-meta {
+  font-size: var(--fs-xs);
+}
+.code-result-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-inline-size: 0;
+}
+
+/* The result card itself — one shape, one copy button, type-specific content.
+   The id+meta header is the "chrome" that gives the user something to copy. */
+.code-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  position: relative;
+  min-inline-size: 0;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.code-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+.code-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  min-inline-size: 0;
+}
+.code-card-id {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 100%;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.code-card-id:hover { color: var(--text); border-color: var(--border-strong); }
+.code-card-id::before {
+  content: "📋";
+  font-size: 11px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.code-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.code-card-meta .chip {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  color: var(--text-2);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+/* Type-specific body content.
+   syntax: one line of code (the actual snippet)
+   scenarios: action / constraint / failure paragraphs
+   tasks: structured fields (objective, risks, edge_cases, validation)
+   books: title + meta + link */
+.code-card-body {
+  min-inline-size: 0;
+}
+.code-card pre.code-snippet {
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.code-card p {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-2);
+}
+.code-card p + p { margin-top: var(--s-1); }
+.code-card p strong { color: var(--text); font-weight: 600; }
+.code-card .code-title {
+  font-size: var(--fs-base);
+  color: var(--text);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--s-1);
+  text-wrap: pretty;
+}
+.code-card .code-title a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+  transition: text-decoration-color var(--t-fast) var(--ease);
+}
+.code-card .code-title a:hover { text-decoration-color: var(--brand); }
+.code-card .code-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--s-1);
+  font-size: var(--fs-xs);
+  color: var(--brand);
+  text-decoration: none;
+}
+.code-card .code-link:hover { text-decoration: underline; }
+.code-card .code-link::after { content: "↗"; font-size: 11px; }
+.code-card .code-empty {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Empty state inside a result section */
+.code-empty-state {
+  padding: var(--s-5) var(--s-3);
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.code-empty-state strong { color: var(--text-2); }
+
 /* ----- 11. STATUS PANEL — read-only list, one row per item ----- */
 
 .status-panel {
