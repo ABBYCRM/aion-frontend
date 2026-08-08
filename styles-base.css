@@ -563,13 +563,13 @@ button:not(:disabled):not([aria-busy="true"]):hover,
    The truly-committal CTA (e.g. "Save") uses .primary-button.cta to get
    the brand-blue fill instead. */
 .primary-button {
-  background: color-mix(in oklab, var(--text) 92%, transparent);
+  background: #f5f6f8;  /* near-white, the Z.ai "filled inverted" */
   border-color: transparent;
-  color: var(--bg);
+  color: #161616;        /* dark text on the light pill — high contrast */
   font-weight: 600;
 }
 .primary-button:hover:not(:disabled) {
-  background: var(--text);
+  background: #ffffff;
   border-color: transparent;
 }
 .primary-button:active:not(:disabled) {
