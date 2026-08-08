@@ -120,10 +120,40 @@
   // Vault tab — admin-only. List / ping / reveal / rotate encrypted secrets
   // ===========================================================================
 
+  // ----- top-level entry points so app-boot.js's tab-bar can call them -----
+  // (these used to be wired to legacy #openVault / #openNotes buttons that
+  // no longer exist after the v2.8.0 tab-bar refactor. Re-exposing them at
+  // the top level fixes the "loading never starts" bug on the Vault and
+  // Notes dialogs.)
+
   function openVaultDialog() {
     if (!dom.vaultDialog) return;
     if (!dom.vaultDialog.open) dom.vaultDialog.showModal();
     refreshVault();
+  }
+
+  function openGithubDialog() {
+    if (!dom.githubDialog) return;
+    if (!dom.githubDialog.open) dom.githubDialog.showModal();
+  }
+
+  // ----- vault pill-tab wiring (replaces the old <select> filter) -----
+  function setVaultCategory(cat) {
+    // Mark active tab
+    document.querySelectorAll('.vault-tab').forEach((btn) => {
+      const active = (btn.dataset.vaultCat || '') === cat;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    // Drive the legacy hidden <select> so refreshVault() (which reads
+    // dom.vaultFilter.value) still works without refactoring the data flow.
+    if (dom.vaultFilter) dom.vaultFilter.value = cat;
+    refreshVault();
+  }
+  function bindVaultTabs() {
+    document.querySelectorAll('.vault-tab').forEach((btn) => {
+      btn.addEventListener('click', () => setVaultCategory(btn.dataset.vaultCat || ''));
+    });
   }
 
   async function refreshVault() {
@@ -159,76 +189,106 @@
   function renderVault(items) {
     dom.vaultList.replaceChildren();
     if (!items.length) {
-      const p = document.createElement('p');
-      p.className = 'muted';
-      p.textContent = 'No keys in the vault yet. Set AION_VAULT_MASTER_KEY or AION_ADMIN_KEYS, then POST /api/vault/{name}/rotate.';
-      dom.vaultList.append(p);
+      const empty = document.createElement('p');
+      empty.className = 'code-empty-state';
+      empty.innerHTML = 'No keys in the vault yet. Set <code>AION_VAULT_MASTER_KEY</code> or <code>AION_ADMIN_KEYS</code>, then POST <code>/api/vault/{name}/rotate</code>.';
+      dom.vaultList.append(empty);
       return;
     }
     for (const item of items) {
-      const row = document.createElement('div');
-      row.className = 'vault-row';
-      const header = document.createElement('div');
-      header.className = 'vault-row-header';
       const status = item.last_ping_status
         ? (item.last_ping_status === 'ok' ? 'ok' : (item.last_ping_status === 'error' ? 'err' : 'pending'))
         : 'unconfigured';
-      header.innerHTML = `
-        <span class="badge ${item.category}">${escapeHtml(item.category)}</span>
-        <strong>${escapeHtml(item.label)}</strong>
-        <code>${escapeHtml(item.name)}</code>
-        <span class="ping-status ${status}">${item.last_ping_status || 'unconfigured'}${item.last_ping_latency_ms != null ? ' · ' + item.last_ping_latency_ms + 'ms' : ''}</span>
-      `;
-      row.append(header);
-      const desc = document.createElement('p');
-      desc.className = 'muted';
-      desc.textContent = item.description;
-      row.append(desc);
-      const meta = document.createElement('p');
-      meta.className = 'muted small';
+      const statusLabel = `${item.last_ping_status || 'unconfigured'}${item.last_ping_latency_ms != null ? ' · ' + item.last_ping_latency_ms + 'ms' : ''}`;
       const fp = item.fingerprint || '—';
       const len = item.has_value ? `${item.value_length} chars` : 'not set';
       const src = item.source || 'unset';
-      const rot = item.last_rotated_at ? new Date(item.last_rotated_at * 1000).toLocaleString() + (item.last_rotated_by ? ' by ' + item.last_rotated_by : '') : 'never';
-      meta.textContent = `fingerprint ${fp} · ${len} · source=${src} · rotated ${rot}`;
-      row.append(meta);
+      const rot = item.last_rotated_at
+        ? new Date(item.last_rotated_at * 1000).toLocaleString() + (item.last_rotated_by ? ' by ' + item.last_rotated_by : '')
+        : 'never';
+
+      // Build the card with explicit DOM nodes (avoids the inline-HTML
+      // string-template footgun the old version had).
+      const card = document.createElement('article');
+      card.className = 'vault-card';
+      card.setAttribute('data-vault-name', item.name);
+
+      // Header: name (left) + meta (right)
+      const head = document.createElement('header');
+      head.className = 'vault-card-head';
+      const idEl = document.createElement('span');
+      idEl.className = 'vault-card-id';
+      idEl.textContent = item.name;
+      head.append(idEl);
+      const meta = document.createElement('span');
+      meta.className = 'vault-card-meta';
+      const catChip = document.createElement('span');
+      catChip.className = 'chip';
+      catChip.textContent = item.category;
+      const ping = document.createElement('span');
+      ping.className = `ping-status ${status}`;
+      ping.textContent = statusLabel;
+      meta.append(catChip, ping);
+      head.append(meta);
+      card.append(head);
+
+      // Body: label + description
+      const body = document.createElement('div');
+      body.className = 'vault-card-body';
+      const title = document.createElement('p');
+      title.innerHTML = `<strong>${escapeHtml(item.label)}</strong>`;
+      body.append(title);
+      const desc = document.createElement('p');
+      desc.textContent = item.description;
+      body.append(desc);
+      const metaLine = document.createElement('p');
+      metaLine.style.fontSize = '11px';
+      metaLine.style.fontFamily = 'var(--mono)';
+      metaLine.style.color = 'var(--muted)';
+      metaLine.textContent = `fingerprint ${fp} · ${len} · source=${src} · rotated ${rot}`;
+      body.append(metaLine);
       if (item.last_ping_error) {
         const err = document.createElement('p');
-        err.className = 'muted small error';
+        err.style.color = 'var(--danger)';
+        err.style.fontSize = '11px';
+        err.style.fontFamily = 'var(--mono)';
         err.textContent = 'last ping: ' + item.last_ping_error;
-        row.append(err);
+        body.append(err);
       }
+      card.append(body);
+
+      // Actions
       const actions = document.createElement('div');
-      actions.className = 'gallery-actions';
+      actions.className = 'vault-card-actions';
       if (item.has_value) {
-        const ping = document.createElement('button');
-        ping.type = 'button';
-        ping.textContent = 'Ping';
-        ping.className = 'icon-button';
-        ping.addEventListener('click', () => pingOne(item.name, ping));
-        const reveal = document.createElement('button');
-        reveal.type = 'button';
-        reveal.textContent = 'Reveal';
-        reveal.className = 'icon-button';
-        reveal.addEventListener('click', () => revealOne(item.name, reveal));
-        actions.append(ping, reveal);
+        const pingBtn = document.createElement('button');
+        pingBtn.type = 'button';
+        pingBtn.textContent = 'Ping';
+        pingBtn.addEventListener('click', () => pingOne(item.name, pingBtn));
+        actions.append(pingBtn);
+        const revealBtn = document.createElement('button');
+        revealBtn.type = 'button';
+        revealBtn.textContent = 'Reveal';
+        revealBtn.addEventListener('click', () => revealOne(item.name, revealBtn));
+        actions.append(revealBtn);
       }
-      const rotate = document.createElement('button');
-      rotate.type = 'button';
-      rotate.textContent = 'Rotate';
-      rotate.className = 'icon-button primary';
-      rotate.addEventListener('click', () => rotateOne(item.name, rotate));
-      actions.append(rotate);
+      const rotateBtn = document.createElement('button');
+      rotateBtn.type = 'button';
+      rotateBtn.textContent = 'Rotate';
+      rotateBtn.className = 'primary-button cta';
+      rotateBtn.style.minInlineSize = '88px';
+      rotateBtn.addEventListener('click', () => rotateOne(item.name, rotateBtn));
+      actions.append(rotateBtn);
       if (item.has_value) {
-        const del = document.createElement('button');
-        del.type = 'button';
-        del.textContent = 'Delete';
-        del.className = 'icon-button danger';
-        del.addEventListener('click', () => deleteOne(item.name, del));
-        actions.append(del);
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.textContent = 'Delete';
+        delBtn.className = 'danger';
+        delBtn.addEventListener('click', () => deleteOne(item.name, delBtn));
+        actions.append(delBtn);
       }
-      row.append(actions);
-      dom.vaultList.append(row);
+      card.append(actions);
+      dom.vaultList.append(card);
     }
   }
 
@@ -298,10 +358,15 @@
   }
 
   function bindGalleryVaultEvents() {
-    if (dom.openVault) dom.openVault.addEventListener('click', openVaultDialog);
+    // The Vault tab is opened via the data-action="vault" tab-bar element
+    // (sidebar + mobile). The tab-bar's openTab() now calls
+    // openVaultDialog() — we don't wire a click handler here because that
+    // path is already taken (see app-boot.js TAB_ACTIONS.vault).
     if (dom.vaultRefresh) dom.vaultRefresh.addEventListener('click', refreshVault);
     if (dom.vaultPingAll) dom.vaultPingAll.addEventListener('click', pingAllVault);
     if (dom.vaultFilter) dom.vaultFilter.addEventListener('change', refreshVault);
     if (dom.galleryRefresh) dom.galleryRefresh.addEventListener('click', refreshGallery);
     if (dom.galleryFilter) dom.galleryFilter.addEventListener('change', refreshGallery);
+    // Pill tabs replace the old <select> filter
+    bindVaultTabs();
   }

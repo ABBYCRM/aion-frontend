@@ -112,27 +112,74 @@
   }
 
   function renderNote(item) {
+    // v2.8.6 — note card with id chip + kind chip + value + tags + actions
+    // (matches the Vault card style for visual consistency).
     const card = document.createElement('article');
-    card.className = 'stack-item';
-    const header = document.createElement('header');
-    const title = document.createElement('strong');
-    title.textContent = `${item.name} · ${item.kind}`;
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.textContent = 'Delete';
-    remove.className = 'danger-button';
-    remove.addEventListener('click', async () => {
+    card.className = 'note-card';
+
+    // Header: name (left) + kind chip (right)
+    const head = document.createElement('header');
+    head.className = 'note-card-head';
+    const idEl = document.createElement('span');
+    idEl.className = 'note-card-id';
+    idEl.textContent = item.name;
+    head.append(idEl);
+    const meta = document.createElement('span');
+    meta.className = 'note-card-meta';
+    const kindChip = document.createElement('span');
+    kindChip.className = 'chip';
+    kindChip.textContent = item.kind;
+    meta.append(kindChip);
+    if (item.created_at) {
+      const date = new Date(item.created_at * (item.created_at < 1e12 ? 1000 : 1));
+      const stamp = document.createElement('span');
+      stamp.style.fontFamily = 'var(--mono)';
+      stamp.style.fontSize = '11px';
+      stamp.textContent = date.toLocaleDateString();
+      meta.append(stamp);
+    }
+    head.append(meta);
+    card.append(head);
+
+    // Body: value + tags
+    const body = document.createElement('div');
+    body.className = 'note-card-body';
+    if (item.value) {
+      const value = document.createElement('p');
+      value.style.fontFamily = 'var(--mono)';
+      value.style.fontSize = '13px';
+      value.style.whiteSpace = 'pre-wrap';
+      value.style.wordBreak = 'break-word';
+      value.style.color = 'var(--text)';
+      // Truncate very long values for the card; the chat detail view shows full
+      const truncated = item.value.length > 600 ? item.value.slice(0, 600) + '…' : item.value;
+      value.textContent = truncated;
+      body.append(value);
+    }
+    if (item.tags && item.tags.length) {
+      const tagsLine = document.createElement('p');
+      tagsLine.style.fontSize = '11px';
+      tagsLine.style.color = 'var(--muted)';
+      tagsLine.innerHTML = `<strong style="color: var(--text-2)">Tags:</strong> ${item.tags.map(escapeHtml).join(', ')}`;
+      body.append(tagsLine);
+    }
+    card.append(body);
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'note-card-actions';
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.textContent = 'Delete';
+    del.className = 'danger';
+    del.addEventListener('click', async () => {
       if (!confirm(`Delete note “${item.name}”?`)) return;
       const response = await apiFetch(`/api/notes/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
       if (!response.ok) showToast(detail(await response.json().catch(() => ({})), response));
       await loadNotes();
     });
-    header.append(title, remove);
-    const value = document.createElement('p');
-    value.textContent = item.value;
-    const tags = document.createElement('small');
-    tags.textContent = (item.tags || []).join(', ');
-    card.append(header, value, tags);
+    actions.append(del);
+    card.append(actions);
     return card;
   }
 
@@ -152,6 +199,14 @@
       await loadNotes();
       showToast('Note added.');
     } catch (error) { showToast(error.message); }
+  }
+
+  // Top-level entry point for the Notes dialog so the tab-bar data-action
+  // handler can call it. Same pattern as openVaultDialog / openMediaDialog.
+  function openNotesDialog() {
+    if (!dom.notesDialog) return;
+    if (!dom.notesDialog.open) dom.notesDialog.showModal();
+    loadNotes();
   }
 
   async function runGithubAction(action) {
@@ -183,4 +238,10 @@
     dom.toast.hidden = false;
     clearTimeout(showToast.timer);
     showToast.timer = setTimeout(() => { dom.toast.hidden = true; }, 3200);
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
   }

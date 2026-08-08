@@ -110,3 +110,36 @@ test('Aion Code global search hits all 4 corpora in parallel', () => {
   // Promise.allSettled keeps every result visible even if one corpus errors
   assert.match(code, /Promise\.allSettled/);
 });
+
+test('Vault + Notes dialogs harmonize with Aion Code + Media', () => {
+  // v2.8.6 — all four operator-facing dialogs share the same chrome:
+  // header with title + subtitle, section-header pattern, lifted-glass card lists.
+  // The shared design language is the contract.
+  assert.match(index, /<dialog id="notesDialog"/);
+  assert.match(index, /<dialog id="vaultDialog"/);
+  assert.match(index, /<dialog id="mediaDialog"/);
+  assert.match(index, /<dialog id="codeDialog"/);
+  // Every dialog has a dialog-subtitle
+  for (const id of ['notesDialog', 'vaultDialog', 'mediaDialog', 'codeDialog', 'settingsDialog']) {
+    // The subtitle is in the header block. Check it's defined in the CSS.
+    assert.match(read('styles-base.css'), /\.dialog-subtitle\s*\{/, `dialog-subtitle CSS missing — ${id}`);
+  }
+  // Vault: category filter is a pill tab, not a <select>
+  assert.match(index, /class="vault-tab[^"]*" data-vault-cat="llm"/);
+  assert.match(index, /class="vault-tab[^"]*" data-vault-cat="github"/);
+  // Notes: form is a 2-column grid (name 2fr | kind 1fr, tags + value span full width)
+  assert.match(read('styles-base.css'), /\.note-form\s*\{[^}]*grid-template-columns:\s*minmax\(0, 2fr\)/);
+  // Notes: textarea has a meaningful min-block-size (was 1-line in the cramped version)
+  assert.match(read('styles-base.css'), /min-block-size:\s*96px/);
+  // All four dialogs open via the tab-bar's data-action= (no legacy openCode/openVault/openNotes)
+  const boot = read('app-boot.js');
+  assert.match(boot, /openVaultDialog/);
+  assert.match(boot, /openNotesDialog/);
+  assert.match(boot, /openGithubDialog/);
+  assert.match(boot, /AION_CODE\?\.openCodeDialog/);
+  assert.match(boot, /openMediaDialog/);
+  assert.match(boot, /openSettingsDialog/);
+  // No legacy #openVault / #openNotes click handler left dangling
+  const vault = read('app-gallery-vault.js');
+  assert.doesNotMatch(vault, /dom\.openVault/);
+});

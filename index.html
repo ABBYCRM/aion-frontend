@@ -128,7 +128,13 @@
 
   <dialog id="settingsDialog" class="dialog">
     <form method="dialog" class="dialog-card">
-      <header><h2>Settings</h2><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
+      <header>
+        <div>
+          <h2>Settings</h2>
+          <p class="dialog-subtitle">API key, runtime policy, and which model Aion should reach for first. Everything here is local to this device.</p>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </header>
       <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" readonly></label>
       <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored locally on this device"></label>
       <label>Temperature<div class="range-row"><input id="temperature" type="range" min="0" max="2" step="0.1" value="0.7" aria-label="Temperature"><output id="temperatureValue" for="temperature">0.7</output></div></label>
@@ -165,22 +171,66 @@
 
   <dialog id="notesDialog" class="dialog wide">
     <div class="dialog-card">
-      <header><h2>Owner-scoped non-secret notes</h2><button class="icon-button" data-close-dialog="notesDialog" aria-label="Close">×</button></header>
-      <form id="noteForm" class="note-form">
-        <input id="noteName" required maxlength="200" placeholder="Name">
-        <select id="noteKind"><option>note</option><option>project</option><option>url</option></select>
-        <input id="noteTags" maxlength="300" placeholder="tags, comma, separated">
-        <textarea id="noteValue" required maxlength="20000" placeholder="Non-secret note value"></textarea>
-        <button class="primary-button" type="submit">Add note</button>
-      </form>
-      <div class="toolbar"><input id="noteSearch" placeholder="Search notes"><button id="refreshNotes" type="button">Refresh</button></div>
-      <div id="notesList" class="stack-list"></div>
+      <header>
+        <div>
+          <h2>Owner-scoped non-secret notes</h2>
+          <p class="dialog-subtitle">Reference cards you can attach to model context. Off by default — enable "Include matching notes" in Settings to inject them.</p>
+        </div>
+        <button class="icon-button" data-close-dialog="notesDialog" aria-label="Close">×</button>
+      </header>
+      <div class="dialog-content">
+        <!-- Add-note form: 2-column grid so the inputs don't crowd the dialog -->
+        <form id="noteForm" class="note-form">
+          <label class="note-form-name">
+            <span>Name</span>
+            <input id="noteName" required maxlength="200" placeholder="e.g. project-claude-frontend">
+          </label>
+          <label class="note-form-kind">
+            <span>Kind</span>
+            <select id="noteKind">
+              <option value="note">note</option>
+              <option value="project">project</option>
+              <option value="url">url</option>
+            </select>
+          </label>
+          <label class="note-form-tags">
+            <span>Tags</span>
+            <input id="noteTags" maxlength="300" placeholder="comma, separated">
+          </label>
+          <label class="note-form-value">
+            <span>Value</span>
+            <textarea id="noteValue" required maxlength="20000" rows="4" placeholder="Non-secret note value. URLs, project refs, command snippets."></textarea>
+          </label>
+          <div class="note-form-actions">
+            <button class="primary-button" type="submit">Add note</button>
+          </div>
+        </form>
+
+        <!-- Notes list section: header + search + grid of cards -->
+        <section class="note-list-section">
+          <header class="section-header">
+            <h3>Your notes</h3>
+            <div class="section-header-tools">
+              <input id="noteSearch" placeholder="Search notes" maxlength="200">
+              <button id="refreshNotes" type="button" class="muted-button">Refresh</button>
+            </div>
+          </header>
+          <div id="notesList" class="note-list"></div>
+        </section>
+      </div>
     </div>
   </dialog>
 
   <dialog id="mediaDialog" class="dialog wide">
     <div class="dialog-card">
-      <header><h2>Media</h2><button class="icon-button" data-close-dialog="mediaDialog" aria-label="Close">×</button></header>
+      <header>
+        <div>
+          <h2>Media</h2>
+          <p class="dialog-subtitle">Text → speech, image generation, video generation, and a gallery of everything you've made.</p>
+        </div>
+        <button class="icon-button" data-close-dialog="mediaDialog" aria-label="Close">×</button>
+      </header>
+      <div class="dialog-content">
       <nav class="media-tabs" role="tablist">
         <button class="media-tab active" data-media-tab="tts" type="button" role="tab" aria-selected="true">Text → Speech</button>
         <button class="media-tab" data-media-tab="image" type="button" role="tab" aria-selected="false">Image</button>
@@ -274,61 +324,88 @@
         </div>
         <div id="galleryGrid" class="image-gallery"></div>
       </section>
+      </div>
     </div>
   </dialog>
 
   <dialog id="vaultDialog" class="dialog wide">
     <div class="dialog-card">
-      <header><h2>Vault (admin)</h2><button class="icon-button" data-close-dialog="vaultDialog" aria-label="Close">×</button></header>
-      <p class="muted">Encrypted secret store. Values are never sent in plain JSON — reveal/rotate require an explicit confirmation.</p>
-      <div class="toolbar">
-        <button id="vaultRefresh" type="button" class="primary-button">Refresh</button>
-        <button id="vaultPingAll" type="button">Ping all</button>
-        <select id="vaultFilter">
-          <option value="">All categories</option>
-          <option value="llm">LLM</option>
-          <option value="search">Search</option>
-          <option value="scraping">Scraping</option>
-          <option value="github">GitHub</option>
-          <option value="email">Email</option>
-          <option value="browser">Browser</option>
-          <option value="screenshot">Screenshot</option>
-          <option value="vector">Vector</option>
-          <option value="inngest">Inngest</option>
-          <option value="discord">Discord</option>
-          <option value="other">Other</option>
-        </select>
-        <span class="muted" id="vaultStatus">Loading…</span>
+      <header>
+        <div>
+          <h2>Vault <span class="dialog-badge-admin">admin</span></h2>
+          <p class="dialog-subtitle">Encrypted secret store. Values are never sent in plain JSON — reveal/rotate require an explicit confirmation.</p>
+        </div>
+        <button class="icon-button" data-close-dialog="vaultDialog" aria-label="Close">×</button>
+      </header>
+      <div class="dialog-content">
+        <!-- Category filter as a 4-cell pill (matches Media's tab bar style) -->
+        <nav class="vault-tabs" role="tablist" aria-label="Vault categories">
+          <button class="vault-tab active" data-vault-cat="" type="button" role="tab" aria-selected="true">All</button>
+          <button class="vault-tab" data-vault-cat="llm" type="button" role="tab" aria-selected="false">LLM</button>
+          <button class="vault-tab" data-vault-cat="search" type="button" role="tab" aria-selected="false">Search</button>
+          <button class="vault-tab" data-vault-cat="github" type="button" role="tab" aria-selected="false">GitHub</button>
+        </nav>
+        <div class="vault-tabs-row2" role="tablist" aria-label="More categories">
+          <button class="vault-tab small" data-vault-cat="scraping" type="button">Scraping</button>
+          <button class="vault-tab small" data-vault-cat="email" type="button">Email</button>
+          <button class="vault-tab small" data-vault-cat="browser" type="button">Browser</button>
+          <button class="vault-tab small" data-vault-cat="screenshot" type="button">Screenshot</button>
+          <button class="vault-tab small" data-vault-cat="vector" type="button">Vector</button>
+          <button class="vault-tab small" data-vault-cat="inngest" type="button">Inngest</button>
+          <button class="vault-tab small" data-vault-cat="discord" type="button">Discord</button>
+          <button class="vault-tab small" data-vault-cat="other" type="button">Other</button>
+        </div>
+
+        <!-- Toolbar: action buttons + status -->
+        <section class="section-header">
+          <h3>Secrets</h3>
+          <div class="section-header-tools">
+            <button id="vaultRefresh" type="button" class="muted-button">Refresh</button>
+            <button id="vaultPingAll" type="button" class="muted-button">Ping all</button>
+            <span class="muted" id="vaultStatus">Loading…</span>
+          </div>
+        </section>
+        <div id="vaultList" class="vault-list"></div>
       </div>
-      <div id="vaultList" class="stack-list"></div>
     </div>
   </dialog>
 
   <dialog id="githubDialog" class="dialog wide">
     <div class="dialog-card">
-      <header><h2>GitHub</h2><button class="icon-button" data-close-dialog="githubDialog" aria-label="Close">×</button></header>
-      <div class="github-form">
-        <label>Allowlisted repository<input id="githubRepository" value="ABBYCRM/aion-frontend" placeholder="owner/repo"></label>
-        <label>Path or search query<input id="githubArgument" placeholder="app-chat-a.js or resolve_model_chain"></label>
-        <div class="button-row">
-          <button data-github-action="repository" type="button">Repository</button>
-          <button data-github-action="issues" type="button">Issues</button>
-          <button data-github-action="file" type="button">Read file</button>
-          <button data-github-action="search" type="button">Search code</button>
+      <header>
+        <div>
+          <h2>GitHub</h2>
+          <p class="dialog-subtitle">Server-mediated access. Read files, list issues, search code — all from the allowlisted repository.</p>
         </div>
+        <button class="icon-button" data-close-dialog="githubDialog" aria-label="Close">×</button>
+      </header>
+      <div class="dialog-content">
+        <div class="github-form">
+          <label>Allowlisted repository<input id="githubRepository" value="ABBYCRM/aion-frontend" placeholder="owner/repo"></label>
+          <label>Path or search query<input id="githubArgument" placeholder="app-chat-a.js or resolve_model_chain"></label>
+          <div class="button-row">
+            <button data-github-action="repository" type="button" class="muted-button">Repository</button>
+            <button data-github-action="issues" type="button" class="muted-button">Issues</button>
+            <button data-github-action="file" type="button" class="muted-button">Read file</button>
+            <button data-github-action="search" type="button" class="muted-button">Search code</button>
+          </div>
+        </div>
+        <pre id="githubOutput" class="json-output">Choose an action.</pre>
+        <p class="muted">GitHub credentials stay server-side. Repository access is fail-closed; writes additionally require an admin key, server enablement, and explicit confirmation.</p>
       </div>
-      <pre id="githubOutput" class="json-output">Choose an action.</pre>
-      <p class="muted">GitHub credentials stay server-side. Repository access is fail-closed; writes additionally require an admin key, server enablement, and explicit confirmation.</p>
     </div>
   </dialog>
 
   <dialog id="codeDialog" class="dialog wide">
     <div class="dialog-card">
       <header>
-        <h2>Aion Code</h2>
+        <div>
+          <h2>Aion Code</h2>
+          <p class="dialog-subtitle">Real rows from four code corpora: 900k syntax snippets, 2.9M engineering scenarios, 5,000 structured tasks, 39 open books. Use the chat for narrative answers; use this tab for direct corpus access.</p>
+        </div>
         <button class="icon-button" data-close-dialog="codeDialog" aria-label="Close">×</button>
       </header>
-      <p class="muted">Real rows from four code corpora: 900k syntax snippets, 2.9M engineering scenarios, 5,000 structured tasks, 39 open books. Type a query and Aion will pull the relevant rows from every corpus. Use the chat for narrative answers; use this tab for direct corpus access.</p>
+      <div class="dialog-content">
 
       <!-- Hero search bar — one input, all 4 corpora -->
       <form id="codeSearchForm" class="code-search">
@@ -413,6 +490,7 @@
           <div id="codeBooksList" class="code-result-list"></div>
         </article>
       </section>
+      </div>
     </div>
   </dialog>
 

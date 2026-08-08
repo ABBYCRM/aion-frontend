@@ -1325,7 +1325,7 @@ button:disabled,
 
 dialog header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--s-3);
   padding: var(--s-4) var(--s-5);
@@ -1340,8 +1340,35 @@ dialog header h2 {
 dialog header .icon-button {
   width: 28px; height: 28px;
   color: var(--muted);
+  flex-shrink: 0;
 }
 dialog header .icon-button:hover { color: var(--text); background: var(--surface-2); }
+dialog header > div {
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+.dialog-subtitle {
+  margin: 4px 0 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: var(--lh-snug);
+  max-inline-size: 60ch;
+  text-wrap: pretty;
+}
+.dialog-badge-admin {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  margin-left: var(--s-2);
+  background: color-mix(in oklab, var(--brand) 14%, transparent);
+  color: var(--brand);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--r-xs);
+  vertical-align: middle;
+}
 
 dialog form,
 dialog .dialog-content {
@@ -1350,8 +1377,45 @@ dialog .dialog-content {
   min-height: 0;
 }
 
-.dialog-actions,
-.button-row,
+/* v2.8.6 — section header for sub-sections inside a dialog. The pattern
+   is "uppercase title on the left, tools on the right". Used by Notes
+   (list header), Vault (secrets header), Aion Code (result sections),
+   and any future dialog that needs to break its body into named parts. */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin: var(--s-4) 0 var(--s-2);
+  min-inline-size: 0;
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--border);
+}
+.section-header h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.section-header-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-inline-size: 0;
+}
+.section-header-tools input {
+  height: 32px;
+  padding: 0 var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  min-inline-size: 180px;
+  max-inline-size: 240px;
+}
 .toolbar {
   display: flex;
   align-items: center;
@@ -2139,6 +2203,215 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
 .stack-item + .stack-item { margin-top: var(--s-1); }
 .stack-item .stack-name { color: var(--text); font-weight: 500; }
 .stack-item .stack-meta { color: var(--muted); font-size: var(--fs-xs); font-family: var(--mono); }
+
+/* ----- 13c. VAULT DIALOG (v2.8.6) — 4-cell pill category + lifted-glass card list ----- */
+
+.vault-tabs,
+.vault-tabs-row2 {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: var(--s-2);
+  flex-wrap: wrap;
+}
+.vault-tabs-row2 { margin-top: var(--s-2); }
+.vault-tab {
+  flex: 1 1 0;
+  padding: 6px var(--s-2);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-align: center;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  min-inline-size: 0;
+}
+.vault-tab.small { flex: 0 1 auto; font-size: var(--fs-xs); }
+.vault-tab:hover { color: var(--text); background: var(--surface-3); }
+.vault-tab.active {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.vault-list,
+.note-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-inline-size: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: var(--s-1);
+}
+.vault-card,
+.note-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  min-inline-size: 0;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.vault-card:hover,
+.note-card:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+.vault-card-head,
+.note-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  min-inline-size: 0;
+}
+.vault-card-id,
+.note-card-id {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-inline-size: 0;
+}
+.vault-card-meta,
+.note-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  font-family: var(--mono);
+}
+.vault-card-meta .chip,
+.note-card-meta .chip {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  color: var(--text-2);
+  font-size: 11px;
+}
+.vault-card-body,
+.note-card-body {
+  min-inline-size: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: var(--lh-snug);
+  text-wrap: pretty;
+}
+.vault-card-body strong { color: var(--text); font-weight: 600; }
+.vault-card-actions,
+.note-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+.vault-card-actions button,
+.note-card-actions button {
+  height: 28px;
+  padding: 0 var(--s-3);
+  font-size: var(--fs-xs);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.vault-card-actions button:hover,
+.note-card-actions button:hover { background: var(--bg); border-color: var(--border-strong); }
+.vault-card-actions button.danger { color: var(--danger); border-color: var(--danger-soft); }
+
+/* ping status pill on each vault row */
+.ping-status {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: var(--r-xs);
+  font-weight: 600;
+  font-family: var(--mono);
+}
+.ping-status.ok { background: color-mix(in oklab, var(--ok) 16%, transparent); color: var(--ok); }
+.ping-status.err { background: color-mix(in oklab, var(--danger) 16%, transparent); color: var(--danger); }
+.ping-status.pending { background: color-mix(in oklab, var(--warn) 16%, transparent); color: var(--warn); }
+.ping-status.unconfigured { background: var(--bg); color: var(--muted); }
+
+/* ----- 13d. NOTES DIALOG (v2.8.6) — 2-column form grid + lifted-glass card list ----- */
+
+.note-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.note-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 0;  /* override the default dialog label margin */
+}
+.note-form label > span {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  font-weight: 600;
+}
+.note-form input,
+.note-form select,
+.note-form textarea {
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-family: var(--font);
+  min-inline-size: 0;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.note-form textarea {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  min-block-size: 96px;
+}
+.note-form input:focus,
+.note-form select:focus,
+.note-form textarea:focus {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+.note-form-name { grid-column: 1 / 2; }
+.note-form-kind { grid-column: 2 / 3; }
+.note-form-tags { grid-column: 1 / 3; }
+.note-form-value { grid-column: 1 / 3; }
+.note-form-actions { grid-column: 1 / 3; display: flex; justify-content: flex-end; }
+@media (max-width: 600px) {
+  .note-form { grid-template-columns: 1fr; }
+  .note-form-name, .note-form-kind, .note-form-tags, .note-form-value, .note-form-actions { grid-column: 1; }
+}
+.note-form-actions .primary-button { min-inline-size: 120px; }
 
 /* ----- 16. RESPONSIVE — 029 ranges, 098 safe area, 025 dvh, 115 touch ----- */
 

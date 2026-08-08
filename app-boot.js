@@ -13,10 +13,10 @@
   // both the sidebar tab bar (radios) and the mobile bottom bar (buttons).
   const TAB_ACTIONS = {
     media:    { index: 0, open: () => { if (typeof openMediaDialog === 'function') openMediaDialog(); else if (dom.mediaDialog) dom.mediaDialog.showModal(); } },
-    vault:    { index: 1, open: () => { if (dom.vaultDialog) dom.vaultDialog.showModal(); } },
-    github:   { index: 2, open: () => { if (dom.githubDialog) dom.githubDialog.showModal(); } },
+    vault:    { index: 1, open: () => { if (typeof openVaultDialog === 'function') openVaultDialog(); else if (dom.vaultDialog) dom.vaultDialog.showModal(); } },
+    github:   { index: 2, open: () => { if (typeof openGithubDialog === 'function') openGithubDialog(); else if (dom.githubDialog) dom.githubDialog.showModal(); } },
     code:     { index: 3, open: () => { if (typeof window.AION_CODE?.openCodeDialog === 'function') window.AION_CODE.openCodeDialog(); else if (dom.codeDialog) dom.codeDialog.showModal(); } },
-    notes:    { index: 4, open: () => { if (dom.notesDialog) { dom.notesDialog.showModal(); if (typeof loadNotes === 'function') loadNotes(); } } },
+    notes:    { index: 4, open: () => { if (typeof openNotesDialog === 'function') openNotesDialog(); else if (dom.notesDialog) { dom.notesDialog.showModal(); if (typeof loadNotes === 'function') loadNotes(); } } },
     settings: { index: 5, open: () => { if (typeof openSettingsDialog === 'function') openSettingsDialog(); } },
   };
 
