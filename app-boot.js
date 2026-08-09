@@ -185,7 +185,12 @@
     if (typeof bindGalleryVaultEvents === 'function') bindGalleryVaultEvents();
     renderAll();
     healthCheck();
-    if (apiKey()) loadModels(); else openSettingsDialog();
+    // QA-only: ?demo=1 in the URL skips the Settings auto-open so
+    // we can capture clean welcome-state screenshots for skin previews.
+    // No effect on production behavior — the query is just a flag.
+    const isDemo = new URL(window.location.href).searchParams.get('demo') === '1';
+    if (apiKey() && !isDemo) loadModels();
+    else if (!apiKey() && !isDemo) openSettingsDialog();
     setInterval(healthCheck, 30_000);
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   }
