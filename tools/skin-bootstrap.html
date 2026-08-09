@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>AION skin bootstrap</title>
+  <script>
+    // Pre-set the skin, then redirect to the main app.
+    // This is used by the screenshot script to take a clean shot of
+    // each skin without re-implementing the auth flow.
+    const params = new URLSearchParams(location.search);
+    const skin = params.get('skin') || 'default';
+    localStorage.setItem('aion.skin.v1', skin);
+    try {
+      const cur = JSON.parse(localStorage.getItem('aion.settings.v2') || '{}');
+      cur.skin = skin;
+      localStorage.setItem('aion.settings.v2', JSON.stringify(cur));
+    } catch { /* first boot */ }
+    location.replace('/?skin=' + encodeURIComponent(skin));
+  </script>
+</head>
+<body style="background:#161616;color:#fff;font-family:system-ui;padding:32px;">
+  Loading AION with skin: <code id="skin">…</code>
+  <script>document.getElementById('skin').textContent = new URLSearchParams(location.search).get('skin') || 'default';</script>
+</body>
+</html>

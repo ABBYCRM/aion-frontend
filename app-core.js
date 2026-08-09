@@ -211,13 +211,29 @@
   function loadSkin() {
     let skin = 'default';
     try {
-      // Prefer the fast-path key (always the latest applied value) so
-      // first-paint matches the user's last choice even if Settings was
-      // never re-saved.
-      const fast = localStorage.getItem(SKIN_KEY);
-      if (fast && SKIN_IDS.includes(fast)) skin = fast;
-      else if (state.settings.skin && SKIN_IDS.includes(state.settings.skin)) {
-        skin = state.settings.skin;
+      // URL hash override (?skin=umbrella-corp) — useful for sharing
+      // a screenshot, a deep link to a skin, or QA. The hash is
+      // stripped after read so a refresh doesn't keep applying it.
+      const url = new URL(window.location.href);
+      const fromQuery = url.searchParams.get('skin');
+      if (fromQuery && SKIN_IDS.includes(fromQuery)) {
+        skin = fromQuery;
+        // Also persist it so the next reload (without ?skin=) keeps it.
+        try { localStorage.setItem(SKIN_KEY, skin); } catch { /* */ }
+        // Clean the URL — keeps the address bar tidy.
+        try {
+          url.searchParams.delete('skin');
+          window.history.replaceState(null, '', url.pathname + (url.search || '') + url.hash);
+        } catch { /* */ }
+      } else {
+        // Prefer the fast-path key (always the latest applied value) so
+        // first-paint matches the user's last choice even if Settings was
+        // never re-saved.
+        const fast = localStorage.getItem(SKIN_KEY);
+        if (fast && SKIN_IDS.includes(fast)) skin = fast;
+        else if (state.settings.skin && SKIN_IDS.includes(state.settings.skin)) {
+          skin = state.settings.skin;
+        }
       }
     } catch { /* storage unavailable — stick with default */ }
     applySkin(skin);
