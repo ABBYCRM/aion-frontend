@@ -1234,6 +1234,47 @@ button:disabled,
   border: 1px solid var(--border);
 }
 
+/* Shortcut chips under the composer — little clickable buttons that
+   pre-fill the prompt with a command template. The user finishes
+   typing and hits Send. Locked rule: shortcuts sit below the hint
+   text, never inline with it. They are actions, not prose. */
+.composer-shortcuts {
+  max-width: var(--content-max);
+  margin: var(--s-2) auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.composer-shortcut {
+  /* chip-sized, not pill-sized — smaller than .muted-button */
+  height: 24px;
+  padding: 0 var(--s-2);
+  font-size: 11px;
+  font-family: var(--mono);
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+.composer-shortcut:hover {
+  background: var(--surface-3);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.composer-shortcut:active {
+  background: var(--brand-soft);
+  color: var(--text);
+  border-color: var(--border-brand);
+}
+
 .attachment-list {
   display: flex;
   flex-wrap: wrap;
@@ -2465,6 +2506,8 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   /* Composer hint is too long on mobile — keep only the first part */
   .composer-hint { font-size: 10px; line-height: 1.4; padding: 0 4px; }
   .composer-hint code { font-size: 10px; }
+  .composer-shortcuts { gap: 4px; }
+  .composer-shortcut { height: 22px; font-size: 10px; padding: 0 8px; }
   .message { grid-template-columns: 28px minmax(0, 1fr); }
   .avatar { width: 28px; height: 28px; font-size: 11px; }
 }

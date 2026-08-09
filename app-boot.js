@@ -85,6 +85,20 @@
     });
     dom.attachButton.addEventListener('click', chooseFiles);
     dom.stopButton.addEventListener('click', stopGeneration);
+    // Composer shortcut buttons — pre-fill the prompt with a command
+    // template. The user finishes typing and hits Send.
+    document.querySelectorAll('.composer-shortcut').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const template = btn.dataset.shortcut || '';
+        if (!template) return;
+        dom.prompt.value = template;
+        dom.prompt.focus();
+        // Place the caret at the end of the template
+        const len = dom.prompt.value.length;
+        dom.prompt.setSelectionRange(len, len);
+        autosize();
+      });
+    });
     dom.modelSelect.addEventListener('change', () => {
       const [provider, ...modelParts] = dom.modelSelect.value.split('::');
       state.selectedModel = provider && modelParts.length ? { provider, model: modelParts.join('::') } : null;

@@ -143,3 +143,27 @@ test('Vault + Notes dialogs harmonize with Aion Code + Media', () => {
   const vault = read('app-gallery-vault.js');
   assert.doesNotMatch(vault, /dom\.openVault/);
 });
+
+test('Composer shortcut buttons pre-fill the prompt with a command template', () => {
+  // v2.8.7 — the /search and /github commands used to live in a long
+  // <p> after the composer. Operator asked for little clickable buttons
+  // that paste the command into the input. Now there are 4 buttons
+  // (Web search, GitHub topic, LinkedIn topic, GitHub repo) each
+  // with a data-shortcut attribute holding the template.
+  assert.match(index, /class="composer-shortcuts"/);
+  assert.match(index, /data-shortcut="\/search "/);
+  assert.match(index, /data-shortcut="\/search github\.com for "/);
+  assert.match(index, /data-shortcut="\/search linkedin\.com for "/);
+  assert.match(index, /data-shortcut="\/github ABBYCRM\/aion-frontend "/);
+  // The click handler must set prompt.value and focus the input
+  const boot = read('app-boot.js');
+  assert.match(boot, /composer-shortcut/);
+  assert.match(boot, /dom\.prompt\.value = template/);
+  assert.match(boot, /dom\.prompt\.focus\(\)/);
+  assert.match(boot, /setSelectionRange/);
+  // The CSS must style them as little chip-sized buttons, not the
+  // default button style (24px height, mono font, surface-2 bg).
+  const css = read('styles-base.css');
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*height:\s*24px/);
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*font-family:\s*var\(--mono\)/);
+});

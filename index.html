@@ -94,7 +94,13 @@
           <button id="sendButton" class="send-button" type="submit" disabled>Send</button>
           <button id="stopButton" class="danger-button" type="button" hidden>Stop</button>
         </form>
-        <p class="composer-hint">Use <code>/search query</code> · <code>/search github.com for X</code> · <code>/search linkedin.com for X</code> · <code>/github owner/repo [issues|file|search]</code>. The <strong>Aion Code</strong> tab queries the code corpora (syntax / scenarios / tasks / books) directly. Credentials belong in deployment secrets, never notes or chat.</p>
+        <p class="composer-hint">Click a shortcut to pre-fill the composer. The <strong>Aion Code</strong> tab queries the code corpora (syntax / scenarios / tasks / books) directly. Credentials belong in deployment secrets, never notes or chat.</p>
+        <div class="composer-shortcuts" role="toolbar" aria-label="Prompt shortcuts">
+          <button type="button" class="composer-shortcut" data-shortcut="/search ">Web search</button>
+          <button type="button" class="composer-shortcut" data-shortcut="/search github.com for ">GitHub topic</button>
+          <button type="button" class="composer-shortcut" data-shortcut="/search linkedin.com for ">LinkedIn topic</button>
+          <button type="button" class="composer-shortcut" data-shortcut="/github ABBYCRM/aion-frontend ">GitHub repo</button>
+        </div>
       </section>
     </main>
     <nav id="tabBarMobile" class="tab-bar tab-bar-mobile" data-active="0" aria-label="Workspace tools">
