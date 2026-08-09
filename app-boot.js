@@ -177,6 +177,7 @@
   }
 
   function boot() {
+    if (window.AION_DEBUG) console.log('[boot] start');
     loadSettings();
     if (typeof loadSkin === 'function') loadSkin();
     loadConversations();
