@@ -167,3 +167,69 @@ test('Composer shortcut buttons pre-fill the prompt with a command template', ()
   assert.match(css, /\.composer-shortcut\s*\{[^}]*height:\s*24px/);
   assert.match(css, /\.composer-shortcut\s*\{[^}]*font-family:\s*var\(--mono\)/);
 });
+
+test('Skin picker lets the user swap appearance without changing layout', () => {
+  // v2.8.8 — skins adapted from ABBYCRM/BOS-OMEGA-Frontend's theme
+  // system. 5 selectable skins in Settings → Appearance:
+  //   default, umbrella-corp, cyberdine, retro95, capybara.
+  // Each skin must override ONLY tokens (colors, radii, fonts,
+  // shadows) — never layout, never grid, never flex. The picker
+  // is a radio group of cards, the active card shows a checkmark.
+
+  // 1. The skin stylesheet is linked from index.html
+  assert.match(index, /href="\/styles-skins\.css"/);
+
+  // 2. The picker is in the Settings dialog, with 5 cards
+  const skinCards = index.match(/<button[^>]+class="skin-card"[^>]+data-skin="([^"]+)"/g) || [];
+  assert.equal(skinCards.length, 5, 'expected 5 skin cards in Settings');
+  for (const id of ['default', 'umbrella-corp', 'cyberdine', 'retro95', 'capybara']) {
+    assert.ok(skinCards.some((c) => c.includes(`data-skin="${id}"`)),
+      `missing skin card: ${id}`);
+  }
+
+  // 3. The skins file overrides AION's tokens (--bg, --surface,
+  //    --brand, --text, --r-*, --shadow-*) — not layout.
+  const skins = read('styles-skins.css');
+  for (const token of ['--bg', '--surface', '--brand', '--text', '--r-sm', '--shadow-md']) {
+    assert.match(skins, new RegExp(`--bg:[^;]+`), `skins.css must override ${token}`);
+  }
+  // The skins must use [data-skin="..."] selectors, not :root.theme-*
+  for (const id of ['default', 'umbrella-corp', 'cyberdine', 'retro95', 'capybara']) {
+    if (id === 'default') continue; // default = no override block
+    assert.ok(skins.includes(`[data-skin="${id}"]`),
+      `skins.css must contain a [data-skin="${id}"] block`);
+  }
+
+  // 4. App state + JS plumbing — applySkin, loadSkin, SKIN_IDS
+  const core = read('app-core.js');
+  assert.match(core, /SKIN_IDS\s*=\s*\[[^\]]*'default'[^\]]*'umbrella-corp'[^\]]*\]/);
+  assert.match(core, /function applySkin/);
+  assert.match(core, /function loadSkin/);
+  assert.match(core, /skin:\s*'default'/);
+  assert.match(core, /localStorage\.setItem\(SKIN_KEY/);
+  // saveSettings must persist the skin
+  assert.match(core, /saved\.skin = state\.settings\.skin/);
+
+  // 5. Boot sequence calls loadSkin AFTER loadSettings
+  const boot = read('app-boot.js');
+  const loadSettingsIdx = boot.indexOf('loadSettings()');
+  const loadSkinIdx = boot.indexOf('loadSkin()');
+  assert.ok(loadSettingsIdx > -1 && loadSkinIdx > -1, 'boot must call loadSettings + loadSkin');
+  assert.ok(loadSkinIdx > loadSettingsIdx, 'loadSkin must run AFTER loadSettings');
+
+  // 6. The skin card click handler is wired
+  assert.match(boot, /document\.querySelectorAll\('\.skin-card'\)/);
+  assert.match(boot, /state\.settings\.skin = id/);
+  assert.match(boot, /applySkin\(id\)/);
+
+  // 7. Setting appVersion bumped to 2.8.8
+  const cfg = read('config.js');
+  assert.match(cfg, /appVersion:\s*'2\.8\.8'/);
+
+  // 8. Locked rule: no skin touches layout. None of the skin blocks
+  //    may redefine grid, flex, display, or position. (Transform is
+  //    OK on hover for the picker card itself, but not for the
+  //    global app shell under the skin.)
+  assert.doesNotMatch(skins, /\[data-skin="[^"]+"\]\s*\.app-shell\s*\{[^}]*display:/);
+  assert.doesNotMatch(skins, /\[data-skin="[^"]+"\]\s*\.sidebar\s*\{[^}]*display:/);
+});

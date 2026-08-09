@@ -1,0 +1,578 @@
+/* =============================================================
+   AION — Skins (selectable CSS-only themes)
+   Adapted from ABBYCRM/BOS-OMEGA-Frontend's theme system,
+   scoped to AION's existing token contract.
+
+   How it works
+   ────────────
+   The user picks a skin from Settings → Appearance. The chosen
+   skin is applied by setting `data-skin="<id>"` on <html>.
+   Each skin block below re-binds the AION tokens (--bg,
+   --surface, --brand, --text, --r-*, --shadow-*, ...) plus
+   any structural overrides (font, body background, etc).
+
+   The "default" skin is the existing Z.ai look. It has no
+   override block — the :root tokens are already the default.
+
+   The skins never touch layout. They only override the
+   variables + a handful of cosmetic properties (background
+   patterns, font family, brand color). Every skin reuses
+   the same component CSS.
+
+   Skin ID list — keep in sync with `app-core.js SKIN_IDS`
+   and the Settings picker:
+     default       — Z.ai warm-neutral charcoal (the current look)
+     umbrella-corp — pitch black, corporate red, hex grid + scan
+     cyberdine     — Terminator red-on-black, industrial bevel
+     retro95       — Windows 95 grey, bevelled, monospace
+     capybara      — warm brown, soft 1rem radius, calm
+
+   If you want to add another skin, copy a block, change the
+   selector, change the tokens, save. The picker will pick it
+   up via SKIN_IDS.
+   ============================================================= */
+
+/* ─────────────────────────────────────────────────────────────
+   SKIN: UMBRELLA CORP
+   Pitch black shell, corporate red borders, animated hex grid,
+   slow CRT scan, soft red pulse bar on the top edge. Inspired
+   by the Umbrella Corporation tactical command console.
+   Adapted from BOS-OMEGA's :root.theme-umbrella-corp block.
+   ───────────────────────────────────────────────────────────── */
+html[data-skin="umbrella-corp"] {
+  /* Core token overrides */
+  --bg:            #050505;
+  --surface:       #0b0b0c;
+  --surface-2:     #111113;
+  --surface-3:     #171719;
+  --surface-inset: #030303;
+
+  --text:        #f2f2f2;
+  --text-2:      #c4c4c4;
+  --muted:       #a9a9a9;
+  --text-faint:  #737373;
+
+  --brand:        #d41414;  /* corporate red */
+  --brand-soft:   #2a1010;
+  --brand-tint:   #ff2b2b;
+  --brand-fg-on:  #ffffff;
+
+  --border:        rgba(212, 20, 20, 0.32);
+  --border-strong: rgba(212, 20, 20, 0.55);
+  --border-brand:  rgba(212, 20, 20, 0.70);
+
+  --ok:    #19c45a;  --ok-soft:    #0c2a18;  --ok-fg:    #b6f0c8;
+  --warn:  #ffcc33;  --warn-soft:  #2c2410;  --warn-fg:  #ffe099;
+  --danger:#ff3333;  --danger-soft:#2c0a0a;  --danger-fg:#ffc4c4;
+
+  /* Sharper, tactical — sharper corners for command-console feel */
+  --r-xs: 2px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+
+  /* Lifted glass: stronger, redder, more defined */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / .7);
+  --shadow-md:
+    0 0 0 1px rgba(212, 20, 20, .25),
+    0 4px 12px rgb(0 0 0 / .7);
+  --shadow-lg:
+    0 0 0 1px rgba(212, 20, 20, .35),
+    0 8px 24px rgb(0 0 0 / .8),
+    inset 0 1px 0 0 rgba(212, 20, 20, .12);
+
+  --font: "Inter", "JetBrains Mono", system-ui, -apple-system, sans-serif;
+}
+
+html[data-skin="umbrella-corp"] body {
+  /* Animated hex grid + radial red vignette */
+  background-color: #050505;
+  background-image:
+    linear-gradient(30deg,  rgba(212, 20, 20, .05) 1px, transparent 1px),
+    linear-gradient(150deg, rgba(212, 20, 20, .05) 1px, transparent 1px),
+    linear-gradient(90deg,  rgba(212, 20, 20, .04) 1px, transparent 1px),
+    radial-gradient(ellipse at top, rgba(212, 20, 20, .10), transparent 60%);
+  background-size: 28px 48px, 28px 48px, 28px 48px, 100% 100%;
+  letter-spacing: 0.01em;
+}
+
+/* Top pulse bar — a 2px line that breathes */
+html[data-skin="umbrella-corp"] .app-shell::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #d41414 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 1000;
+  animation: uc-pulse-bar 2.4s ease-in-out infinite;
+}
+@keyframes uc-pulse-bar {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50%      { opacity: 1;   transform: scaleY(2.2); }
+}
+
+/* Sidebar gets a red right divider and a darker gradient */
+html[data-skin="umbrella-corp"] .sidebar {
+  background: linear-gradient(180deg, #050505 0%, #0a0a0a 100%);
+  box-shadow: inset -1px 0 0 0 rgba(212, 20, 20, .35);
+  border-right: 1px solid rgba(212, 20, 20, .35);
+}
+
+/* Cards: red hairline + soft inner red glow */
+html[data-skin="umbrella-corp"] .dialog-card,
+html[data-skin="umbrella-corp"] .code-card,
+html[data-skin="umbrella-corp"] .vault-card,
+html[data-skin="umbrella-corp"] .note-card,
+html[data-skin="umbrella-corp"] .message {
+  border-color: rgba(212, 20, 20, .35);
+  box-shadow:
+    0 0 0 1px rgba(212, 20, 20, .10),
+    0 8px 24px rgb(0 0 0 / .7),
+    inset 0 0 24px rgba(212, 20, 20, .06);
+}
+
+/* Primary button: red metallic gradient */
+html[data-skin="umbrella-corp"] .primary-button {
+  background: linear-gradient(180deg, #d41414 0%, #8b1010 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 51, 51, .6);
+  text-shadow: 0 1px 0 rgb(0 0 0 / .4);
+}
+html[data-skin="umbrella-corp"] .primary-button.cta {
+  background: linear-gradient(180deg, #ff2b2b 0%, #b01010 100%);
+  color: #fff;
+}
+
+/* Active sidebar item: red glow */
+html[data-skin="umbrella-corp"] .conversation-item.active {
+  background: linear-gradient(90deg, rgba(212, 20, 20, .18) 0%, rgba(139, 16, 16, .22) 100%);
+  box-shadow: inset 2px 0 0 0 #d41414;
+  color: #fff;
+}
+
+/* Headings: uppercase, white, with a thin red bar prefix */
+html[data-skin="umbrella-corp"] h1,
+html[data-skin="umbrella-corp"] h2,
+html[data-skin="umbrella-corp"] h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Reduced motion: disable the pulse bar */
+@media (prefers-reduced-motion: reduce) {
+  html[data-skin="umbrella-corp"] .app-shell::before { animation: none; }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   SKIN: CYBERDINE
+   Terminator red-on-black, industrial bevel, monospace caps.
+   No decorative motion. Pure hostile-terminal feel.
+   ───────────────────────────────────────────────────────────── */
+html[data-skin="cyberdine"] {
+  --bg:            #0a0000;
+  --surface:       #140404;
+  --surface-2:     #1c0606;
+  --surface-3:     #260909;
+  --surface-inset: #050000;
+
+  --text:        #ff3b30;
+  --text-2:      #d12e25;
+  --muted:       #8a1f1a;
+  --text-faint:  #5a1411;
+
+  --brand:        #ff1a1a;
+  --brand-soft:   #2a0606;
+  --brand-tint:   #ff5555;
+  --brand-fg-on:  #0a0000;
+
+  --border:        rgba(255, 26, 26, .35);
+  --border-strong: rgba(255, 26, 26, .55);
+  --border-brand:  rgba(255, 26, 26, .80);
+
+  --ok:    #ff8800;  --ok-soft:    #2a1200;  --ok-fg:    #ffc080;
+  --warn:  #ffcc00;  --warn-soft:  #2a2000;  --warn-fg:  #ffe080;
+  --danger:#ff0033;  --danger-soft:#2a0006;  --danger-fg:#ff8095;
+
+  --r-xs: 0px;
+  --r-sm: 0px;
+  --r-md: 0px;
+  --r-lg: 0px;
+
+  --shadow-sm: 0 0 0 1px rgba(255, 26, 26, .3);
+  --shadow-md:
+    0 0 0 1px rgba(255, 26, 26, .45),
+    inset 0 0 8px rgba(255, 26, 26, .15);
+  --shadow-lg:
+    0 0 0 1px rgba(255, 26, 26, .55),
+    0 0 12px rgba(255, 26, 26, .25),
+    inset 0 0 16px rgba(255, 26, 26, .18);
+
+  --font: "JetBrains Mono", "Menlo", "Consolas", monospace;
+}
+
+html[data-skin="cyberdine"] body {
+  background-color: #0a0000;
+  background-image:
+    repeating-linear-gradient(0deg,  rgba(255, 26, 26, .04) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(255, 26, 26, .03) 0 1px, transparent 1px 6px);
+  text-shadow: 0 0 4px rgba(255, 26, 26, .35);
+  letter-spacing: 0.04em;
+}
+
+html[data-skin="cyberdine"] .sidebar,
+html[data-skin="cyberdine"] .app-topbar,
+html[data-skin="cyberdine"] .dialog-card,
+html[data-skin="cyberdine"] .message,
+html[data-skin="cyberdine"] .code-card {
+  border: 1px solid rgba(255, 26, 26, .45);
+  box-shadow: inset 0 0 8px rgba(255, 26, 26, .10);
+}
+
+html[data-skin="cyberdine"] .primary-button,
+html[data-skin="cyberdine"] .primary-button.cta {
+  background: #ff1a1a;
+  color: #0a0000;
+  border: 1px solid #ff5555;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  font-weight: 700;
+}
+
+html[data-skin="cyberdine"] h1,
+html[data-skin="cyberdine"] h2,
+html[data-skin="cyberdine"] h3,
+html[data-skin="cyberdine"] .brand-mark {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #ff3b30;
+  font-weight: 700;
+}
+
+html[data-skin="cyberdine"] .icon-button,
+html[data-skin="cyberdine"] .send-button {
+  border: 1px solid rgba(255, 26, 26, .35);
+  background: transparent;
+  color: #ff3b30;
+}
+
+html[data-skin="cyberdine"] .conversation-item.active {
+  background: rgba(255, 26, 26, .12);
+  box-shadow: inset 3px 0 0 0 #ff1a1a;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   SKIN: RETRO 95
+   Classic Windows 95. Beige/grey desktop, bevelled borders,
+   square corners, monospace, no shadows, no gradients. Nostalgia
+   tax: legible but aggressive.
+   ───────────────────────────────────────────────────────────── */
+html[data-skin="retro95"] {
+  color-scheme: light;
+
+  --bg:            #c0c0c0;
+  --surface:       #c0c0c0;
+  --surface-2:     #d4d0c8;
+  --surface-3:     #dfdfdf;
+  --surface-inset: #ffffff;
+
+  --text:        #000000;
+  --text-2:      #1a1a1a;
+  --muted:       #404040;
+  --text-faint:  #707070;
+
+  --brand:        #000080;  /* classic Win95 navy */
+  --brand-soft:   #c0c0ff;
+  --brand-tint:   #000080;
+  --brand-fg-on:  #ffffff;
+
+  --border:        #808080;
+  --border-strong: #404040;
+  --border-brand:  #000080;
+
+  --ok:    #008000;  --ok-soft:    #c0e0c0;  --ok-fg:    #003000;
+  --warn:  #808000;  --warn-soft:  #e0e0c0;  --warn-fg:  #404000;
+  --danger:#800000;  --danger-soft:#e0c0c0;  --danger-fg:#400000;
+
+  --r-xs: 0px;
+  --r-sm: 0px;
+  --r-md: 0px;
+  --r-lg: 0px;
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+
+  --font: "Lucida Console", "Courier New", monospace;
+}
+
+html[data-skin="retro95"] body {
+  background-color: #008080;  /* classic teal */
+  color: #000;
+}
+
+html[data-skin="retro95"] .sidebar,
+html[data-skin="retro95"] .app-topbar,
+html[data-skin="retro95"] .dialog-card,
+html[data-skin="retro95"] .message,
+html[data-skin="retro95"] .code-card,
+html[data-skin="retro95"] .vault-card,
+html[data-skin="retro95"] .note-card,
+html[data-skin="retro95"] input,
+html[data-skin="retro95"] textarea,
+html[data-skin="retro95"] select,
+html[data-skin="retro95"] .composer,
+html[data-skin="retro95"] button {
+  background: #c0c0c0;
+  color: #000;
+  border: 2px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;  /* the classic 95 bevel */
+  box-shadow: none;
+  border-radius: 0;
+}
+
+html[data-skin="retro95"] .sidebar,
+html[data-skin="retro95"] .app-topbar {
+  border-color: #ffffff #404040 #404040 #ffffff;
+  border-width: 2px;
+}
+
+html[data-skin="retro95"] .primary-button,
+html[data-skin="retro95"] .primary-button.cta {
+  background: #c0c0c0;
+  color: #000;
+  border: 2px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;
+  text-transform: none;
+  font-weight: 600;
+}
+html[data-skin="retro95"] .primary-button:active,
+html[data-skin="retro95"] .primary-button.cta:active {
+  border-color: #404040 #ffffff #ffffff #404040;
+}
+
+html[data-skin="retro95"] h1,
+html[data-skin="retro95"] h2,
+html[data-skin="retro95"] h3,
+html[data-skin="retro95"] .brand-mark {
+  background: #000080;
+  color: #fff;
+  padding: 2px 6px;
+  font-family: "MS Sans Serif", "Tahoma", sans-serif;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+html[data-skin="retro95"] .conversation-item.active {
+  background: #000080;
+  color: #fff;
+}
+
+html[data-skin="retro95"] .icon-button {
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;
+  border-radius: 0;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   SKIN: CAPYBARA
+   Warm brown, soft 1rem radius, calm. The cozy option.
+   ───────────────────────────────────────────────────────────── */
+html[data-skin="capybara"] {
+  --bg:            #f3ece1;  /* warm cream */
+  --surface:       #ebe1d2;
+  --surface-2:     #e0d4c1;
+  --surface-3:     #d4c5af;
+  --surface-inset: #faf5ec;
+
+  --text:        #3a2e22;  /* deep brown */
+  --text-2:      #5c4a38;
+  --muted:       #8a7762;
+  --text-faint:  #b0a08d;
+
+  --brand:        #8a5a3b;  /* warm caramel */
+  --brand-soft:   #e6d4bd;
+  --brand-tint:   #8a5a3b;
+  --brand-fg-on:  #fff8ec;
+
+  --border:        rgba(58, 46, 34, .18);
+  --border-strong: rgba(58, 46, 34, .30);
+  --border-brand:  rgba(138, 90, 59, .50);
+
+  --ok:    #5a8a3b;  --ok-soft:    #d4e6c0;  --ok-fg:    #2c4a18;
+  --warn:  #c4884a;  --warn-soft:  #ecd9bd;  --warn-fg:  #6c4218;
+  --danger:#a84032;  --danger-soft:#e6c5be;  --danger-fg:#5a1a10;
+
+  --r-xs: 6px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+
+  --shadow-sm: 0 1px 2px rgb(58 46 34 / .12);
+  --shadow-md:
+    0 2px 6px rgb(58 46 34 / .14),
+    0 0 0 1px rgb(58 46 34 / .06);
+  --shadow-lg:
+    0 6px 18px rgb(58 46 34 / .18),
+    0 0 0 1px rgb(58 46 34 / .08),
+    inset 0 1px 0 0 rgb(255 248 236 / .6);
+
+  --font: "Georgia", "Iowan Old Style", ui-serif, serif;
+}
+
+html[data-skin="capybara"] body {
+  color-scheme: light;
+  background-color: #f3ece1;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(138, 90, 59, .06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(138, 90, 59, .04) 0%, transparent 50%);
+}
+
+html[data-skin="capybara"] .sidebar,
+html[data-skin="capybara"] .dialog-card,
+html[data-skin="capybara"] .message,
+html[data-skin="capybara"] .code-card,
+html[data-skin="capybara"] .vault-card,
+html[data-skin="capybara"] .note-card {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-skin="capybara"] .primary-button,
+html[data-skin="capybara"] .primary-button.cta {
+  background: #8a5a3b;
+  color: #fff8ec;
+  border: 1px solid rgba(58, 46, 34, .25);
+}
+
+html[data-skin="capybara"] .icon-button {
+  background: transparent;
+  color: #5c4a38;
+  border: 1px solid transparent;
+}
+html[data-skin="capybara"] .icon-button:hover {
+  background: var(--surface-2);
+  color: #3a2e22;
+}
+
+html[data-skin="capybara"] h1,
+html[data-skin="capybara"] h2,
+html[data-skin="capybara"] h3 {
+  font-family: "Georgia", serif;
+  color: #3a2e22;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+html[data-skin="capybara"] .conversation-item.active {
+  background: #e6d4bd;
+  color: #3a2e22;
+  box-shadow: inset 3px 0 0 0 #8a5a3b;
+}
+
+html[data-skin="capybara"] .brand-mark {
+  background: #8a5a3b;
+  color: #fff8ec;
+  border: 1px solid rgba(58, 46, 34, .25);
+}
+
+
+/* =============================================================
+   SKIN PICKER UI
+   5-card grid in Settings → Appearance. The cards themselves
+   are intentionally NOT re-themed by the active skin — they
+   must stay readable so the user can always see what they're
+   picking. They use the page's neutral chrome (surface-2, the
+   default text color) regardless of which skin is active.
+   ============================================================= */
+
+.skin-picker {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-4) var(--s-4) var(--s-3);
+  margin: var(--s-2) 0;
+  background: var(--surface);
+}
+.skin-picker > legend {
+  padding: 0 var(--s-2);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.skin-picker-help {
+  margin: 0 0 var(--s-3);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--s-3);
+}
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms, box-shadow 120ms, transform 120ms;
+  font: inherit;
+}
+.skin-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.skin-card[aria-checked="true"] {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--border-brand);
+}
+.skin-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.skin-swatch {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  height: 28px;
+  border-radius: var(--r-xs);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.sw-dot { display: block; }
+.skin-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 2px;
+}
+.skin-tag {
+  font-size: 11px;
+  line-height: 1.3;
+}
+.skin-card[aria-checked="true"]::after {
+  content: "✓ Active";
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand);
+  margin-top: 2px;
+}

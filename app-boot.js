@@ -99,6 +99,19 @@
         autosize();
       });
     });
+    // Skin picker: click a card → apply immediately (no Save needed) AND
+    // commit the choice to state.settings so the next Save() writes it.
+    // The skin change is intentionally live because it's purely cosmetic
+    // and reversible — the user can see what they're picking.
+    document.querySelectorAll('.skin-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const id = card.getAttribute('data-skin');
+        if (typeof applySkin === 'function' && id) {
+          state.settings.skin = id;
+          applySkin(id);
+        }
+      });
+    });
     dom.modelSelect.addEventListener('change', () => {
       const [provider, ...modelParts] = dom.modelSelect.value.split('::');
       state.selectedModel = provider && modelParts.length ? { provider, model: modelParts.join('::') } : null;
@@ -165,6 +178,7 @@
 
   function boot() {
     loadSettings();
+    if (typeof loadSkin === 'function') loadSkin();
     loadConversations();
     bindEvents();
     if (typeof bindMediaEvents === 'function') bindMediaEvents();

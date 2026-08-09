@@ -6,6 +6,8 @@
   const MODEL_KEY = 'aion.model.v2';
   const API_KEY_LOCAL = 'aion.apiKey.local';
   const API_KEY_FORGET_KEY = 'aion.apiKey.forgetOnClose';
+  const SKIN_KEY = 'aion.skin.v1';
+  const SKIN_IDS = ['default', 'umbrella-corp', 'cyberdine', 'retro95', 'capybara'];
   const MAX_TEXT_FILE = Number(CONFIG.maxTextFileBytes) || 100_000;
   const MAX_IMAGE_FILE = Number(CONFIG.maxImageBytes) || 900_000;
   const MAX_ATTACHMENT_COUNT = Number(CONFIG.maxAttachmentCount) || 6;
@@ -77,6 +79,7 @@
       autoSpeak: false,
       ttsVoice: 'alloy',
       forgetApiKeyOnClose: false,
+      skin: 'default',
     },
     selectedModel: null,
     modelsLoaded: false,
@@ -127,6 +130,9 @@
       state.settings.autoSpeak = saved.autoSpeak === true;
       state.settings.ttsVoice = typeof saved.ttsVoice === 'string' ? saved.ttsVoice : 'alloy';
       state.settings.forgetApiKeyOnClose = saved.forgetApiKeyOnClose === true;
+      if (typeof saved.skin === 'string' && SKIN_IDS.includes(saved.skin)) {
+        state.settings.skin = saved.skin;
+      }
       const selected = JSON.parse(localStorage.getItem(MODEL_KEY) || 'null');
       if (selected && selected.provider && selected.model) state.selectedModel = selected;
     } catch { /* use secure defaults */ }
@@ -143,6 +149,7 @@
     saved.autoSpeak = state.settings.autoSpeak;
     saved.ttsVoice = state.settings.ttsVoice;
     saved.forgetApiKeyOnClose = state.settings.forgetApiKeyOnClose;
+    saved.skin = state.settings.skin;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(saved));
     if (state.settings.forgetApiKeyOnClose) localStorage.setItem(API_KEY_FORGET_KEY, '1');
     else localStorage.removeItem(API_KEY_FORGET_KEY);
@@ -179,6 +186,41 @@
     }));
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(safe)); }
     catch { showToast('Local history is full. Export or delete older conversations.'); }
+  }
+
+  // ----- Skin handling -----
+  // AION keeps skin state in two places so it survives a hard refresh even
+  // before Settings is opened: SETTINGS_KEY (canonical) and SKIN_KEY
+  // (fast-path so the active skin is applied on the very first paint).
+  // The two are reconciled in loadSettings() above.
+
+  function applySkin(skinId) {
+    const id = SKIN_IDS.includes(skinId) ? skinId : 'default';
+    const root = document.documentElement;
+    if (id === 'default') root.removeAttribute('data-skin');
+    else root.setAttribute('data-skin', id);
+    // Reflect the choice in the Settings picker (aria-checked).
+    const cards = document.querySelectorAll('.skin-card');
+    cards.forEach((card) => {
+      const matches = card.getAttribute('data-skin') === id;
+      card.setAttribute('aria-checked', matches ? 'true' : 'false');
+    });
+    try { localStorage.setItem(SKIN_KEY, id); } catch { /* storage full / disabled */ }
+  }
+
+  function loadSkin() {
+    let skin = 'default';
+    try {
+      // Prefer the fast-path key (always the latest applied value) so
+      // first-paint matches the user's last choice even if Settings was
+      // never re-saved.
+      const fast = localStorage.getItem(SKIN_KEY);
+      if (fast && SKIN_IDS.includes(fast)) skin = fast;
+      else if (state.settings.skin && SKIN_IDS.includes(state.settings.skin)) {
+        skin = state.settings.skin;
+      }
+    } catch { /* storage unavailable — stick with default */ }
+    applySkin(skin);
   }
 
   function sanitizeToolForStorage(tool) {

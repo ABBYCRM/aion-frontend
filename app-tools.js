@@ -10,6 +10,10 @@
     dom.autoSpeak.checked = !!state.settings.autoSpeak;
     if (dom.ttsVoiceSetting) dom.ttsVoiceSetting.value = state.settings.ttsVoice || 'alloy';
     if (dom.forgetApiKeyOnClose) dom.forgetApiKeyOnClose.checked = state.settings.forgetApiKeyOnClose;
+    // Reflect the active skin in the picker (covers the case where the
+    // user opened Settings without the picker having been wired yet, e.g.
+    // first launch).
+    if (typeof applySkin === 'function') applySkin(state.settings.skin || 'default');
     if (!dom.settingsDialog.open) dom.settingsDialog.showModal();
     refreshPolicy();
   }
