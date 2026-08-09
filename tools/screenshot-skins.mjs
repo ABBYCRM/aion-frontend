@@ -40,8 +40,16 @@ for (const skin of SKINS) {
     // to think one is configured.
     localStorage.setItem('aion.apiKey.local', 'aion_screenshot_demo_key_not_real');
   }, skin.id);
-  // Reload with both the skin + demo flag for defense in depth
+  // Reload with both the skin + demo flag for defense in depth.
+  // After the reload, force-close any open Settings dialog so the
+  // screenshot shows the welcome state. (The dialog from the very
+  // first page load carries over as `<dialog open>` in the DOM and
+  // is not automatically closed by a same-page navigation.)
   await page.goto(`${URL}?skin=${skin.id}&demo=1`, { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const dlg = document.getElementById('settingsDialog');
+    if (dlg && dlg.open) dlg.close();
+  });
   await page.waitForSelector('.brand-mark', { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(1000);
   const path = `${OUT}/${skin.file}`;
