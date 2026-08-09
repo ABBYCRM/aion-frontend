@@ -133,7 +133,7 @@
     </nav>
   </div>
 
-  <dialog id="settingsDialog" class="dialog">
+  <dialog id="settingsDialog" class="dialog wide">
     <form method="dialog" class="dialog-card">
       <header>
         <div>
@@ -142,93 +142,100 @@
         </div>
         <button class="icon-button" value="cancel" aria-label="Close">×</button>
       </header>
-      <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" readonly></label>
-      <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored locally on this device"></label>
-      <label>Temperature<div class="range-row"><input id="temperature" type="range" min="0" max="2" step="0.1" value="0.7" aria-label="Temperature"><output id="temperatureValue" for="temperature">0.7</output></div></label>
-      <label>Max completion tokens<input id="maxTokens" type="number" min="32" max="4096" step="32"></label>
-      <label class="search-toggle"><input id="useNotes" type="checkbox"><span>Include matching notes in model context</span></label>
-      <label class="search-toggle"><input id="persistHistory" type="checkbox"><span>Persist sanitized chat history on this device</span></label>
-      <label class="search-toggle"><input id="autoSpeak" type="checkbox"><span>Auto-speak AION replies (server TTS, with VTT captions)</span></label>
-      <label>AION voice
-        <select id="ttsVoiceSetting">
-          <option value="alloy">alloy</option><option value="echo">echo</option>
-          <option value="fable">fable</option><option value="onyx">onyx</option>
-          <option value="nova">nova</option><option value="shimmer">shimmer</option>
-        </select>
-      </label>
-      <label class="search-toggle"><input id="forgetApiKeyOnClose" type="checkbox"><span>Forget API key when this tab closes (otherwise the key is kept in this browser's local storage)</span></label>
-      <fieldset class="skin-picker">
-        <legend>Appearance</legend>
-        <p class="muted skin-picker-help">Pick a skin. Colors, fonts, and animations change — the layout never does. Stored on this device.</p>
-        <div class="skin-grid" role="radiogroup" aria-label="Skin">
-          <button type="button" class="skin-card" data-skin="default" role="radio" aria-checked="true">
-            <span class="skin-swatch skin-swatch-default" aria-hidden="true">
-              <span class="sw-dot" style="background:#161616"></span>
-              <span class="sw-dot" style="background:#1a1a1a"></span>
-              <span class="sw-dot" style="background:#0881f0"></span>
-              <span class="sw-dot" style="background:#e6e8ec"></span>
-            </span>
-            <span class="skin-name">AION Z.ai</span>
-            <span class="skin-tag muted">Default · warm charcoal</span>
-          </button>
-          <button type="button" class="skin-card" data-skin="umbrella-corp" role="radio" aria-checked="false">
-            <span class="skin-swatch skin-swatch-umbrella" aria-hidden="true">
-              <span class="sw-dot" style="background:#050505"></span>
-              <span class="sw-dot" style="background:#0b0b0c"></span>
-              <span class="sw-dot" style="background:#d41414"></span>
-              <span class="sw-dot" style="background:#f2f2f2"></span>
-            </span>
-            <span class="skin-name">Umbrella Corp</span>
-            <span class="skin-tag muted">Tactical · animated hex</span>
-          </button>
-          <button type="button" class="skin-card" data-skin="cyberdine" role="radio" aria-checked="false">
-            <span class="skin-swatch skin-swatch-cyberdine" aria-hidden="true">
-              <span class="sw-dot" style="background:#0a0000"></span>
-              <span class="sw-dot" style="background:#140404"></span>
-              <span class="sw-dot" style="background:#ff1a1a"></span>
-              <span class="sw-dot" style="background:#ff3b30"></span>
-            </span>
-            <span class="skin-name">Cyberdine</span>
-            <span class="skin-tag muted">Industrial · red-on-black</span>
-          </button>
-          <button type="button" class="skin-card" data-skin="retro95" role="radio" aria-checked="false">
-            <span class="skin-swatch skin-swatch-retro95" aria-hidden="true">
-              <span class="sw-dot" style="background:#c0c0c0"></span>
-              <span class="sw-dot" style="background:#dfdfdf"></span>
-              <span class="sw-dot" style="background:#000080"></span>
-              <span class="sw-dot" style="background:#000000"></span>
-            </span>
-            <span class="skin-name">Retro 95</span>
-            <span class="skin-tag muted">Bevelled · monospace</span>
-          </button>
-          <button type="button" class="skin-card" data-skin="capybara" role="radio" aria-checked="false">
-            <span class="skin-swatch skin-swatch-capybara" aria-hidden="true">
-              <span class="sw-dot" style="background:#f3ece1"></span>
-              <span class="sw-dot" style="background:#ebe1d2"></span>
-              <span class="sw-dot" style="background:#8a5a3b"></span>
-              <span class="sw-dot" style="background:#3a2e22"></span>
-            </span>
-            <span class="skin-name">Capybara</span>
-            <span class="skin-tag muted">Warm · cozy</span>
-          </button>
+      <div class="dialog-content">
+        <div class="settings-grid">
+          <label>Backend URL<input id="backendUrl" type="url" autocomplete="url" readonly></label>
+          <label>AION API key<input id="apiKey" type="password" autocomplete="off" placeholder="Stored locally on this device"></label>
+          <label>Temperature<div class="range-row"><input id="temperature" type="range" min="0" max="2" step="0.1" value="0.7" aria-label="Temperature"><output id="temperatureValue" for="temperature">0.7</output></div></label>
+          <label>Max completion tokens<input id="maxTokens" type="number" min="32" max="4096" step="32"></label>
+          <label class="full">AION voice
+            <select id="ttsVoiceSetting">
+              <option value="alloy">alloy</option><option value="echo">echo</option>
+              <option value="fable">fable</option><option value="onyx">onyx</option>
+              <option value="nova">nova</option><option value="shimmer">shimmer</option>
+            </select>
+          </label>
         </div>
-      </fieldset>
-      <fieldset class="status-panel">
-        <legend>Runtime policy (read-only)</legend>
-        <div class="status-row"><span>Backend</span><span id="policyBackend" class="status-value muted">…</span></div>
-        <div class="status-row"><span>Brain</span><span id="policyBrain" class="status-value muted">…</span></div>
-        <div class="status-row"><span>GitHub token</span><span id="policyGhToken" class="status-value muted">…</span></div>
-        <div class="status-row"><span>GitHub App</span><span id="policyGhApp" class="status-value muted">…</span></div>
-        <div class="status-row"><span>Repo allowlist</span><span id="policyGhAllow" class="status-value muted">…</span></div>
-        <div class="status-row"><span>GitHub write</span><span id="policyGhWrite" class="status-value muted">…</span></div>
-        <div class="status-row"><span>CORS origins</span><span id="policyCors" class="status-value muted">…</span></div>
-        <button id="refreshPolicy" type="button" class="muted-button">Refresh policy</button>
-      </fieldset>
+        <div class="settings-toggles" role="group" aria-label="Behaviour toggles">
+          <label class="search-toggle"><input id="useNotes" type="checkbox"><span>Include matching notes in model context</span></label>
+          <label class="search-toggle"><input id="persistHistory" type="checkbox"><span>Persist sanitized chat history on this device</span></label>
+          <label class="search-toggle"><input id="autoSpeak" type="checkbox"><span>Auto-speak AION replies (server TTS, with VTT captions)</span></label>
+          <label class="search-toggle"><input id="forgetApiKeyOnClose" type="checkbox"><span>Forget API key when this tab closes</span></label>
+        </div>
+        <fieldset class="skin-picker">
+          <legend>Appearance</legend>
+          <p class="muted skin-picker-help">Pick a skin. Colors, fonts, and animations change — the layout never does. Stored on this device.</p>
+          <div class="skin-grid" role="radiogroup" aria-label="Skin">
+            <button type="button" class="skin-card" data-skin="default" role="radio" aria-checked="true">
+              <span class="skin-swatch skin-swatch-default" aria-hidden="true">
+                <span class="sw-dot" style="background:#161616"></span>
+                <span class="sw-dot" style="background:#1a1a1a"></span>
+                <span class="sw-dot" style="background:#0881f0"></span>
+                <span class="sw-dot" style="background:#e6e8ec"></span>
+              </span>
+              <span class="skin-name">AION Z.ai</span>
+              <span class="skin-tag muted">Default · warm charcoal</span>
+            </button>
+            <button type="button" class="skin-card" data-skin="umbrella-corp" role="radio" aria-checked="false">
+              <span class="skin-swatch skin-swatch-umbrella" aria-hidden="true">
+                <span class="sw-dot" style="background:#050505"></span>
+                <span class="sw-dot" style="background:#0b0b0c"></span>
+                <span class="sw-dot" style="background:#d41414"></span>
+                <span class="sw-dot" style="background:#f2f2f2"></span>
+              </span>
+              <span class="skin-name">Umbrella Corp</span>
+              <span class="skin-tag muted">Tactical · animated hex</span>
+            </button>
+            <button type="button" class="skin-card" data-skin="cyberdine" role="radio" aria-checked="false">
+              <span class="skin-swatch skin-swatch-cyberdine" aria-hidden="true">
+                <span class="sw-dot" style="background:#0a0000"></span>
+                <span class="sw-dot" style="background:#140404"></span>
+                <span class="sw-dot" style="background:#ff1a1a"></span>
+                <span class="sw-dot" style="background:#ff3b30"></span>
+              </span>
+              <span class="skin-name">Cyberdine</span>
+              <span class="skin-tag muted">Industrial · red-on-black</span>
+            </button>
+            <button type="button" class="skin-card" data-skin="retro95" role="radio" aria-checked="false">
+              <span class="skin-swatch skin-swatch-retro95" aria-hidden="true">
+                <span class="sw-dot" style="background:#c0c0c0"></span>
+                <span class="sw-dot" style="background:#dfdfdf"></span>
+                <span class="sw-dot" style="background:#000080"></span>
+                <span class="sw-dot" style="background:#000000"></span>
+              </span>
+              <span class="skin-name">Retro 95</span>
+              <span class="skin-tag muted">Bevelled · monospace</span>
+            </button>
+            <button type="button" class="skin-card" data-skin="capybara" role="radio" aria-checked="false">
+              <span class="skin-swatch skin-swatch-capybara" aria-hidden="true">
+                <span class="sw-dot" style="background:#f3ece1"></span>
+                <span class="sw-dot" style="background:#ebe1d2"></span>
+                <span class="sw-dot" style="background:#8a5a3b"></span>
+                <span class="sw-dot" style="background:#3a2e22"></span>
+              </span>
+              <span class="skin-name">Capybara</span>
+              <span class="skin-tag muted">Warm · cozy</span>
+            </button>
+          </div>
+        </fieldset>
+        <fieldset class="status-panel">
+          <legend>Runtime policy <span class="muted">· read-only</span></legend>
+          <div class="status-grid">
+            <div class="status-row"><span>Backend</span><span id="policyBackend" class="status-value muted">…</span></div>
+            <div class="status-row"><span>Brain</span><span id="policyBrain" class="status-value muted">…</span></div>
+            <div class="status-row"><span>GitHub token</span><span id="policyGhToken" class="status-value muted">…</span></div>
+            <div class="status-row"><span>GitHub App</span><span id="policyGhApp" class="status-value muted">…</span></div>
+            <div class="status-row"><span>Repo allowlist</span><span id="policyGhAllow" class="status-value muted">…</span></div>
+            <div class="status-row"><span>GitHub write</span><span id="policyGhWrite" class="status-value muted">…</span></div>
+            <div class="status-row full"><span>CORS origins</span><span id="policyCors" class="status-value muted">…</span></div>
+          </div>
+          <button id="refreshPolicy" type="button" class="muted-button">Refresh policy</button>
+        </fieldset>
+      </div>
       <div class="dialog-actions">
         <button id="clearHistory" class="danger-button" type="button">Clear local history</button>
         <button id="saveSettings" class="primary-button cta" value="default">Save</button>
       </div>
-      <p class="muted">The API key is stored on this device and reused across sessions. Enable "Forget on close" if you share this device. History and notes context are off by default.</p>
     </form>
   </dialog>
 

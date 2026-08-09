@@ -576,3 +576,179 @@ html[data-skin="capybara"] .brand-mark {
   color: var(--brand);
   margin-top: 2px;
 }
+
+
+/* =============================================================
+   v2.8.8 — Settings dialog harmonization
+   The Settings dialog got too tall once the skin picker was
+   added. Tighten the layout:
+     - 2-column grid for the basic inputs (URL/API key on top
+       row, temperature/max-tokens on the second row, AION voice
+       spans the full width on its own row)
+     - 2-column grid for the behaviour toggles so they don't
+       stack into a long list
+     - 2-column grid for the runtime policy status rows
+     - Compact toggles with a smaller checkbox + a tighter line
+     - Use the dialog's own neutral surface (no separate fieldset
+       backgrounds) so the dialog reads as one piece, not a stack
+       of cards.
+   These rules are NOT skin-scoped — they apply to the Settings
+   dialog in every skin.
+   ============================================================= */
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.settings-grid > label { margin-bottom: 0; }
+.settings-grid > label.full { grid-column: 1 / -1; }
+
+.settings-toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+  margin-bottom: var(--s-5);
+  padding: var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.settings-toggles > .search-toggle {
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  min-block-size: 0;
+  align-items: center;
+}
+.settings-toggles > .search-toggle input[type="checkbox"] {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  appearance: none;
+  -webkit-appearance: none;
+  inline-size: 14px;
+  block-size: 14px;
+  margin: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--surface-3);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: background-color 120ms, border-color 120ms;
+  flex-shrink: 0;
+}
+.settings-toggles > .search-toggle input[type="checkbox"]::before {
+  content: "";
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 1px;
+  background: var(--brand);
+  transform: scale(0);
+  transition: transform 120ms;
+}
+.settings-toggles > .search-toggle input[type="checkbox"]:checked {
+  background: var(--surface);
+  border-color: var(--brand);
+}
+.settings-toggles > .search-toggle input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+.settings-toggles > .search-toggle:has(input:checked) {
+  background: var(--brand-soft);
+  border-color: var(--border-brand);
+}
+
+/* Runtime policy: 2-column grid for the status rows. */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2) var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.status-grid > .status-row.full { grid-column: 1 / -1; }
+
+#settingsDialog fieldset.status-panel {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  margin: 0 0 var(--s-4);
+}
+#settingsDialog fieldset.status-panel > legend {
+  padding: 0 var(--s-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+#settingsDialog fieldset.status-panel > legend .muted {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+#settingsDialog fieldset.status-panel .status-row {
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: var(--fs-sm);
+  gap: var(--s-3);
+}
+#settingsDialog fieldset.status-panel .status-row:last-child {
+  border-bottom: 0;
+}
+
+/* Skin picker lives in the dialog as a single coherent group. */
+#settingsDialog fieldset.skin-picker {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  margin: 0 0 var(--s-4);
+}
+#settingsDialog fieldset.skin-picker > legend {
+  padding: 0 var(--s-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+#settingsDialog fieldset.skin-picker .skin-grid {
+  /* The dialog is .wide (880px). 5 cards fit in a single row at
+     that width — keep them tight, no wrap. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+#settingsDialog fieldset.skin-picker .skin-card {
+  /* Compact: smaller swatch, smaller text, no transform on hover
+     (the dialog is dense — animation noise would feel jumpy). */
+  padding: var(--s-2);
+  gap: 4px;
+  text-align: center;
+  align-items: center;
+}
+#settingsDialog fieldset.skin-picker .skin-card:hover { transform: none; }
+#settingsDialog fieldset.skin-picker .skin-swatch {
+  height: 20px;
+}
+#settingsDialog fieldset.skin-picker .skin-name {
+  font-size: 12px;
+  margin-top: 0;
+}
+#settingsDialog fieldset.skin-picker .skin-tag {
+  font-size: 10px;
+  line-height: 1.2;
+}
+#settingsDialog fieldset.skin-picker .skin-card[aria-checked="true"]::after {
+  /* No floating "✓ Active" tag inside the dialog — the brand
+     border already tells the user which one is active. */
+  content: "";
+  display: none;
+}

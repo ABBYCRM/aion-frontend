@@ -222,9 +222,9 @@ test('Skin picker lets the user swap appearance without changing layout', () => 
   assert.match(boot, /state\.settings\.skin = id/);
   assert.match(boot, /applySkin\(id\)/);
 
-  // 7. Setting appVersion bumped to 2.8.8
+  // 7. Setting appVersion bumped to 2.8.8+
   const cfg = read('config.js');
-  assert.match(cfg, /appVersion:\s*'2\.8\.8'/);
+  assert.match(cfg, /appVersion:\s*'(2\.8\.[89]|2\.9\.)'/);
 
   // 8. Locked rule: no skin touches layout. None of the skin blocks
   //    may redefine grid, flex, display, or position. (Transform is
@@ -251,4 +251,46 @@ test('Brain-signal probe skips when no API key (avoids 401 dialog cascade)', () 
   assert.ok(apiKeyCheck > -1, 'must have apiKey() guard');
   assert.ok(apiFetchCall > -1, 'must still call apiFetch for the happy path');
   assert.ok(apiKeyCheck < apiFetchCall, 'apiKey guard must come before apiFetch');
+});
+
+test('Settings dialog uses a 2-column grid for inputs + toggles (harmonized v2.8.9)', () => {
+  // v2.8.9 — Settings got too tall once the skin picker was added.
+  // Operator asked to HARMONIZE the screen. We now:
+  //   - Wrap the body in a .dialog-content for clean scrolling
+  //   - 2-col grid for the basic inputs (.settings-grid)
+  //   - 2-col grid for the behaviour toggles (.settings-toggles)
+  //   - 2-col grid for the runtime policy (.status-grid)
+  //   - 5 skin cards in a single row at the .wide dialog width
+  //   - Toggles use real checkboxes (not hidden opacity:0 hacks)
+  const html = read('index.html');
+  const css = read('styles-skins.css');
+
+  // The dialog must be .wide so the 2-col grids actually have room
+  assert.match(html, /id="settingsDialog"\s+class="dialog wide"/);
+  // The body must be wrapped in .dialog-content
+  assert.match(html, /<div class="dialog-content">[\s\S]*?<\/div>\s*<div class="dialog-actions">/);
+  // Inputs use .settings-grid
+  assert.match(html, /<div class="settings-grid">/);
+  // Toggles use .settings-toggles
+  assert.match(html, /<div class="settings-toggles"\s+role="group"/);
+  // All 4 toggles are still inside .settings-toggles
+  for (const id of ['useNotes', 'persistHistory', 'autoSpeak', 'forgetApiKeyOnClose']) {
+    assert.match(html, new RegExp(`<div class="settings-toggles"[\\s\\S]*?id="${id}"`));
+  }
+  // Status panel uses .status-grid
+  assert.match(html, /<div class="status-grid">/);
+  // CORS row spans the full width (long URLs)
+  assert.match(html, /<div class="status-row full"><span>CORS origins/);
+
+  // CSS contracts
+  assert.match(css, /\.settings-grid\s*\{[^}]*grid-template-columns:\s*1fr 1fr/);
+  assert.match(css, /\.settings-toggles\s*\{[^}]*grid-template-columns:\s*1fr 1fr/);
+  assert.match(css, /\.status-grid\s*\{[^}]*grid-template-columns:\s*1fr 1fr/);
+  // Skin picker has 5 cards in a row at the .wide dialog width
+  assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,/);
+  // Toggles use visible checkboxes (not the old opacity:0 pattern)
+  assert.match(css, /\.settings-toggles > \.search-toggle input\[type="checkbox"\]\s*\{[^}]*position:\s*static/);
+  assert.match(css, /\.settings-toggles > \.search-toggle input\[type="checkbox"\]\s*\{[^}]*opacity:\s*1/);
+  // The "✓ Active" floating label is suppressed in the dialog
+  assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-card\[aria-checked="true"\]::after\s*\{[^}]*display:\s*none/);
 });
