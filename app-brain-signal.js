@@ -62,6 +62,14 @@
   }
 
   async function probeBrain() {
+    // If the user hasn't configured an API key, don't probe — the
+    // 401 would trigger the Settings auto-open dialog (via
+    // app-chat-a.js apiFetch), which is jarring for a status pill
+    // that just wants to show "DOWN". Show "API key required" instead.
+    if (typeof apiKey === 'function' && !apiKey()) {
+      setPill('disabled', { error: 'API key required to probe Aion-Brain' });
+      return;
+    }
     setPill('checking');
     try {
       // Prefer dedicated probe; fall back to continuity-pack if probe missing

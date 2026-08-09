@@ -177,7 +177,6 @@
   }
 
   function boot() {
-    if (window.AION_DEBUG) console.log('[boot] start');
     loadSettings();
     if (typeof loadSkin === 'function') loadSkin();
     loadConversations();
@@ -190,7 +189,6 @@
     // we can capture clean welcome-state screenshots for skin previews.
     // No effect on production behavior — the query is just a flag.
     const isDemo = new URL(window.location.href).searchParams.get('demo') === '1';
-    if (window.AION_DEBUG) console.log('[boot] isDemo=', isDemo, 'hasKey=', !!apiKey());
     if (apiKey() && !isDemo) loadModels();
     else if (!apiKey() && !isDemo) openSettingsDialog();
     setInterval(healthCheck, 30_000);

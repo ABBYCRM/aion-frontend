@@ -233,3 +233,22 @@ test('Skin picker lets the user swap appearance without changing layout', () => 
   assert.doesNotMatch(skins, /\[data-skin="[^"]+"\]\s*\.app-shell\s*\{[^}]*display:/);
   assert.doesNotMatch(skins, /\[data-skin="[^"]+"\]\s*\.sidebar\s*\{[^}]*display:/);
 });
+
+test('Brain-signal probe skips when no API key (avoids 401 dialog cascade)', () => {
+  // v2.8.8 — when the user has no API key, the brain-signal pill
+  // must NOT call apiFetch. A 401 from /api/brain/status triggers
+  // openSettingsDialog() inside app-chat-a.js, which would pop the
+  // Settings dialog every time the page boots. The pill should
+  // just show "API key required" / "disabled" instead.
+  const sig = read('app-brain-signal.js');
+  assert.match(sig, /function probeBrain/);
+  // Must short-circuit on missing key BEFORE the apiFetch call
+  assert.match(sig, /if \(typeof apiKey === 'function' && !apiKey\(\)\)/);
+  assert.match(sig, /setPill\('disabled'[\s\S]{0,200}\)/);
+  // The apiFetch call must come AFTER the short-circuit
+  const apiKeyCheck = sig.indexOf('!apiKey()');
+  const apiFetchCall = sig.indexOf('await apiFetch(\'/api/brain/status\')');
+  assert.ok(apiKeyCheck > -1, 'must have apiKey() guard');
+  assert.ok(apiFetchCall > -1, 'must still call apiFetch for the happy path');
+  assert.ok(apiKeyCheck < apiFetchCall, 'apiKey guard must come before apiFetch');
+});
