@@ -309,7 +309,8 @@ test('Settings dialog goes single-column + skin cards wrap to 2x3 on mobile (v2.
   assert.match(css, /@media \(max-width: 600px\)\s*\{/);
   // Dialog goes full-width
   assert.match(css, /\.dialog,\s*\.dialog\.wide\s*\{[^}]*max-width:\s*100vw/);
-  // Settings grid: 1 col on mobile
+  // Settings grid + status grid: 1 col on mobile (toggles too —
+  // the toggle text is too long for a 2-col at 412px)
   assert.match(css, /#settingsDialog \.settings-grid,\s*#settingsDialog \.settings-toggles,\s*#settingsDialog \.status-grid\s*\{[^}]*grid-template-columns:\s*1fr/);
   // Skin picker: 3 per row on mobile
   assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,/);

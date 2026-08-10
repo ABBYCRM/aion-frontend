@@ -803,12 +803,15 @@ html[data-skin="capybara"] .brand-mark {
     font-size: 14px;
   }
   #settingsDialog .range-row input[type="range"] { flex: 1; }
-  /* Toggles: 2-col grid at >=480px (so the text has room),
-     1-col below 480px (small phones). */
-  #settingsDialog .settings-toggles { gap: var(--s-2); grid-template-columns: 1fr 1fr; }
+  /* Toggles: stack 1-col on mobile. The toggle text is long
+     (e.g. "Auto-speak AION replies (server TTS, with VTT
+     captions)") and doesn't fit in a 148px-wide 2-col cell
+     without ugly 4-line wrapping. 1-col gives the text room
+     to breathe. The 2-col layout is for desktop only. */
+  #settingsDialog .settings-toggles { gap: var(--s-2); grid-template-columns: 1fr; }
   #settingsDialog .settings-toggles > .search-toggle {
-    font-size: 12px;
-    line-height: 1.35;
+    font-size: 13px;
+    line-height: 1.4;
     min-block-size: 44px;
   }
   #settingsDialog .settings-toggles > .search-toggle input[type="checkbox"] {
@@ -854,9 +857,8 @@ html[data-skin="capybara"] .brand-mark {
   }
 }
 
-/* Very small phones (<380px): even tighter */
+/* Very small phones (<380px): skin cards wrap to 2 per row */
 @media (max-width: 380px) {
-  #settingsDialog .settings-toggles { grid-template-columns: 1fr; }
   #settingsDialog fieldset.skin-picker .skin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
