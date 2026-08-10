@@ -1241,16 +1241,19 @@ button:disabled,
 .composer-shortcuts {
   max-width: var(--content-max);
   margin: var(--s-2) auto 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  justify-content: stretch;
 }
 .composer-shortcut {
-  /* chip-sized, not pill-sized — smaller than .muted-button */
-  height: 24px;
-  padding: 0 var(--s-2);
-  font-size: 11px;
+  /* chip-sized, not pill-sized — smaller than .muted-button.
+     Min-block-size 24px (not 44px) — these are one-tap actions
+     adjacent to the much larger Send button, so they don't need
+     a full touch target. */
+  min-block-size: 22px;
+  padding: 0 6px;
+  font-size: 10.5px;
   font-family: var(--mono);
   font-weight: 500;
   color: var(--text-2);
@@ -1259,6 +1262,10 @@ button:disabled,
   border-radius: var(--r-xs);
   cursor: pointer;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-inline-size: 0;
   transition:
     background var(--t-fast) var(--ease),
     color var(--t-fast) var(--ease),
@@ -2511,7 +2518,7 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   .composer-hint { font-size: 10px; line-height: 1.4; padding: 0 4px; }
   .composer-hint code { font-size: 10px; }
   .composer-shortcuts { gap: 4px; }
-  .composer-shortcut { height: 22px; font-size: 10px; padding: 0 8px; }
+  .composer-shortcut { font-size: 9.5px; padding: 0 4px; }
   .message { grid-template-columns: 28px minmax(0, 1fr); }
   .avatar { width: 28px; height: 28px; font-size: 11px; }
 }

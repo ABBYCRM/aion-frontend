@@ -162,9 +162,11 @@ test('Composer shortcut buttons pre-fill the prompt with a command template', ()
   assert.match(boot, /dom\.prompt\.focus\(\)/);
   assert.match(boot, /setSelectionRange/);
   // The CSS must style them as little chip-sized buttons, not the
-  // default button style (24px height, mono font, surface-2 bg).
+  // default button style (22-24px height, mono font, surface-2 bg).
+  // v2.8.11 — switched to min-block-size (was height) so the chip
+  // can shrink to a 4-col grid layout on mobile.
   const css = read('styles-base.css');
-  assert.match(css, /\.composer-shortcut\s*\{[^}]*height:\s*24px/);
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*min-block-size:\s*22px/);
   assert.match(css, /\.composer-shortcut\s*\{[^}]*font-family:\s*var\(--mono\)/);
 });
 
@@ -320,4 +322,32 @@ test('Settings dialog goes single-column + skin cards wrap to 2x3 on mobile (v2.
   // Very small phones (<380px) — skin cards 2 per row
   assert.match(css, /@media \(max-width: 380px\)\s*\{/);
   assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+});
+
+test('Composer shortcut buttons are 4-col grid + smaller chip on mobile (v2.8.11)', () => {
+  // v2.8.11 — operator: "make the circled buttons smaller. so
+  // there is more space in the screen". The 4 shortcuts used
+  // to wrap to 2 rows on a 412px viewport, eating ~80px of
+  // vertical space. Fix: 4-col grid (1 row) + smaller chip
+  // (22px min-block-size, 10.5px font, 6px padding).
+  const css = read('styles-base.css');
+  const html = read('index.html');
+
+  // 4-col grid so the 4 chips always share one row
+  assert.match(css, /\.composer-shortcuts\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+  // No flex-wrap (we use a grid, not a flex row)
+  assert.doesNotMatch(css, /\.composer-shortcuts\s*\{[^}]*flex-wrap:\s*wrap/);
+  // Smaller chip
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*min-block-size:\s*22px/);
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*font-size:\s*10\.5px/);
+  // min-inline-size: 0 + white-space: nowrap + text-overflow: ellipsis
+  // so the chip can shrink without pushing siblings
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*min-inline-size:\s*0/);
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*white-space:\s*nowrap/);
+  assert.match(css, /\.composer-shortcut\s*\{[^}]*text-overflow:\s*ellipsis/);
+
+  // The 4 buttons are still in the HTML
+  for (const t of ['/search ', '/search github.com for ', '/search linkedin.com for ', '/github ABBYCRM/aion-frontend ']) {
+    assert.match(html, new RegExp(`data-shortcut="${t.replace(/[.\\/]/g, m => '\\' + m)}"`));
+  }
 });
