@@ -224,7 +224,7 @@ test('Skin picker lets the user swap appearance without changing layout', () => 
 
   // 7. Setting appVersion bumped to 2.8.8+
   const cfg = read('config.js');
-  assert.match(cfg, /appVersion:\s*'(2\.8\.[89]|2\.9\.)'/);
+  assert.match(cfg, /appVersion:\s*'(2\.8\.[89]|2\.8\.1[0-9]|2\.9\.)'/);
 
   // 8. Locked rule: no skin touches layout. None of the skin blocks
   //    may redefine grid, flex, display, or position. (Transform is
@@ -293,4 +293,30 @@ test('Settings dialog uses a 2-column grid for inputs + toggles (harmonized v2.8
   assert.match(css, /\.settings-toggles > \.search-toggle input\[type="checkbox"\]\s*\{[^}]*opacity:\s*1/);
   // The "✓ Active" floating label is suppressed in the dialog
   assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-card\[aria-checked="true"\]::after\s*\{[^}]*display:\s*none/);
+});
+
+test('Settings dialog goes single-column + skin cards wrap to 2x3 on mobile (v2.8.10)', () => {
+  // v2.8.10 — on a 412px viewport, the v2.8.9 2-col grid + 5-card
+  // single row breaks: skin cards become 43px wide, status rows
+  // overlap. Operator: "MAKE THESE BUTTONS SMALLER" + "harmonize
+  // these areas" on mobile.
+  // Fix: <600px → settings dialog full-width + single column for
+  // inputs/toggles/status + skin cards wrap to 3 per row.
+  // <380px → skin cards wrap to 2 per row.
+  const css = read('styles-skins.css');
+
+  // @media (max-width: 600px) block must exist
+  assert.match(css, /@media \(max-width: 600px\)\s*\{/);
+  // Dialog goes full-width
+  assert.match(css, /\.dialog,\s*\.dialog\.wide\s*\{[^}]*max-width:\s*100vw/);
+  // Settings grid: 1 col on mobile
+  assert.match(css, /#settingsDialog \.settings-grid,\s*#settingsDialog \.settings-toggles,\s*#settingsDialog \.status-grid\s*\{[^}]*grid-template-columns:\s*1fr/);
+  // Skin picker: 3 per row on mobile
+  assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,/);
+  // Status rows stack on mobile (label above value)
+  assert.match(css, /#settingsDialog fieldset\.status-panel \.status-row\s*\{[^}]*flex-direction:\s*column/);
+
+  // Very small phones (<380px) — skin cards 2 per row
+  assert.match(css, /@media \(max-width: 380px\)\s*\{/);
+  assert.match(css, /#settingsDialog fieldset\.skin-picker \.skin-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
 });

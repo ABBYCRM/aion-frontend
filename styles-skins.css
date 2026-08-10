@@ -752,3 +752,109 @@ html[data-skin="capybara"] .brand-mark {
   content: "";
   display: none;
 }
+
+
+/* =============================================================
+   v2.8.10 — MOBILE HARMONIZATION
+   On a 412px viewport (Pixel 7), the 2-col grids + 5-card
+   row are too tight. Force single-column layouts for the
+   Settings dialog and tighten the input/toggle/card sizes.
+
+   Also: smaller main UI buttons on mobile (send, pills,
+   tab bar) — operator feedback that everything felt
+   oversized on Android.
+   ============================================================= */
+
+@media (max-width: 600px) {
+  /* ── Dialogs: go full-width with side padding ── */
+  .dialog,
+  .dialog.wide {
+    max-width: 100vw;
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    margin: 8px;
+  }
+  dialog header {
+    padding: var(--s-3) var(--s-4);
+  }
+  dialog form,
+  dialog .dialog-content {
+    padding: var(--s-3) var(--s-4);
+  }
+  .dialog-actions {
+    padding: var(--s-2) var(--s-4);
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .dialog-actions button { flex: 1 1 auto; min-block-size: 36px; }
+
+  /* ── Settings dialog: single column everywhere ── */
+  #settingsDialog .settings-grid,
+  #settingsDialog .settings-toggles,
+  #settingsDialog .status-grid {
+    grid-template-columns: 1fr;
+  }
+  #settingsDialog .settings-grid > label { min-inline-size: 0; }
+  /* Inputs: tighter so the dialog fits more */
+  #settingsDialog dialog label > input,
+  #settingsDialog dialog label > select,
+  #settingsDialog dialog label > textarea {
+    height: 36px;
+    font-size: 14px;
+  }
+  #settingsDialog .range-row input[type="range"] { flex: 1; }
+  /* Toggles: keep the 2-col row only at >=480px so the
+     text has room. Below 480px, stack 1 col. */
+  #settingsDialog .settings-toggles { gap: var(--s-2); }
+  #settingsDialog .settings-toggles > .search-toggle {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  #settingsDialog .settings-toggles > .search-toggle input[type="checkbox"] {
+    inline-size: 16px;
+    block-size: 16px;
+  }
+
+  /* ── Skin picker: wrap to 2x3 grid (3 per row) ── */
+  #settingsDialog fieldset.skin-picker .skin-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  #settingsDialog fieldset.skin-picker .skin-card {
+    padding: var(--s-2);
+    text-align: center;
+    align-items: center;
+  }
+  #settingsDialog fieldset.skin-picker .skin-swatch {
+    height: 18px;
+  }
+  #settingsDialog fieldset.skin-picker .skin-name {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+  #settingsDialog fieldset.skin-picker .skin-tag {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  /* ── Runtime policy: 1 column ── */
+  #settingsDialog fieldset.status-panel {
+    padding: var(--s-2) var(--s-3) var(--s-3);
+  }
+  #settingsDialog fieldset.status-panel .status-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 6px 0;
+  }
+  #settingsDialog fieldset.status-panel .status-value {
+    font-size: 11px;
+    word-break: break-all;
+  }
+}
+
+/* Very small phones (<380px): even tighter */
+@media (max-width: 380px) {
+  #settingsDialog .settings-toggles { grid-template-columns: 1fr; }
+  #settingsDialog fieldset.skin-picker .skin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
