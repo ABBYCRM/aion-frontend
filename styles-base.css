@@ -2489,7 +2489,11 @@ input[type="range"]:active::-moz-range-thumb { transform: scale(.95); background
   .topbar { gap: var(--s-2); padding: 0 var(--s-2); }
   .model-controls select { font-size: var(--fs-xs); max-width: 26vw; }
   .search-toggle { padding: 0 var(--s-2); }
-  .search-toggle span { display: none; }
+  /* The topbar's web-search pill is icon-only at mobile (the
+     magnifier-glass SVG carries the meaning). The Settings
+     dialog toggles are NOT pill-style and MUST keep their
+     text labels — scope this to the topbar. */
+  .topbar .search-toggle span { display: none; }
   .connection { padding: 0 var(--s-2); font-size: 10px; }
   /* Composer: tighter, send on its own row next to textarea, stop hidden when not streaming */
   .composer { grid-template-columns: auto minmax(0, 1fr) auto; padding: 6px 8px; gap: 6px; }
