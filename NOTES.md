@@ -1,5 +1,18 @@
 # Notes
 
+## 2026-08-12 (later) — send a stable session_id per conversation (Claude)
+
+Operator report: system can't remember the last thing it was asked. Root
+cause was on the Brain side (see aion-backend-v2 and Aion-Brain NOTES.md).
+On this side: `sendMessage()` in `app-chat-a.js` now sends
+`session_id: conversation.id` in the `/api/chat` payload — `conversation.id`
+was already a stable per-conversation ID (`createConversation()` in
+`app-core.js`), it just wasn't being sent anywhere. This lets the backend
+recall durable memory (episodes/facts/goals) across turns of the same
+conversation instead of every request looking like a brand-new session.
+
+Verified: `node --test tests/*.test.mjs` — 19/19 pass.
+
 ## 2026-08-12 — AION system review (Claude)
 
 Ran a cross-repo health review of the AION system (aion-backend-v2,
