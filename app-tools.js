@@ -76,7 +76,7 @@
     }
     state.settings.apiBase = backend;
     state.settings.temperature = Math.min(2, Math.max(0, Number(dom.temperature.value) || 0.7));
-    state.settings.maxTokens = Math.min(4096, Math.max(32, Number(dom.maxTokens.value) || 1024));
+    state.settings.maxTokens = Math.min(4096, Math.max(32, Number(dom.maxTokens.value) || 2048));
     state.settings.persistHistory = dom.persistHistory.checked;
     state.settings.useNotes = dom.useNotes.checked;
     state.settings.autoSpeak = dom.autoSpeak.checked;
