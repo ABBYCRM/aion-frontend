@@ -90,6 +90,20 @@
     return `${prefix}_${crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)}`;
   }
 
+  // Shared HTML-escaping helper. Was previously reimplemented separately in
+  // app-gallery-vault.js, app-render-b.js, app-code.js, and app-tools.js —
+  // consolidated here (loads first) so every later app-*.js file can call
+  // escapeHtml() directly, same as the other shared globals below (apiKey,
+  // renderAll, etc.). Only null/undefined collapse to '' — 0, false, and
+  // '' round-trip through String() as themselves, so a literal "0" or
+  // "false" value isn't silently blanked out.
+  function escapeHtml(value) {
+    if (value == null) return '';
+    return String(value).replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[character]);
+  }
+
   function apiKey() {
     try {
       if (localStorage.getItem(API_KEY_FORGET_KEY) === '1') {

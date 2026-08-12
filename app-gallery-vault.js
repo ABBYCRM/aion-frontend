@@ -351,11 +351,7 @@
     } catch (error) { showToast('Ping-all failed: ' + error.message); }
   }
 
-  function escapeHtml(value) {
-    return String(value || '').replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    })[c]);
-  }
+  // escapeHtml is shared from app-core.js (loads before this file).
 
   function bindGalleryVaultEvents() {
     // The Vault tab is opened via the data-action="vault" tab-bar element

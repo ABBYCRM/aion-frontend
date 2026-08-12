@@ -3,7 +3,7 @@ const SHELL = [
   '/', '/index.html', '/styles-base.css', '/styles-ui.css', '/styles-skins.css', '/brain-signal.css', '/config.js',
   '/app-core.js', '/app-brain-signal.js', '/app-render-a.js', '/app-render-b.js',
   '/app-chat-a.js', '/app-chat-b.js', '/app-tools.js', '/app-boot.js',
-  '/app-code.js', '/app-gallery-vault.js', '/app-media.js', '/app-core.js',
+  '/app-code.js', '/app-gallery-vault.js', '/app-media.js',
   '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png',
 ];
 
