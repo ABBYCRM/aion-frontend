@@ -479,12 +479,7 @@
 
   // ----- utilities -----------------------------------------------------
 
-  function escapeHtml(s) {
-    if (s == null) return '';
-    return String(s).replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[c]));
-  }
+  // escapeHtml is shared from app-core.js (loads before this file).
   function escapeAttr(s) {
     return escapeHtml(s).replace(/javascript:/gi, '').replace(/"/g, '&quot;');
   }

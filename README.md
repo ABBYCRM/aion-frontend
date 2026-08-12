@@ -1,4 +1,4 @@
-# AION frontend 2.4.0
+# AION frontend 2.8.11
 
 Static Progressive Web App for the authenticated AION backend.
 Pairs with `aion-backend-v2` (Python) and `Aion-Brain` (Node.js

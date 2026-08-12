@@ -64,11 +64,7 @@
     return blocks.reduce((output, block, index) => output.replace(`@@BLOCK_${index}@@`, block), text);
   }
 
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, (character) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    })[character]);
-  }
+  // escapeHtml is shared from app-core.js (loads before this file).
 
   function safeHttpUrl(value) {
     try {

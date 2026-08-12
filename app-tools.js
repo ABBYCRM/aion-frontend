@@ -244,8 +244,4 @@
     showToast.timer = setTimeout(() => { dom.toast.hidden = true; }, 3200);
   }
 
-  function escapeHtml(value) {
-    return String(value || '').replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[c]));
-  }
+  // escapeHtml is shared from app-core.js (loads before this file).
