@@ -172,6 +172,47 @@
       if (bb) meta.append(bb);
     }
     if (message.model) meta.append(makeBadge(message.model));
+    // v2.8.12 — answer mirror self-check badge. When the audit didn't
+    // pass, surface a "Self-check: weak" pill. Click for the 5-axis
+    // breakdown. When the user prompt was very long, the audit may
+    // short-circuit with "You probably already had this" instead.
+    if (message.selfCheck) {
+      const sc = message.selfCheck;
+      let label, kind;
+      if (sc.userKnewAlready) {
+        label = 'Self-check: you probably had this';
+        kind = 'info';
+      } else if (sc.passed) {
+        label = 'Self-check: ok';
+        kind = 'ok';
+      } else {
+        label = `Self-check: weak (attempts ${sc.attempts})`;
+        kind = 'weak';
+      }
+      const badge = document.createElement('button');
+      badge.type = 'button';
+      badge.className = `meta-badge self-check self-check-${kind}`;
+      badge.title = `Audited by ${sc.auditor || 'unknown'} — value_added=${sc.valueAdded ?? '?'} grounded=${sc.grounded ?? '?'} honest=${sc.honest ?? '?'} novel=${sc.novel ?? '?'}` +
+        (sc.missingItems && sc.missingItems.length ? `\nMissing: ${sc.missingItems.join(', ')}` : '') +
+        (sc.weakItems && sc.weakItems.length ? `\nWeak: ${sc.weakItems.join(', ')}` : '');
+      badge.textContent = label;
+      meta.append(badge);
+    }
+    // v2.8.12 — post-stream style badge. Shows the 2-pass diff
+    // (no-ai-slop + adhd). Tiny pill on the right.
+    if (message.styleApply) {
+      const sa = message.styleApply;
+      const parts = [];
+      if (sa.slopPatternsCaught) parts.push(`${sa.slopPatternsCaught} slop`);
+      if (sa.closersStripped) parts.push(`${sa.closersStripped} closers`);
+      if (sa.timeEstimatesRewritten) parts.push(`${sa.timeEstimatesRewritten} times`);
+      if (parts.length === 0) parts.push('clean');
+      const badge = document.createElement('span');
+      badge.className = 'meta-badge style-apply';
+      badge.title = `Post-stream style pass: ${sa.skill}`;
+      badge.textContent = `Styled: ${parts.join(', ')}`;
+      meta.append(badge);
+    }
     if (message.attachments?.length) meta.append(makeBadge(`Attachments: ${message.attachments.map((item) => item.name).join(', ')}`));
     if (message.error && message.content) meta.append(makeBadge(message.error));
     card.append(meta);

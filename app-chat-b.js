@@ -54,6 +54,43 @@
       case 'attempt': assistant.model = `${event.provider}/${event.model}`; break;
       case 'attempt_failed': assistant.tools.push(event); break;
       case 'delta': assistant.content += event.text || ''; break;
+      // v2.8.12 — answer mirror. Backend emits a self_check event after
+      // every chat reply with the 5-axis audit. We stash the result on
+      // the assistant message so render can surface a "Self-check:
+      // weak" badge when the audit didn't pass.
+      case 'self_check':
+        assistant.selfCheck = {
+          resolved: !!event.resolved,
+          passed: !!event.passed,
+          userKnewAlready: !!event.user_knew_already,
+          attempts: event.attempts || 1,
+          tokensAdded: event.tokens_added || 0,
+          auditor: event.auditor || '',
+          valueAdded: event.audit && event.audit.value_added,
+          grounded: event.audit && event.audit.grounded,
+          honest: event.audit && event.audit.honest,
+          novel: event.audit && event.audit.novel,
+          missingItems: (event.audit && event.audit.missing_items) || [],
+          weakItems: (event.audit && event.audit.weak_items) || [],
+        };
+        break;
+      // v2.8.12 — post-stream style pass. Backend ran the reply
+      // through writing.ste.slop_suppress + writing.adhd_output. We
+      // capture the diff metadata so the UI can badge the message.
+      case 'style_apply':
+        assistant.styleApply = {
+          skill: event.skill || 'writing.adhd_output + writing.ste.slop_suppress',
+          closersStripped: event.closers_stripped || 0,
+          timeEstimatesRewritten: event.time_estimates_rewritten || 0,
+          slopPatternsCaught: event.slop_patterns_caught || 0,
+          wordReduction: event.word_reduction || 0,
+        };
+        break;
+      // v2.8.12 — tool usage summary. Backend emits a flat list of
+      // tools used (not the per-tool events).
+      case 'tools_used':
+        assistant.toolsUsed = Array.isArray(event.tools) ? event.tools : [];
+        break;
       case 'done':
         assistant.model = `${event.provider}/${event.model}`;
         assistant.error = '';

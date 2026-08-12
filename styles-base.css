@@ -926,6 +926,33 @@ button:disabled,
 .badge.rejected, .badge.error { color: var(--danger-fg); border-color: var(--danger-soft); }
 .badge small { color: var(--text-faint); font-weight: 400; }
 
+/* v2.8.12 — answer mirror + post-stream style badges.
+   .self-check-<kind> colors the badge by audit outcome.
+   .style-apply is the no-ai-slop + ADHD 2-pass diff pill. */
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 var(--s-2);
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  font-weight: 500;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-2);
+  white-space: nowrap;
+  cursor: default;
+  transition: background var(--t-fast) var(--ease);
+}
+button.meta-badge { cursor: help; }
+button.meta-badge:hover { background: var(--surface-3); }
+.meta-badge.self-check-ok { color: var(--ok-fg); border-color: var(--ok-soft); }
+.meta-badge.self-check-weak { color: var(--warn-fg); border-color: var(--warn-soft); }
+.meta-badge.self-check-info { color: var(--brand-2); border-color: var(--border-brand); }
+.meta-badge.style-apply { color: var(--text-faint); border-color: var(--border); font-style: italic; }
+
 .msg-action {
   display: inline-flex;
   align-items: center;

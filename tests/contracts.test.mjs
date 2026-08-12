@@ -351,3 +351,22 @@ test('Composer shortcut buttons are 4-col grid + smaller chip on mobile (v2.8.11
     assert.match(html, new RegExp(`data-shortcut="${t.replace(/[.\\/]/g, m => '\\' + m)}"`));
   }
 });
+
+// v2.8.12 — answer mirror + style apply event handlers
+test('app-chat-b.js handles self_check, style_apply, tools_used events', () => {
+  const src = read('app-chat-b.js');
+  assert.match(src, /case 'self_check':/, 'self_check case missing');
+  assert.match(src, /case 'style_apply':/, 'style_apply case missing');
+  assert.match(src, /case 'tools_used':/, 'tools_used case missing');
+  assert.match(src, /assistant\.selfCheck\s*=/, 'selfCheck assignment missing');
+  assert.match(src, /assistant\.styleApply\s*=/, 'styleApply assignment missing');
+  assert.match(src, /assistant\.toolsUsed\s*=/, 'toolsUsed assignment missing');
+});
+
+test('app-render-a.js renders self-check and style-apply badges', () => {
+  const src = read('app-render-a.js');
+  assert.match(src, /message\.selfCheck/, 'selfCheck not referenced in render');
+  assert.match(src, /message\.styleApply/, 'styleApply not referenced in render');
+  assert.match(src, /self-check-\$\{kind\}/, 'self-check dynamic badge class missing');
+  assert.match(src, /style-apply/, 'style-apply badge class missing');
+});
