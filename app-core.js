@@ -73,7 +73,14 @@
     settings: {
       apiBase: CONFIGURED_API_BASE,
       temperature: 0.7,
-      maxTokens: 1024,
+      // 2048, not 1024: the chain now includes reasoning models (NVIDIA
+      // Nemotron) that spend output tokens on a thinking pass before the
+      // answer. At 1024 a normal complex question comes back with
+      // finish_reason=length — truncated mid-sentence, or (when the budget
+      // runs out during the thinking pass) showing the user raw
+      // chain-of-thought instead of an answer. Verified against the live
+      // gateway: 1024 truncates, 1600+ returns clean.
+      maxTokens: 2048,
       persistHistory: false,
       useNotes: false,
       autoSpeak: false,
@@ -138,7 +145,12 @@
         state.settings.apiBase = normalizeApiBase(saved.apiBase);
       }
       if (Number.isFinite(saved.temperature)) state.settings.temperature = Math.min(2, Math.max(0, saved.temperature));
-      if (Number.isInteger(saved.maxTokens)) state.settings.maxTokens = Math.min(4096, Math.max(32, saved.maxTokens));
+      if (Number.isInteger(saved.maxTokens)) {
+        // One-time migration off the old 1024 default. Only the exact old
+        // default is moved — a value the user deliberately chose is left alone.
+        const tokens = saved.maxTokens === 1024 ? 2048 : saved.maxTokens;
+        state.settings.maxTokens = Math.min(4096, Math.max(32, tokens));
+      }
       state.settings.persistHistory = saved.persistHistory === true;
       state.settings.useNotes = saved.useNotes === true;
       state.settings.autoSpeak = saved.autoSpeak === true;
