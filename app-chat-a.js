@@ -106,6 +106,10 @@
       max_tokens: state.settings.maxTokens,
       web_search: dom.webSearchToggle.checked,
       use_notes: state.settings.useNotes,
+      // Stable per-conversation ID so the backend/Brain can recall prior
+      // turns (durable memory) instead of every request looking like a
+      // brand-new, unrelated session.
+      session_id: conversation.id,
     };
     if (state.selectedModel) {
       payload.provider = state.selectedModel.provider;
